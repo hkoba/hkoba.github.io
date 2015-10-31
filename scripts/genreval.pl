@@ -75,6 +75,7 @@ __END__
     <!--[if lt IE 9]>
       <script src="/revealjs/lib/js/html5shiv.js"></script>
     <![endif]-->
+    <style>.reveal section img {border-width: 0px;}</style>
   </head>
 
   <body>
