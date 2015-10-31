@@ -17,10 +17,7 @@
 
 `MOP4Import::Declare` (--dev)
 
-https://github.com/hkoba/perl-mop4import
-
-https://github.com/hkoba/perl-mop4import/blob/master/whyfields.pod
-
+http://search.cpan.org/~hkoba/MOP4Import-0.000_002/whyfields.pod
 
 ====
 
