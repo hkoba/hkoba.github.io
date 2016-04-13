@@ -20,13 +20,24 @@ fields、保存時検査、そして import の使い方
 
 ---
 
+## Demo 1.
+
+---
+
 ## I will talk about:
 
 * `perl -wc` and `use strict`
-   * So, **When** to _perl -wc_?
+   * So, **When** to _perl -wc_?  
+   (いつ _perl -wc_ を呼ぶべきか)
 * `use fields` and `%FIELDS`
 
 See [MOP4Import-Declare/whyfields](https://metacpan.org/pod/distribution/MOP4Import-Declare/whyfields.pod) for this talk.
+
+---
+
+# Demo 1
+
+
 
 ---
 

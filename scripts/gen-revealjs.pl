@@ -100,7 +100,8 @@ __END__
       <script src="/revealjs/lib/js/html5shiv.js"></script>
     <![endif]-->
     <style>
-       .reveal section img {border-width: 0px;}
+    .reveal h2, .reveal h3, .reveal h4, .reveal h5 {text-transform: none;}
+    .reveal section img {border-width: 0px;}
        .reveal li { margin-bottom: .5ex; }
        .reveal code {
            background: #0e1560;

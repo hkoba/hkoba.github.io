@@ -16,7 +16,8 @@
       <script src="/revealjs/lib/js/html5shiv.js"></script>
     <![endif]-->
     <style>
-       .reveal section img {border-width: 0px;}
+    .reveal h2, .reveal h3, .reveal h4, .reveal h5 {text-transform: none;}
+    .reveal section img {border-width: 0px;}
        .reveal li { margin-bottom: .5ex; }
        .reveal code {
            background: #0e1560;
@@ -34,31 +35,164 @@
       <div class="slides">
 <section data-markdown>
 <script type='text/template'>
-## Why %FIELDS and how.
-
-Perl の use strict をもっと活かすための,  
-fields、保存時検査、そして import の使い方
+#### Perl の `use strict` をもっと活かすための
+### `%FIELDS`, `perl -wc`, `import` の使い方
 
 ## kichijoji.pm #7
 
 <img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
-**@hkoba** 
+Twitter **@hkoba**  
+Github: hkoba
 </script>
 </section>
 <section data-markdown>
 <script type='text/template'>
-## Who am I
+## 自己紹介
 
-* Freelance programmer
 * `@hkoba` (in CPAN, GitHub, Twitter)
-* My Modules: `YATT::Lite`, `App::perlminlint`, `MOP4Import::Declare`
-* Writes: Perl, Tcl/Tk, Zsh, Emacs Lisp and C/C++.
+* プログラマー(フリーランス)
+* 主に Perl, Tcl/Tk, Zsh  <span style="font-size: small;">(←老害？)</span>
+* 代表作: `YATT::Lite`, `App::perlminlint`, `MOP4Import::Declare`
+</script>
+</section>
+<section>
+<section data-markdown>
+<script type='text/template'>
+## 今日お伝えしたい3つのこと
+
+#### それは…
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+# `%FIELDS` 便利!
+### (`use fields` でもいい)
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+# `Save時にperl -wc` <!-- .element: style="font-size: 80%;" -->
+# 安心！
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+# `use (import) で`  <!-- .element: style="font-size: 60%;" -->
+# `型を生成`  <!-- .element: style="font-size: 60%;" -->
+## すると、捗る！
+
+
+#### の３つです。
+</script>
+</section>
+</section>
+<section>
+<section data-markdown>
+<script type='text/template'>
+## `use fields` (fields.pm) とは <!-- .element: style="font-size: 80%" -->
+
+* Perl 5.5 で導入
+* クラスのインスタンス変数(field)を宣言する仕組み
+```perl
+package Cat;
+use fields qw/name birth_year/;  # 名前、生まれ年
+```
+* 変数の型宣言と併用
+```perl
+my Cat $cat;
+```
+* コンパイル時に、静的に field の TYPO(タイポ、つづり間違い)を検知してエラーに
+```perl
+$cat->{namae} = 'foo';   # コンパイル時にエラー！
+say $cat->{birth_yearr}; # コンパイル時にエラー！
+```
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### `use fields` の例: クラス定義
+
+```perl
+package Cat {
+ 
+   use fields qw/name birth_year/; # field declaration
+ 
+   sub new {
+      my Cat $self = fields::new(shift); #  my TYPE $sport.
+      $self->{name}       = shift; # Checked!
+      $self->{birth_year} = shift // $self->_this_year; # Checked!
+      $self;
+   }
+ 
+   sub age {
+      my Cat $self = shift;
+      return _this_year() - $self->{birth_year}; # Checked!
+   }
+   sub _this_year { (localtime)[5] + 1900 }
+}
+```
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### `use fields` の例: クラスを使う側
+
+```perl
+
+my @cats = map {Cat->new(split ":", $_, 2)} @ARGV ? @ARGV : qw/Daisy:2010/;
+ 
+foreach my Cat $cat (@cats) {
+ 
+   print $cat->{name}, ": ", $cat->age, "\n";
+ 
+   # print $cat->{namae}, "\n"; # Compilation error!
+}
+```
 </script>
 </section>
 <section data-markdown>
 <script type='text/template'>
 ## Demo 1.
+
+わざと壊して, `perl -wc` してみましょう。
 </script>
+</section>
+</section>
+<section>
+<section data-markdown>
+<script type='text/template'>
+### あなたを守る fields.pm、
+## 何故使われなかったのか…
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### fields.pm は Accessor を作ってくれない！
+
+```perl
+use fields qw/name birth_year/;
+__PACKAGE__->mk_accessors(qw/name birth_year/); # DRY!
+```
+
+### 型名つけるのが面倒！
+
+```perl
+my MyModuleX $foo;
+my MyModuleY $bar;
+```
+
+### 型名が長くなるともっと辛い！
+
+```perl
+my MyProject::SomeModule::SomeClass $obj;
+```
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### そもそも `perl -wc` を滅多に使わない?!
+</script>
+</section>
 </section>
 <section data-markdown>
 <script type='text/template'>
