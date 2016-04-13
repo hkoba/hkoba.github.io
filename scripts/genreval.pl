@@ -4,6 +4,8 @@ use warnings;
 use autodie;
 use Carp;
 
+use Getopt::Long;
+
 sub section (&@);
 sub md_section (&);
 
@@ -14,17 +16,35 @@ END
 }
 
 {
+  GetOptions("r|revealup-compat", \ (my $o_revealup_compat)
+	     , "o=s", \ (my $o_outfn)
+	   )
+    or usage();
+
   usage() unless @ARGV;
 
   my $template = do {local $/; <DATA>};
   $template =~ s/&yatt:theme;/beige/;
   my ($top, $bottom) = split /__SUBST__/, $template, 2;
 
+  my ($sect, $subsect) = do {
+    if ($o_revealup_compat) {
+      qw(--- ___);
+    } else {
+      qw(==== ----);
+    }
+  };
+
+  my $tmpfn = "$o_outfn.tmp$$";
+  if ($o_outfn) {
+    open STDOUT, '>', $tmpfn;
+  }
+
   local $/;
   print $top;
   while (<>) {
-    foreach (split /\n\n+====*\n\n+/) {
-      my @subsects = split /\n\n+----*\n\n+/;
+    foreach (split /\n\n+$sect*\n\n+/) {
+      my @subsects = split /\n\n+$subsect*\n\n+/;
       if (@subsects >= 2) {
 	section {
 	  md_section { ensure_nl(); print } for @subsects;
@@ -35,6 +55,10 @@ END
     }
   }
   print $bottom;
+
+  if ($o_outfn) {
+    rename $tmpfn, $o_outfn;
+  }
 }
 
 sub section (&@) {
