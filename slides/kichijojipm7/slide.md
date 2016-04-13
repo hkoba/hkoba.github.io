@@ -1,6 +1,7 @@
-## Why and how to use %FIELDS
+## Why %FIELDS and how.
 
-Perl の use strict をもっと活かすための,fields、保存時検査、そして import の使い方
+Perl の use strict をもっと活かすための,  
+fields、保存時検査、そして import の使い方
 
 ## kichijoji.pm #7
 
@@ -11,38 +12,47 @@ Perl の use strict をもっと活かすための,fields、保存時検査、�
 
 ## Who am I
 
-* CPAN ID: hkoba.
+* Freelance programmer
+* `@hkoba` (in CPAN, GitHub, Twitter)
+* My Modules: `YATT::Lite`, `App::perlminlint`, `MOP4Import::Declare`
 * Writes: Perl, Tcl/Tk, Zsh, Emacs Lisp and C/C++.
 
-___
-
-## My modules
-
-* YATT::Lite
-* App::perlminlint
-* MOP4Import::Declare
 
 ---
 
 ## I will talk about:
 
 * `perl -wc` and `use strict`
-* `use fields`
-* `perlminlint`
-* And some proposal about...
+   * So, **When** to _perl -wc_?
+* `use fields` and `%FIELDS`
 
-___
+See [MOP4Import-Declare/whyfields](https://metacpan.org/pod/distribution/MOP4Import-Declare/whyfields.pod) for this talk.
 
-### Proposal:
+---
 
-* Make `%FIELDS` 1st class like `@ISA`
-* Composable Exporter
-* Meta Object Protocol for Import
-* `MOP4Import::Declare`
-* [MOP4Import-Declare/whyfields](https://metacpan.org/pod/distribution/MOP4Import-Declare/whyfields.pod)
+## Question!
+
+When do you run `perl -wc` for your program?  
+(どんな時、 `perl -wc` してますか？)
+
+1. Never (全然)
+2. Occationary (気が向いた時)
+2. Every releasing (リリース時)
+3. Every testing (テスト時)
+4. <span class="fragment highlight-blue">Every editing (編集する度)</span>
+
 
 ---
 
 
+## Why we love `use strict` ?
 
-あれこれ
+* Finds **TYPOs** of variable names.
+* **Before** it runs.
+
+---
+
+# "Before"
+
+Really?
+

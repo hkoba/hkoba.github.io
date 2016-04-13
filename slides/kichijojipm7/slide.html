@@ -1,87 +1,3 @@
-#!/usr/bin/env perl
-use strict;
-use warnings;
-use autodie;
-use Carp;
-
-use Getopt::Long;
-
-sub section (&@);
-sub md_section (&);
-
-sub usage {
-  die <<END;
-Usage: $0 slide.md
-END
-}
-
-{
-  GetOptions("r|revealup-compat", \ (my $o_revealup_compat)
-	     , "o=s", \ (my $o_outfn)
-	   )
-    or usage();
-
-  usage() unless @ARGV;
-
-  my $template = do {local $/; <DATA>};
-  $template =~ s/&yatt:theme;/beige/;
-  my ($top, $bottom) = split /__SUBST__/, $template, 2;
-
-  my ($sect, $subsect) = do {
-    if ($o_revealup_compat) {
-      qw(--- ___);
-    } else {
-      qw(==== ----);
-    }
-  };
-
-  my $tmpfn = "$o_outfn.tmp$$";
-  if ($o_outfn) {
-    open STDOUT, '>', $tmpfn;
-  }
-
-  local $/;
-  print $top;
-  while (<>) {
-    foreach (split /\n\n+$sect*\n\n+/) {
-      my @subsects = split /\n\n+$subsect*\n\n+/;
-      if (@subsects >= 2) {
-	section {
-	  md_section { ensure_nl(); print } for @subsects;
-	};
-      } else {
-	md_section { ensure_nl(); print };
-      }
-    }
-  }
-  print $bottom;
-
-  if ($o_outfn) {
-    rename $tmpfn, $o_outfn;
-  }
-}
-
-sub section (&@) {
-  my ($code, @atts) = @_;
-  print "<section",join("",map {" $_"} @atts).">\n";
-  $code->();
-  print "</section>\n";
-}
-
-sub md_section (&) {
-  my ($code) = @_;
-  section {
-    print "<script type='text/template'>\n";
-    $code->();
-    print "</script>\n";
-  } "data-markdown";
-}
-
-sub ensure_nl {
-  s/\n*\z/\n/;
-}
-
-__END__
 <!doctype html>
 <html lang="en">
   <head>
@@ -90,7 +6,7 @@ __END__
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="/revealjs/css/reveal.css">
-    <link rel="stylesheet" href="/revealjs/css/theme/&yatt:theme;.css" id="theme">
+    <link rel="stylesheet" href="/revealjs/css/theme/beige.css" id="theme">
     <link rel="stylesheet" href="/revealjs/lib/css/zenburn.css">
     <!-- If the query includes 'print-pdf', use the PDF print sheet -->
     <script>
@@ -116,7 +32,70 @@ __END__
   <body>
     <div class="reveal">
       <div class="slides">
-__SUBST__
+<section data-markdown>
+<script type='text/template'>
+## Why %FIELDS and how.
+
+Perl の use strict をもっと活かすための,  
+fields、保存時検査、そして import の使い方
+
+## kichijoji.pm #7
+
+<img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
+**@hkoba** 
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+## Who am I
+
+* Freelance programmer
+* `@hkoba` (in CPAN, GitHub, Twitter)
+* My Modules: `YATT::Lite`, `App::perlminlint`, `MOP4Import::Declare`
+* Writes: Perl, Tcl/Tk, Zsh, Emacs Lisp and C/C++.
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+## I will talk about:
+
+* `perl -wc` and `use strict`
+   * So, **When** to _perl -wc_?
+* `use fields` and `%FIELDS`
+
+See [MOP4Import-Declare/whyfields](https://metacpan.org/pod/distribution/MOP4Import-Declare/whyfields.pod) for this talk.
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+## Question!
+
+When do you run `perl -wc` for your program?  
+(どんな時、 `perl -wc` してますか？)
+
+1. Never (全然)
+2. Occationary (気が向いた時)
+2. Every releasing (リリース時)
+3. Every testing (テスト時)
+4. <span class="fragment highlight-blue">Every editing (編集する度)</span>
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+## Why we love `use strict` ?
+
+* Finds **TYPOs** of variable names.
+* **Before** it runs.
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+# "Before"
+
+Really?
+</script>
+</section>
+
       </div>
     </div>
 
