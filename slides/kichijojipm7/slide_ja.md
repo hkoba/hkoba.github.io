@@ -9,6 +9,14 @@ Github: hkoba
 
 ---
 
+## スライド URL:
+
+http://hkoba.github.io/ → `kichijojipm` → `#7`
+
+http://hkoba.github.io/slides/kichijojipm7/slide_ja.html
+
+---
+
 ## 自己紹介
 
 * `@hkoba` (in CPAN, GitHub, Twitter)
@@ -36,7 +44,7 @@ __
 __
 
 # `use (import) で`  <!-- .element: style="font-size: 60%;" -->
-# `型を生成`  <!-- .element: style="font-size: 60%;" -->
+# `クラスを生成`  <!-- .element: style="font-size: 60%;" -->
 ## すると、捗る！
 
 
@@ -48,10 +56,20 @@ __
 
 * Perl 5.5 で導入
 * クラスのインスタンス変数(field)を宣言する仕組み
+* 実体はパッケージ変数 `%FIELDS`
+
 ```perl
-package Cat;
-use fields qw/name birth_year/;  # 名前、生まれ年
+package Cat {
+
+  use fields qw/name birth_year/;  # 名前、生まれ年
+
+  # (ほぼ) 等価なコード
+  BEGIN {our %FIELDS = (name => 1, birth_year => 2)}
+}
 ```
+
+__
+
 * 変数の型宣言と併用
 ```perl
 my Cat $cat;
@@ -61,7 +79,7 @@ my Cat $cat;
 $cat->{namae} = 'foo';   # コンパイル時にエラー！
 say $cat->{birth_yearr}; # コンパイル時にエラー！
 ```
-
+* つまり `perl -wc` で検出できる
 
 ___
 
@@ -111,15 +129,18 @@ ___
 
 ---
 
-### あなたを守る fields.pm、
+### あなたを守るはずの fields.pm が
 ## 何故使われなかったのか…
 
 __
+
+<!-- .slide: id="fields-weakpoints" -->
 
 ### fields.pm は Accessor を作ってくれない！
 
 ```perl
 use fields qw/name birth_year/;
+
 __PACKAGE__->mk_accessors(qw/name birth_year/); # DRY!
 ```
 
@@ -138,31 +159,21 @@ my MyProject::SomeModule::SomeClass $obj;
 
 ___
 
-### そもそも `perl -wc` を滅多に使わない?!
+でも、これらへの[対策](#/fields-workaround)は作れます
+
+それよりも…
+
+___
+
+### そもそも
+# `perl -wc` が
+## 普及していない？
 
 ---
 
-## I will talk about:
+## さて皆さんに質問です
 
-* `perl -wc` and `use strict`
-   * So, **When** to _perl -wc_?  
-   (いつ _perl -wc_ を呼ぶべきか)
-* `use fields` and `%FIELDS`
-
-See [MOP4Import-Declare/whyfields](https://metacpan.org/pod/distribution/MOP4Import-Declare/whyfields.pod) for this talk.
-
----
-
-# Demo 1
-
-
-
----
-
-## Question!
-
-When do you run `perl -wc` for your program?  
-(どんな時、 `perl -wc` してますか？)
+どんな時、 `perl -wc` してますか？
 
 1. Never (全然)
 2. Occationary (気が向いた時)
@@ -173,15 +184,7 @@ When do you run `perl -wc` for your program?
 
 ---
 
+<!-- .slide: id="fields-workaround" -->
 
-## Why we love `use strict` ?
-
-* Finds **TYPOs** of variable names.
-* **Before** it runs.
-
----
-
-# "Before"
-
-Really?
+[fields の弱点](#/fields-weakpoints)を克服するためには
 
