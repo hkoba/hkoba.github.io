@@ -110,8 +110,8 @@ return sub {
   }
   else {
      return [200, header()
-            , ["Unsupported method", "psgi.version="
-               , join(" ", $env->{'psgi.version'})]]; # Checked too!
+            , ["Unsupported method"
+              , "psgi.version=", $env->{'psgi.version'}]]; # Checked too!
   }
 };
 ```
@@ -197,7 +197,7 @@ foreach my Cat $cat (@cats) {
 }
 ```
 
-### fields.pm だけでは Accessor が無い！
+### fields.pm だけでは new も Accessor も無い！
 
 ```perl
 use fields qw/name birth_year/;
@@ -258,7 +258,7 @@ Can't locate Barr.pm in @INC (...
 
 ---
 
-### そこで `App::perlminlint`
+### そこで拙作:  `App::perlminlint`
 
 https://github.com/hkoba/app-perlminlint
 
@@ -394,9 +394,28 @@ ___
 
 ---
 
-### `fields + mk_accessors`?
+### 作ればいい？
 
-### →オレオレ import() の世界へようこそ！
+___
+
+### オレオレ Exporter (import()) 作るの、面倒…
+
+
+___
+
+### `Exporter` とは
+
+* 変数や関数を Export (輸出) してくれるモジュール。
+
+* `use Foo (引数1, 2, ...);` のように使う
+
+* `BEGIN {require Foo; import Foo (引数1, 2, ...)}` として実行される
+
+* Exporter になるモジュールには `import()` (輸入) メソッドを定義しておく
+
+___
+
+### %FIELDS を定義する Exporter の例
 
 ```perl
 package Class::Accessor::Fields; # XXX: Fake module
@@ -406,25 +425,175 @@ sub import {
   my ($callpack) = caller;
   my $fields = fields_hash($callpack); # %{${callpack}::FIELDS}
   foreach my $f (@fields) {
-     $fields->{$f} = 1; # ←何でも良い
+     $fields->{$f} = 1;  # ←何でも良い
+     next if $f =~ /^_/; # ←例えば _name はアクセサを作らない
      my $name = $f;
      *{globref($callpack, $name)} = sub {shift->{$name}};
      *{globref($callpack, "set_".$name)} = sub {shift->{$name} = shift};
   }
 }
-1;
 ```
 
 ___
 
+```perl
+sub globref {
+  my $pack_or_obj = shift;
+  my $pack = ref $pack_or_obj || $pack_or_obj;
+  my $symname = join("::", $pack, @_);
+  no strict 'refs';
+  \*{$symname};
+}
 
-```sh
-% perl -Idemos/3/lib -MClass::Accessor::Fields=foo,bar,baz -Mstrict -le '
-  sub MY () {__PACKAGE__};
-  sub foo {
-    my MY $foo = shift;
-    $foo->{fo} + $foo->{bar}
+sub fields_hash {
+  my $sym = globref($_[0], 'FIELDS');
+  # XXX: return \%{*$sym}; # If we use this, we get "used only once" warning.
+  unless (*{$sym}{HASH}) {
+    *$sym = {};
   }
-'
-No such class field "fo" in variable $foo of type main at -e line 1.
+  *{$sym}{HASH};
+}
+1;
 ```
+
+
+___
+
+
+#### `Class::Accessor::Fields`(仮)の使用例
+
+```perl
+package Backend;
+use strict;
+use warnings;
+
+use Class::Accessor::Fields qw/_DBH dbi db_user db_pass/;
+use DBI;
+
+sub DBH {
+  (my MY $self) = @_;
+
+  $self->{_DBH} //= do {
+    DBI->connect($self->{dbi}
+		 , $self->{db_user}, $self->{db_pass}
+		 , {PrintError => 0, RaiseError => 1, AutoCommit => 1});
+  };
+}
+1;
+```
+
+---
+
+### オレオレ import() 乱立！
+
+
+### …困ったことが
+
+___
+
+
+#### 良いとこ取り出来なくて不便。例：
+
+```perl
+package MyExporter { use base 'Class::Accessor::Fields'; ... }
+
+use MyExporter qw/$CONFIG/;  # 変数の import もしたいな←出来ない
+
+use MyExporter; #  だけで use strict; use warnings にしたいな←出来ない
+```
+
+#### ← 先の `Class::Accessor::Fields` では出来ない。
+
+import を丸々、定義し直すしか無い。
+
+---
+
+### →そこで拙作: `MOP4Import::Declare` 
+
+https://github.com/hkoba/perl-mop4import-declare
+
+* **M**eta **O**bject **P**rotocol for **I**mport
+* import の引数(プラグマ)を、パターンに応じて `declare_...` で始まるメソッド呼び出しへと
+dispatch する枠組み
+
+```perl
+use MOP4Import::Declare  プラグマ1, プラグマ2, ...;
+```
+
+___
+
+### 定義済みプラグマの例
+
+* `[fields => name1, name2, ...]`
+  * `fields.pm` と同等
+  * getter も自動生成
+* `-as_base`
+  * `use parent` + `use base` 相当
+  * `MY()` も自動生成
+
+___
+
+
+```perl
+use MOP4Import::Declare -as_base, [fields => qw/db_user db_pass/];
+
+# ↓大体、以下と同じ
+BEGIN {
+  MOP4Import::Declare->declare_as_base(+{}, __PACKAGE__);
+  MOP4Import::Declare->declare_fields(+{}, __PACKAGE__, qw/db_user db_pass/);
+}
+```
+
+* `MOP4Import::Declare` を継承して、オレオレ Exporter を作れる。
+(import 用の pragma を追加・拡張出来る)
+
+---
+
+### 同梱パッケージ
+
+* `MOP4Import::Base::Configure`
+  * `MOP4Import::Declare` ＋ `new` , `configure()`
+* `MOP4Import::Base::CLI`
+  * `MOP4Import::Base::Configure` ＋ command line
+  * fields が option に
+  * メソッドがサブコマンドに
+
+---
+
+### `MOP4Import::Types`
+
+複数の内部クラスを一括で定義できる。  
+(細かいクラス定義ファイルを沢山作りたくない時に便利)
+
+___
+
+
+```perl
+package MyApp;
+use MOP4Import::Types
+  (Artist => [[fields => qw/artistid name/]]
+   , CD   => [[fields => qw/cdid artistid title year/]]);
+
+# MyApp::Artist
+# MyApp::CD が, fields 付きで定義される
+
+# sub Artist () {'MyApp::Artist'} 等も定義される。
+
+sub print_artist_cds {
+  (my $self, my Artist $artist) = @_;
+  my @cds = $self->DB->select(CD => {artistid => $artist->{artistid}});
+  foreach my CD $cd (@cds) {
+    print tsv($cd->{title}, $cd->{year}), "\n";
+  }
+}
+```
+
+
+
+---
+
+### まとめ
+
+* `%FIELDS` はいいぞ！
+* まめに `perl -wc` するともっといいぞ！
+* `import` 定義すると、更にいいぞ！
