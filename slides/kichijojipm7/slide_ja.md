@@ -311,9 +311,8 @@ cpanm App::perlminlint
 
 #### Emacs の flycheck の場合
 
-App::perlminlint に設定例が同梱
-
-https://github.com/hkoba/app-perlminlint/tree/master/flycheck-perlminlint
+App::perlminlint に設定例
+([flycheck-perlminlint](https://github.com/hkoba/app-perlminlint/tree/master/flycheck-perlminlint))が同梱
 
 ```elisp
 (flycheck-set-checker-properties
@@ -327,6 +326,13 @@ https://github.com/hkoba/app-perlminlint/tree/master/flycheck-perlminlint
 ```vim
 let g:syntastic_perl_perl_exec = 'perlminlint'
 ```
+
+---
+
+### **ただし！** `トロイの木馬` には注意
+
+perlminlint は (perl -wc と同じく)  
+`テスト対象コードの一部を実行`します。
 
 ---
 
@@ -365,7 +371,7 @@ my Cat $animal;
 ```perl
 sub MY () {__PACKAGE__}
 
-sub get_age {
+sub age {
   (my MY $self) = @_;
   ...
 }
@@ -373,13 +379,52 @@ sub get_age {
 
 ---
 
-### 内部アクセスは邪道
+### Q. 内部アクセスは邪道
 
-モジュール定義の中だけ `my TYPE $var` を使うことにすればいい。
+* →クラス定義 `*.pm` の中でだけ、  
+`my MY $var` と `$var->{field}` を許す
+
+* クラスのユーザー側では、従来通り、アクセサーを使う。
+
+___
+
+### Q. Accessor 欲しい
+
+### → `fields + mk_accessors` なモジュールを作ればいい！
+
+---
+
+### `fields + mk_accessors`?
+
+### →オレオレ import() の世界へようこそ！
+
+```perl
+package Class::Accessor::Fields; # XXX: Fake module
+use strict; use warnings;
+sub import {
+  my ($pack, @fields) = @_;
+  my ($callpack) = caller;
+  my $fields = fields_hash($callpack); # %{${callpack}::FIELDS}
+  foreach my $f (@fields) {
+     $fields->{$f} = 1; # ←何でも良い
+     my $name = $f;
+     *{globref($callpack, $name)} = sub {shift->{$name}};
+     *{globref($callpack, "set_".$name)} = sub {shift->{$name} = shift};
+  }
+}
+1;
+```
+
+___
 
 
-### Accessor 欲しい
-
-→ `fields + mkaccessor` なモジュールを作ればいい！
-
-
+```sh
+% perl -Idemos/3/lib -MClass::Accessor::Fields=foo,bar,baz -Mstrict -le '
+  sub MY () {__PACKAGE__};
+  sub foo {
+    my MY $foo = shift;
+    $foo->{fo} + $foo->{bar}
+  }
+'
+No such class field "fo" in variable $foo of type main at -e line 1.
+```
