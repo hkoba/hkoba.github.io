@@ -101,6 +101,8 @@ __END__
     <![endif]-->
     <style>
     .reveal h2, .reveal h3, .reveal h4, .reveal h5 {text-transform: none;}
+    .reveal a {color: #22B79B;}
+    .reveal a:hover {color: #78BB62;}
     .reveal section img {border-width: 0px;}
        .reveal li { margin-bottom: .5ex; }
        .reveal code {

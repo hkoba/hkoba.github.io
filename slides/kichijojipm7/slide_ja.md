@@ -1,7 +1,7 @@
+## kichijoji.pm #7
+
 #### Perl の `use strict` をもっと活かすための
 ### `%FIELDS`, `perl -wc`, `import` の使い方
-
-## kichijoji.pm #7
 
 <img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
 Twitter **@hkoba**  
@@ -83,15 +83,50 @@ say $cat->{birth_yearr}; # コンパイル時にエラー！
 
 ___
 
+## `%FIELDS` 検査の実装は:
+
+`op.c:finalize_op()`
+
+* 検査対象： [OP_HELEM](https://github.com/Perl/perl5/blob/637494ac7ab11f737c47bf95a2c3a27ef1117984/op.c#L2497-L2533) など
+  * バージョンで増減
+
+* 検査ルーチン: blead perl だと
+[op.c:S_check_hash_fields_and_hekify()](https://github.com/Perl/perl5/blob/637494ac7ab11f737c47bf95a2c3a27ef1117984/op.c#L2309)
+
+---
+
+### `%FIELDS` はコンパイル時のみ
+### => 生HASHにも使える
+
+```perl
+package Env {
+  use fields qw/REQUEST_METHOD psgi.version/; # and so on...
+};
+return sub {
+  (my Env $env) = @_;
+  
+  if ($env->{REQUEST_METHOD} eq 'GET') { # Checked!
+     return [200, header(), ["You used 'GET'"]];
+  }
+  else {
+     return [200, header()
+            , ["Unsupported method", "psgi.version="
+               , join(" ", $env->{'psgi.version'})]]; # Checked too!
+  }
+};
+```
+
+---
+
 ### `use fields` の例: クラス定義
 
 ```perl
 package Cat {
  
-   use fields qw/name birth_year/; # field declaration
+   use fields qw/name birth_year/; # fields declaration.
  
    sub new {
-      my Cat $self = fields::new(shift); #  my TYPE $sport.
+      my Cat $self = fields::new(shift); #  my CLASS $var.
       $self->{name}       = shift; # Checked!
       $self->{birth_year} = shift // $self->_this_year; # Checked!
       $self;
@@ -121,6 +156,7 @@ foreach my Cat $cat (@cats) {
 }
 ```
 
+
 ___
 
 ## Demo 1.
@@ -130,28 +166,20 @@ ___
 ---
 
 ### あなたを守るはずの fields.pm が
-## 何故使われなかったのか…
+## 何故 `使われなかった` のか…
 
 __
 
 <!-- .slide: id="fields-weakpoints" -->
 
-### fields.pm は Accessor を作ってくれない！
-
-```perl
-use fields qw/name birth_year/;
-
-__PACKAGE__->mk_accessors(qw/name birth_year/); # DRY!
-```
-
-### 型名つけるのが面倒！
+### my に型名を書くのが面倒！
 
 ```perl
 my MyModuleX $foo;
 my MyModuleY $bar;
 ```
 
-### 型名が長くなるともっと辛い！
+### 型名が長くなると、もっと辛い！
 
 ```perl
 my MyProject::SomeModule::SomeClass $obj;
@@ -159,11 +187,31 @@ my MyProject::SomeModule::SomeClass $obj;
 
 ___
 
-でも、これらへの[対策](#/fields-workaround)は作れます
+### 実装を露出させるのは OOP 的に邪道!
+
+```perl
+foreach my Cat $cat (@cats) {
+ 
+   print $cat->{name}, "\n"; # 内部に直接アクセスは…
+
+}
+```
+
+### fields.pm だけでは Accessor が無い！
+
+```perl
+use fields qw/name birth_year/;
+
+__PACKAGE__->mk_accessors(qw/name birth_year/); # DRY!
+```
+
+___
+
+でも、これらへの[対策、緩和策](#/fields-workaround)は作れます
 
 それよりも…
 
-___
+---
 
 ### そもそも
 # `perl -wc` が
@@ -171,20 +219,167 @@ ___
 
 ---
 
-## さて皆さんに質問です
+#### さて皆さんに `質問` です
 
-どんな時、 `perl -wc` してますか？
+### どんな時、 `perl -wc` してますか？
 
-1. Never (全然)
-2. Occationary (気が向いた時)
-2. Every releasing (リリース時)
-3. Every testing (テスト時)
-4. <span class="fragment highlight-blue">Every editing (編集する度)</span>
+1. 全然 (又は、知らなかった)
+2. 気が向いた時
+3. **syntastic(vim)** や **flycheck(emacs)** でエディタに統合
+4. その他
 
+
+---
+
+## `perl -wc` の面倒な点
+
+`-I....` ライブラリ・パスの設定が必要  
+(use がコケる)
+
+```sh
+% perl -wc demos/2/foo.pl
+Can't locate Foo.pm in @INC (you may need to install the Foo module) (@INC contains: ...
+```
+
+___
+
+## モジュールの場合：
+
+`perl -MMod -e0` の方が、
+多くのエラーを見つけてくれる(ex. `require` の TYPO, `import()` のエラー...)
+
+```sh
+% perl -wc demos/2/lib/Foo.pm
+demos/2/lib/Foo.pm syntax OK
+
+% perl -Idemos/2/lib -MFoo -e0
+Can't locate Barr.pm in @INC (...
+```
+
+---
+
+### そこで `App::perlminlint`
+
+https://github.com/hkoba/app-perlminlint
+
+`perl` の代わりに `perlminlint` を呼ぶだけ
+
+```sh
+perlminlint  YOUR_SCRIPT
+```
+
+___
+
+### 主なオプションは互換
+
+`-wc` も渡せます。(既存のツールとの互換性のため)
+
+```sh
+perlminlint -w -c -wc YOUR_SCRIPT
+```
+
+___
+
+#### 例
+
+```sh
+% perlminlint  myscript.pl
+#  => This tests "perl -wc myscript.pl"
+
+% perlminlint  bin/myscript.pl
+#  => This tests "perl -Ilib -wc myscript.pl"
+
+% perlminlint  MyModule.pm
+#  => This tests "perl -MMyModule -we0"
+
+% perlminlint  MyInnerModule.pm
+#  => This tests "perl -I.. -MMyApp::MyInnerModule -we0"
+
+% perlminlint  cpanfile
+#  => This tests Module::CPANfile->load
+```
+
+#### インストールは cpanm でおk
+
+```sh
+cpanm App::perlminlint
+```
+
+---
+
+### perlminlint をエディタから呼ぶには
+
+#### Emacs の flycheck の場合
+
+App::perlminlint に設定例が同梱
+
+https://github.com/hkoba/app-perlminlint/tree/master/flycheck-perlminlint
+
+```elisp
+(flycheck-set-checker-properties
+      'perl
+      '((flycheck-command "perlminlint" source-original)))
+```
+
+
+#### Vim の syntastic の場合(多分)
+
+```vim
+let g:syntastic_perl_perl_exec = 'perlminlint'
+```
 
 ---
 
 <!-- .slide: id="fields-workaround" -->
 
-[fields の弱点](#/fields-weakpoints)を克服するためには
+### fields の話に戻ります
+
+### fields.pm にも[弱み](#/fields-weakpoints)があると言いました
+
+---
+
+### my 型名 $var を楽にするには
+
+```perl
+sub foo {
+  (my MyProject::SomeModule::SomeClass $animal) = @_;
+}
+```
+
+実はこの `TYPE名` の所で constant sub を呼べるので
+
+```perl
+sub Cat () { 'MyProject::SomeModule::SomeClass' }
+
+my Cat $animal;
+```
+
+とか出来ます
+
+---
+
+### 名前考えるのメンドイ…
+
+いっそ `MY` でどうすか？
+
+```perl
+sub MY () {__PACKAGE__}
+
+sub get_age {
+  (my MY $self) = @_;
+  ...
+}
+```
+
+---
+
+### 内部アクセスは邪道
+
+モジュール定義の中だけ `my TYPE $var` を使うことにすればいい。
+
+
+### Accessor 欲しい
+
+→ `fields + mkaccessor` なモジュールを作ればいい！
+
 
