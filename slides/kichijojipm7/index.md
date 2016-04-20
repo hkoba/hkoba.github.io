@@ -11,19 +11,19 @@ Github: hkoba
 
 ## スライド URL:
 
-http://hkoba.github.io/ → `kichijojipm` → `#7`
-
-http://hkoba.github.io/slides/kichijojipm7/slide_ja.html
+[hkoba.github.io](http://hkoba.github.io/)
+→ [`kichijojipm` `#7`](http://hkoba.github.io/slides/kichijojipm7/)
 
 ---
 
-## 自己紹介
+## 自己紹介 `@hkoba` 
 
-* `@hkoba` (in CPAN, GitHub, Twitter)
 * プログラマー(フリーランス)
 * 主に Perl, Tcl/Tk, Zsh  <span style="font-size: small;">(←老害？)</span>
-* 代表作: `YATT::Lite`, `App::perlminlint`, `MOP4Import::Declare`
-
+* 代表作:
+  * `YATT::Lite` - "use strict なテンプレートエンジン"
+  * `App::perlminlint` - "perl -wc をもっと手軽に"
+  * `MOP4Import::Declare` - "import() を書きやすく"
 
 ---
 
@@ -38,8 +38,8 @@ __
 
 __
 
-# `Save時にperl -wc` <!-- .element: style="font-size: 80%;" -->
-# 安心！
+# `ファイル保存でperl -wc` <!-- .element: style="font-size: 80%;" -->
+## の安心感！
 
 __
 
@@ -54,17 +54,23 @@ __
 
 ## `use fields` (fields.pm) とは <!-- .element: style="font-size: 80%" -->
 
-* Perl 5.5 で導入
+* Perl 5.6 で導入 → 5.10 で現在の姿に
 * クラスのインスタンス変数(field)を宣言する仕組み
 * 実体はパッケージ変数 `%FIELDS`
 
 ```perl
 package Cat {
-
   use fields qw/name birth_year/;  # 名前、生まれ年
+}
+```
 
-  # (ほぼ) 等価なコード
-  BEGIN {our %FIELDS = (name => 1, birth_year => 2)}
+(ほぼ) 等価なコード
+
+```perl
+package Cat {
+  BEGIN {
+    our %FIELDS = (name => 1, birth_year => 2);
+  }
 }
 ```
 
@@ -95,8 +101,9 @@ ___
 
 ---
 
-### `%FIELDS` はコンパイル時のみ
-### => 生HASHにも使える
+#### 豆知識： `%FIELDS` 検査は
+#### 実行時の変数の内容には無関係
+### => 生HASHにすら使える
 
 ```perl
 package Env {
@@ -344,7 +351,7 @@ perlminlint は (perl -wc と同じく)
 
 ---
 
-### my 型名 $var を楽にするには
+### Q. my 型名 $var 長いの辛い…
 
 ```perl
 sub foo {
@@ -352,7 +359,7 @@ sub foo {
 }
 ```
 
-実はこの `TYPE名` の所で constant sub を呼べるので
+← `TYPE名` の所で constant sub を呼べるので、
 
 ```perl
 sub Cat () { 'MyProject::SomeModule::SomeClass' }
@@ -360,13 +367,13 @@ sub Cat () { 'MyProject::SomeModule::SomeClass' }
 my Cat $animal;
 ```
 
-とか出来ます
+別名(alias)を定義すれば短く出来る
 
 ---
 
-### 名前考えるのメンドイ…
+### Q. 別名もう一つ考えるのメンドイ…
 
-いっそ `MY` でどうすか？
+← いっそ `MY` でどうすか？
 
 ```perl
 sub MY () {__PACKAGE__}
@@ -379,12 +386,14 @@ sub age {
 
 ---
 
-### Q. 内部アクセスは邪道
+### Q. 内部アクセスは邪道だ…
 
-* →クラス定義 `*.pm` の中でだけ、  
-`my MY $var` と `$var->{field}` を許す
+←使い方に縛りを入れればどうか。
 
-* クラスのユーザー側では、従来通り、アクセサーを使う。
+* クラス定義 `*.pm` の中でだけ、  
+`my MY $var` と `$var->{field}` を許す。
+
+* クラスのユーザー(クライアント・コード)側では、従来通りアクセサーを使う。
 
 ___
 
@@ -409,7 +418,14 @@ ___
 
 * `use Foo (引数1, 2, ...);` のように使う
 
-* `BEGIN {require Foo; import Foo (引数1, 2, ...)}` として実行される
+* これが
+```perl
+  BEGIN {
+    require Foo;
+    import Foo (引数1, 2, ...)
+  }
+```
+として実行される
 
 * Exporter になるモジュールには `import()` (輸入) メソッドを定義しておく
 
@@ -513,12 +529,37 @@ import を丸々、定義し直すしか無い。
 https://github.com/hkoba/perl-mop4import-declare
 
 * **M**eta **O**bject **P**rotocol for **I**mport
-* import の引数(プラグマ)を、パターンに応じて `declare_...` で始まるメソッド呼び出しへと
+
+__
+
+
+* 継承して Exporter を簡単に作れる
+* import の引数を、(プラグマと呼ぶ)パターンに応じて
+`declare_...` で始まるメソッド呼び出しへと変換、
 dispatch する枠組み
 
 ```perl
 use MOP4Import::Declare  プラグマ1, プラグマ2, ...;
 ```
+
+___
+
+
+```perl
+use MOP4Import::Declare -as_base, [fields => qw/db_user db_pass/];
+```
+
+↓大体、以下と同じ
+
+```perl
+BEGIN {
+  MOP4Import::Declare->declare_as_base(+{}, __PACKAGE__);
+  MOP4Import::Declare->declare_fields(+{}, __PACKAGE__, qw/db_user db_pass/);
+}
+```
+
+* `MOP4Import::Declare` を継承して、オレオレ Exporter を作れる。
+(import 用の pragma を追加・拡張出来る)
 
 ___
 
@@ -531,21 +572,6 @@ ___
   * `use parent` + `use base` 相当
   * `MY()` も自動生成
 
-___
-
-
-```perl
-use MOP4Import::Declare -as_base, [fields => qw/db_user db_pass/];
-
-# ↓大体、以下と同じ
-BEGIN {
-  MOP4Import::Declare->declare_as_base(+{}, __PACKAGE__);
-  MOP4Import::Declare->declare_fields(+{}, __PACKAGE__, qw/db_user db_pass/);
-}
-```
-
-* `MOP4Import::Declare` を継承して、オレオレ Exporter を作れる。
-(import 用の pragma を追加・拡張出来る)
 
 ---
 
