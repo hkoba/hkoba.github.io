@@ -5,7 +5,8 @@
 
 <img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
 Twitter **@hkoba**  
-Github: hkoba
+Github: hkoba  
+本名: 小林弘明
 
 ---
 
@@ -256,11 +257,13 @@ ___
 多くのエラーを見つけてくれる(ex. `require` の TYPO, `import()` のエラー...)
 
 ```sh
-% perl -wc demos/2/lib/Foo.pm
-demos/2/lib/Foo.pm syntax OK
+% perl -wc demos/2/lib/Bar.pm   
+demos/2/lib/Bar.pm syntax OK
+```
 
-% perl -Idemos/2/lib -MFoo -e0
-Can't locate Barr.pm in @INC (...
+```sh
+% perl -Idemos/2/lib -MBar -e0
+Can't locate Foooo.pm in @INC (...
 ```
 
 ---
@@ -407,7 +410,7 @@ ___
 
 ___
 
-### オレオレ Exporter (import()) 作るの、面倒…
+### ただ作る `だけなら` 簡単です。
 
 
 ___
@@ -451,6 +454,8 @@ sub import {
 ```
 
 ___
+
+`globref()`, `fields_hash()` の定義の例
 
 ```perl
 sub globref {
@@ -515,7 +520,7 @@ package MyExporter { use base 'Class::Accessor::Fields'; ... }
 
 use MyExporter qw/$CONFIG/;  # 変数の import もしたいな←出来ない
 
-use MyExporter; #  だけで use strict; use warnings にしたいな←出来ない
+use MyExporter; # Mojo みたいに use strict; use warnings も兼ねたいな←出来ない
 ```
 
 #### ← 先の `Class::Accessor::Fields` では出来ない。
@@ -533,33 +538,32 @@ https://github.com/hkoba/perl-mop4import-declare
 __
 
 
-* 継承して Exporter を簡単に作れる
 * import の引数を、(プラグマと呼ぶ)パターンに応じて
-`declare_...` で始まるメソッド呼び出しへと変換、
-dispatch する枠組み
-
-```perl
-use MOP4Import::Declare  プラグマ1, プラグマ2, ...;
-```
+`declare_...` で始まるメソッド呼び出し(＝プロトコル)
+へと変換、dispatch する枠組み
+    ```perl
+    use MOP4Import::Declare  プラグマ1, プラグマ2, ...;
+    ```
+* 継承してメソッドを増やすだけで、
+新しいプラグマの使える Exporter を作れる
 
 ___
 
 
 ```perl
+package MyBaseObject;
 use MOP4Import::Declare -as_base, [fields => qw/db_user db_pass/];
 ```
 
 ↓大体、以下と同じ
 
 ```perl
+package MyBaseObject;
 BEGIN {
   MOP4Import::Declare->declare_as_base(+{}, __PACKAGE__);
   MOP4Import::Declare->declare_fields(+{}, __PACKAGE__, qw/db_user db_pass/);
 }
 ```
-
-* `MOP4Import::Declare` を継承して、オレオレ Exporter を作れる。
-(import 用の pragma を追加・拡張出来る)
 
 ___
 
@@ -575,24 +579,38 @@ ___
 
 ---
 
-### 同梱パッケージ
+### 同梱: `MOP4Import::Base::Configure`
 
-* `MOP4Import::Base::Configure`
-  * `MOP4Import::Declare` ＋ `new` , `configure()`
-* `MOP4Import::Base::CLI`
-  * `MOP4Import::Base::Configure` ＋ command line
-  * fields が option に
-  * メソッドがサブコマンドに
+基底オブジェクトとして使えるようにしたもの。
 
----
-
-### `MOP4Import::Types`
-
-複数の内部クラスを一括で定義できる。  
-(細かいクラス定義ファイルを沢山作りたくない時に便利)
+* `MOP4Import::Declare` ＋ `new` , `configure()`
 
 ___
 
+### 同梱: `MOP4Import::Base::CLI`
+
+コマンド行アプリを作る時の基底オブジェクト向け
+
+* `MOP4Import::Base::Configure` ＋ command line
+* fields が option に
+* メソッドがサブコマンドに
+
+---
+
+### 同梱: `MOP4Import::Types`
+
+* `declare_...` とはまた別のプロトコル。
+* 複数の内部クラスを一括で定義できる。  
+(細かいクラス定義ファイルを沢山作りたくない時に便利)
+  ```perl
+  use MOP4Import::Types
+    型名1 => [declareのプラグマ1, プラグマ2, ...],
+    型名2 => [declareのプラグマ1, プラグマ2, ...];
+  ```
+
+___
+
+### `MOP4Import::Types` の使用例
 
 ```perl
 package MyApp;

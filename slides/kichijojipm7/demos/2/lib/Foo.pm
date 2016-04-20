@@ -1,4 +1,4 @@
 package Foo;
 use strict;
-require Barr;
+require Bar;
 1;

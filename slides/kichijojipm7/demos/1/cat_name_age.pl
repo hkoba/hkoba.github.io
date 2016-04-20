@@ -27,5 +27,5 @@ foreach my Cat $cat (@cats) {
 
    print $cat->{name}, ": ", $cat->age, "\n";
 
-   # print $cat->{namae}, "\n"; # Compilation error!
+#   print $cat->{namae}, "\n"; # Compilation error!
 }

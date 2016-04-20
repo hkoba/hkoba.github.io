@@ -3,5 +3,4 @@ use strict;
 use warnings;
 
 use Foo;
-my;
 print "Foo";
