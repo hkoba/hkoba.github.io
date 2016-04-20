@@ -268,9 +268,7 @@ Can't locate Foooo.pm in @INC (...
 
 ---
 
-### そこで拙作:  `App::perlminlint`
-
-https://github.com/hkoba/app-perlminlint
+### そこで拙作:  [`App::perlminlint`](https://github.com/hkoba/app-perlminlint)
 
 * `perl -wc` のラッパー
   * `-I...` などを自動で調べて補う
@@ -352,7 +350,9 @@ perlminlint は (perl -wc と同じく)
 
 <!-- .slide: id="fields-workaround" -->
 
-### fields の話に戻ります
+### `fields` の話に戻ります
+
+---
 
 ### fields.pm にも[弱み](#/fields-weakpoints)があると言いました
 
@@ -395,14 +395,15 @@ sub age {
 
 ### Q. 内部アクセスは邪道だ…
 
-←使い方に縛りを入れればどうか。
+←使い方に制限を入れればどうか。
 
-* クラス定義 `*.pm` の中でだけ、  
-`my MY $var` と `$var->{field}` を許す。
+* メソッド定義中の、  
+`$self->{field}` へのアクセスだけに制限
 
-* クラスのユーザー(クライアント・コード)側では、従来通りアクセサーを使う。
+* クラスのユーザー(クライアント・コード)側では、  
+従来通りアクセサー `$self->field()` を使う。
 
-___
+---
 
 ### Q. Accessor 欲しい
 
@@ -509,10 +510,15 @@ sub DBH {
 
 ---
 
-### オレオレ import() 乱立！
+### オレオレ import() 作るの楽しい！
 
+↓
 
-### …困ったことが
+### 乱立！
+
+↓
+
+### …良いとこ取りが、出来ない！
 
 ___
 
@@ -539,11 +545,10 @@ import を丸々、定義し直すしか無い。
 
 ---
 
-### →そこで拙作: `MOP4Import::Declare` 
-
-https://github.com/hkoba/perl-mop4import-declare
+### →そこで拙作: [`MOP4Import::Declare`](https://github.com/hkoba/perl-mop4import-declare)
 
 * **M**eta **O**bject **P**rotocol for **I**mport
+* つまみ食いしやすい import を定義するための、土台
 
 __
 
@@ -587,7 +592,7 @@ ___
   * `MY()` も自動生成
 
 
----
+___
 
 ### 同梱: `MOP4Import::Base::Configure`
 
@@ -609,18 +614,18 @@ ___
 
 ### 同梱: `MOP4Import::Types`
 
-* `declare_...` とはまた別のプロトコル。
-* 複数の内部クラスを一括で定義できる。  
+* 複数の内部クラスを `%FIELDS` 付きで一括定義  
 (細かいクラス定義ファイルを沢山作りたくない時に便利)
   ```perl
   use MOP4Import::Types
     型名1 => [declareのプラグマ1, プラグマ2, ...],
     型名2 => [declareのプラグマ1, プラグマ2, ...];
   ```
+* 特に生 HASH 相手の時に便利
 
 ___
 
-### `MOP4Import::Types` の使用例
+### 例: 型を一括定義
 
 ```perl
 package MyApp;
@@ -650,4 +655,4 @@ sub print_artist_cds {
 
 * `%FIELDS` はいいぞ！
 * まめに `perl -wc` するともっといいぞ！
-* `import` 定義すると、更にいいぞ！
+* `import` で型を一括定義すると、更にいいぞ！

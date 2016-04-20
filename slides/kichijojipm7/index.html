@@ -338,9 +338,7 @@ Can't locate Foooo.pm in @INC (...
 <section>
 <section data-markdown>
 <script type='text/template'>
-### そこで拙作:  `App::perlminlint`
-
-https://github.com/hkoba/app-perlminlint
+### そこで拙作:  [`App::perlminlint`](https://github.com/hkoba/app-perlminlint)
 
 * `perl -wc` のラッパー
   * `-I...` などを自動で調べて補う
@@ -432,8 +430,11 @@ perlminlint は (perl -wc と同じく)
 <script type='text/template'>
 <!-- .slide: id="fields-workaround" -->
 
-### fields の話に戻ります
-
+### `fields` の話に戻ります
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
 ### fields.pm にも[弱み](#/fields-weakpoints)があると言いました
 </script>
 </section>
@@ -474,17 +475,17 @@ sub age {
 ```
 </script>
 </section>
-<section>
 <section data-markdown>
 <script type='text/template'>
 ### Q. 内部アクセスは邪道だ…
 
-←使い方に縛りを入れればどうか。
+←使い方に制限を入れればどうか。
 
-* クラス定義 `*.pm` の中でだけ、  
-`my MY $var` と `$var->{field}` を許す。
+* メソッド定義中の、  
+`$self->{field}` へのアクセスだけに制限
 
-* クラスのユーザー(クライアント・コード)側では、従来通りアクセサーを使う。
+* クラスのユーザー(クライアント・コード)側では、  
+従来通りアクセサー `$self->field()` を使う。
 </script>
 </section>
 <section data-markdown>
@@ -493,7 +494,6 @@ sub age {
 
 ### → `fields + mk_accessors` なモジュールを作ればいい！
 </script>
-</section>
 </section>
 <section>
 <section data-markdown>
@@ -602,10 +602,15 @@ sub DBH {
 <section>
 <section data-markdown>
 <script type='text/template'>
-### オレオレ import() 乱立！
+### オレオレ import() 作るの楽しい！
 
+↓
 
-### …困ったことが
+### 乱立！
+
+↓
+
+### …良いとこ取りが、出来ない！
 </script>
 </section>
 <section data-markdown>
@@ -635,11 +640,10 @@ import を丸々、定義し直すしか無い。
 <section>
 <section data-markdown>
 <script type='text/template'>
-### →そこで拙作: `MOP4Import::Declare` 
-
-https://github.com/hkoba/perl-mop4import-declare
+### →そこで拙作: [`MOP4Import::Declare`](https://github.com/hkoba/perl-mop4import-declare)
 
 * **M**eta **O**bject **P**rotocol for **I**mport
+* つまみ食いしやすい import を定義するための、土台
 </script>
 </section>
 <section data-markdown>
@@ -684,8 +688,6 @@ BEGIN {
   * `MY()` も自動生成
 </script>
 </section>
-</section>
-<section>
 <section data-markdown>
 <script type='text/template'>
 ### 同梱: `MOP4Import::Base::Configure`
@@ -712,19 +714,19 @@ BEGIN {
 <script type='text/template'>
 ### 同梱: `MOP4Import::Types`
 
-* `declare_...` とはまた別のプロトコル。
-* 複数の内部クラスを一括で定義できる。  
+* 複数の内部クラスを `%FIELDS` 付きで一括定義  
 (細かいクラス定義ファイルを沢山作りたくない時に便利)
   ```perl
   use MOP4Import::Types
     型名1 => [declareのプラグマ1, プラグマ2, ...],
     型名2 => [declareのプラグマ1, プラグマ2, ...];
   ```
+* 特に生 HASH 相手の時に便利
 </script>
 </section>
 <section data-markdown>
 <script type='text/template'>
-### `MOP4Import::Types` の使用例
+### 例: 型を一括定義
 
 ```perl
 package MyApp;
@@ -754,7 +756,7 @@ sub print_artist_cds {
 
 * `%FIELDS` はいいぞ！
 * まめに `perl -wc` するともっといいぞ！
-* `import` 定義すると、更にいいぞ！
+* `import` で型を一括定義すると、更にいいぞ！
 </script>
 </section>
 
