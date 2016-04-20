@@ -229,11 +229,11 @@ ___
 
 #### さて皆さんに `質問` です
 
-### どんな時、 `perl -wc` してますか？
+### `perl -wc` (又は他の lint) してますか？
 
 1. 全然 (又は、知らなかった)
 2. 気が向いた時
-3. **syntastic(vim)** や **flycheck(emacs)** でエディタに統合
+3. エディタに統合済み (**syntastic(vim)** ,  **flycheck(emacs)** ...)
 4. その他
 
 
@@ -272,21 +272,22 @@ Can't locate Foooo.pm in @INC (...
 
 https://github.com/hkoba/app-perlminlint
 
-`perl` の代わりに `perlminlint` を呼ぶだけ
-
-```sh
-perlminlint  YOUR_SCRIPT
-```
+* `perl -wc` のラッパー
+  * `-I...` などを自動で調べて補う
+  * 拡張子等に応じて、検査方法を変更
 
 ___
 
-### 主なオプションは互換
+* 使い方: `perl` の代わりに `perlminlint` を呼ぶだけ
+    ```sh
+    perlminlint  YOUR_SCRIPT
+    ```
 
-`-wc` も渡せます。(既存のツールとの互換性のため)
-
-```sh
-perlminlint -w -c -wc YOUR_SCRIPT
-```
+* 主なオプションは互換
+  * `-wc` も渡せます。(既存のツールとの互換性のため)
+    ```sh
+    perlminlint -w -c -wc YOUR_SCRIPT
+    ```
 
 ___
 
@@ -319,10 +320,12 @@ cpanm App::perlminlint
 
 ### perlminlint をエディタから呼ぶには
 
+___
+
 #### Emacs の flycheck の場合
 
-App::perlminlint に設定例
-([flycheck-perlminlint](https://github.com/hkoba/app-perlminlint/tree/master/flycheck-perlminlint))が同梱
+設定例が同梱:
+([flycheck-perlminlint](https://github.com/hkoba/app-perlminlint/tree/master/flycheck-perlminlint))
 
 ```elisp
 (flycheck-set-checker-properties
@@ -330,6 +333,7 @@ App::perlminlint に設定例
       '((flycheck-command "perlminlint" source-original)))
 ```
 
+___
 
 #### Vim の syntastic の場合(多分)
 
@@ -434,7 +438,7 @@ ___
 
 ___
 
-### %FIELDS を定義する Exporter の例
+### %FIELDS を定義する Exporter の `例`
 
 ```perl
 package Class::Accessor::Fields; # XXX: Fake module
@@ -513,13 +517,19 @@ sub DBH {
 ___
 
 
-#### 良いとこ取り出来なくて不便。例：
+#### 良いとこ取りが、出来なくて不便。例：
 
 ```perl
 package MyExporter { use base 'Class::Accessor::Fields'; ... }
+```
 
+すると…
+
+```perl
 use MyExporter qw/$CONFIG/;  # 変数の import もしたいな←出来ない
+```
 
+```perl
 use MyExporter; # Mojo みたいに use strict; use warnings も兼ねたいな←出来ない
 ```
 

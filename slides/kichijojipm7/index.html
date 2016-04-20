@@ -294,11 +294,11 @@ __PACKAGE__->mk_accessors(qw/name birth_year/); # DRY!
 <script type='text/template'>
 #### さて皆さんに `質問` です
 
-### どんな時、 `perl -wc` してますか？
+### `perl -wc` (又は他の lint) してますか？
 
 1. 全然 (又は、知らなかった)
 2. 気が向いた時
-3. **syntastic(vim)** や **flycheck(emacs)** でエディタに統合
+3. エディタに統合済み (**syntastic(vim)** ,  **flycheck(emacs)** ...)
 4. その他
 </script>
 </section>
@@ -342,22 +342,23 @@ Can't locate Foooo.pm in @INC (...
 
 https://github.com/hkoba/app-perlminlint
 
-`perl` の代わりに `perlminlint` を呼ぶだけ
-
-```sh
-perlminlint  YOUR_SCRIPT
-```
+* `perl -wc` のラッパー
+  * `-I...` などを自動で調べて補う
+  * 拡張子等に応じて、検査方法を変更
 </script>
 </section>
 <section data-markdown>
 <script type='text/template'>
-### 主なオプションは互換
+* 使い方: `perl` の代わりに `perlminlint` を呼ぶだけ
+    ```sh
+    perlminlint  YOUR_SCRIPT
+    ```
 
-`-wc` も渡せます。(既存のツールとの互換性のため)
-
-```sh
-perlminlint -w -c -wc YOUR_SCRIPT
-```
+* 主なオプションは互換
+  * `-wc` も渡せます。(既存のツールとの互換性のため)
+    ```sh
+    perlminlint -w -c -wc YOUR_SCRIPT
+    ```
 </script>
 </section>
 <section data-markdown>
@@ -389,28 +390,35 @@ cpanm App::perlminlint
 </script>
 </section>
 </section>
+<section>
 <section data-markdown>
 <script type='text/template'>
 ### perlminlint をエディタから呼ぶには
-
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
 #### Emacs の flycheck の場合
 
-App::perlminlint に設定例
-([flycheck-perlminlint](https://github.com/hkoba/app-perlminlint/tree/master/flycheck-perlminlint))が同梱
+設定例が同梱:
+([flycheck-perlminlint](https://github.com/hkoba/app-perlminlint/tree/master/flycheck-perlminlint))
 
 ```elisp
 (flycheck-set-checker-properties
       'perl
       '((flycheck-command "perlminlint" source-original)))
 ```
-
-
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
 #### Vim の syntastic の場合(多分)
 
 ```vim
 let g:syntastic_perl_perl_exec = 'perlminlint'
 ```
 </script>
+</section>
 </section>
 <section data-markdown>
 <script type='text/template'>
@@ -520,7 +528,7 @@ sub age {
 </section>
 <section data-markdown>
 <script type='text/template'>
-### %FIELDS を定義する Exporter の例
+### %FIELDS を定義する Exporter の `例`
 
 ```perl
 package Class::Accessor::Fields; # XXX: Fake module
@@ -602,13 +610,19 @@ sub DBH {
 </section>
 <section data-markdown>
 <script type='text/template'>
-#### 良いとこ取り出来なくて不便。例：
+#### 良いとこ取りが、出来なくて不便。例：
 
 ```perl
 package MyExporter { use base 'Class::Accessor::Fields'; ... }
+```
 
+すると…
+
+```perl
 use MyExporter qw/$CONFIG/;  # 変数の import もしたいな←出来ない
+```
 
+```perl
 use MyExporter; # Mojo みたいに use strict; use warnings も兼ねたいな←出来ない
 ```
 
