@@ -36,7 +36,7 @@ __
 __
 
 # `ファイル保存でperl -wc` <!-- .element: style="font-size: 80%;" -->
-## の安心感！
+## この安心感！
 
 __
 
@@ -182,6 +182,8 @@ ___
 ### あなたを守るはずの fields.pm が
 ## 何故 `使われなかった` のか…
 
+### 私なりの推測は…
+
 __
 
 <!-- .slide: id="fields-weakpoints" -->
@@ -221,6 +223,33 @@ __PACKAGE__->mk_accessors(qw/name birth_year/); # DRY!
 
 ___
 
+<!-- .slide: id="annoying-inner-classes" -->
+
+#### たとえ 生HASH 使えても
+### 内部クラスを沢山書くのは面倒
+
+```perl
+package MyApp;
+{
+  package MyApp::Artist; use fields => qw/artistid name/;
+}
+{
+  package MyApp::CD; use fields => qw/cdid artistid title year/;
+}
+
+sub print_artist_cds {
+  (my $self, my MyApp::Artist $artist) = @_;
+  my @cds = $self->DB->select(CD => {artistid => $artist->{artistid}});
+  foreach my MyApp::CD $cd (@cds) {
+    print tsv($cd->{title}, $cd->{year}), "\n";
+  }
+}
+
+```
+
+
+___
+
 でも、これらへの[対策、緩和策](#/fields-workaround)は作れます
 
 それよりも…
@@ -246,19 +275,34 @@ ___
 
 ---
 
-## `perl -wc` の面倒な点
+### `perl -wc` がイマイチ普及しない
+### 理由を私なりに推測すると…
 
-`-I....` ライブラリ・パスの設定が必要  
+---
+
+### `perl -wc` は
+## 前準備が面倒だから？
+
+---
+
+## `-I....` の設定が必要！
+
 (use がコケる)
 
 ```sh
 % perl -wc demos/2/foo.pl
-Can't locate Foo.pm in @INC (you may need to install the Foo module) (@INC contains: ...
+Can't locate Foo.pm in @INC (you may need to install the Foo module)..
 ```
+
+```sh
+% perl -Idemos/2/lib -wc demos/2/foo.pl
+demos/2/foo.pl syntax OK
+```
+
 
 ___
 
-## モジュールの場合：
+### モジュールに `perl -wc` はイマイチ！
 
 `perl -MMod -e0` の方が、
 多くのエラーを見つけてくれる(ex. `require` の TYPO, `import()` のエラー...)
@@ -364,6 +408,8 @@ perlminlint は (perl -wc と同じく)
 
 ### fields.pm にも[弱み](#/fields-weakpoints)があると言いました
 
+### ←それへの対策、緩和策です。
+
 ---
 
 ### Q. my 型名 $var 長いの辛い…
@@ -415,14 +461,16 @@ sub age {
 
 ### Q. Accessor 欲しい
 
-### → `fields + mk_accessors` なモジュールを作ればいい！
+#### ←拙作: `MOP4Import::Base::Configure` をどうぞ
 
----
+* `MOP4Import::Declare` に同梱
+* fields + base + getter 生成 + new + setter hook
 
-### 作ればいい？
 
 ___
 
+### ちなみに
+### fields + mk_accessors な Exporter も、
 ### ただ作る `だけなら` 簡単です。
 
 
@@ -516,7 +564,7 @@ sub DBH {
 1;
 ```
 
----
+___
 
 ### オレオレ import() 作るの楽しい！
 
@@ -551,14 +599,14 @@ use MyExporter; # Mojo みたいに use strict; use warnings も兼ねたいな�
 
 import を丸々、定義し直すしか無い。
 
----
+___
 
 ### →そこで拙作: [`MOP4Import::Declare`](https://github.com/hkoba/perl-mop4import-declare)
 
 * **M**eta **O**bject **P**rotocol for **I**mport
 * つまみ食いしやすい import を定義するための、土台
 
-__
+___
 
 
 * import の引数を、(プラグマと呼ぶ)パターンに応じて
@@ -624,7 +672,11 @@ ___
 
 ---
 
-### 同梱: `MOP4Import::Types`
+### Q. 内部クラスを沢山書くのは面倒
+
+#### ←拙作: `MOP4Import::Types` をどうぞ
+
+___
 
 * 複数の内部クラスを `%FIELDS` 付きで一括定義  
 (細かいクラス定義ファイルを沢山作りたくない時に便利)
@@ -645,11 +697,6 @@ use MOP4Import::Types
   (Artist => [[fields => qw/artistid name/]]
    , CD   => [[fields => qw/cdid artistid title year/]]);
 
-# MyApp::Artist
-# MyApp::CD が, fields 付きで定義される
-
-# sub Artist () {'MyApp::Artist'} 等も定義される。
-
 sub print_artist_cds {
   (my $self, my Artist $artist) = @_;
   my @cds = $self->DB->select(CD => {artistid => $artist->{artistid}});
@@ -659,7 +706,10 @@ sub print_artist_cds {
 }
 ```
 
+* `MyApp::Artist`, `MyApp::CD` が, fields 付きで定義される
+* `sub Artist () {'MyApp::Artist'}` 等も定義される。
 
+[見比べてみましょー](#/annoying-inner-classes)
 
 ---
 

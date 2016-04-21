@@ -1,4 +1,4 @@
 package Foo;
 use strict;
-require Bar;
+sub foo {"foo"}
 1;
