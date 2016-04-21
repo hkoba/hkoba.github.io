@@ -463,9 +463,69 @@ sub age {
 
 #### ←拙作: `MOP4Import::Base::Configure` をどうぞ
 
-* `MOP4Import::Declare` に同梱
 * fields + base + getter 生成 + new + setter hook
 
+```perl
+package Cat;
+use MOP4Import::Base::Configure
+  -as_base
+  , [fields => qw/name birth_year/]; # field declaration
+
+sub after_new {
+  (my MY $self) = @_;
+  $self->{birth_year} //= $self->_this_year;
+}
+
+sub age {
+  my Cat $self = shift;
+  return $self->_this_year - $self->{birth_year};	# Checked!
+}
+sub _this_year { (localtime)[5] + 1900 }
+1;
+```
+
+___
+
+新しい Cat を使う側
+
+```perl
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+use Cat;
+
+my $cat = Cat->new(name => 'Daisy', birth_year => 2000);
+
+print $cat->name, " ", $cat->age, "\n"; # Getter
+
+$cat->configure(name => 'Mew', birth_year => 2000); # 一括 Setter
+
+print $cat->name, "\n";
+```
+
+継承したい時
+
+```perl
+package MyCat {
+  use Cat -as_base, [fields => qw/photos/];
+};
+```
+
+___
+
+インストール
+
+```sh
+cpanm MOP4Import::Declare
+```
+
+又は git で直接 submodule に
+
+```sh
+url=https://github.com/hkoba/perl-mop4import-declare.git
+git submodule add $url lib/MOP4Import
+```
 
 ___
 
