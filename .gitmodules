@@ -3,4 +3,4 @@
 	url = https://github.com/hakimel/reveal.js.git
 [submodule "slides/kichijojipm7/demos/3/lib/MOP4Import"]
 	path = slides/kichijojipm7/demos/3/lib/MOP4Import
-	url = git@github.com:hkoba/perl-mop4import-declare.git
+	url = https://github.com/hkoba/perl-mop4import-declare.git
