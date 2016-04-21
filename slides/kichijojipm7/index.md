@@ -4,11 +4,11 @@
 ### `%FIELDS`, `perl -wc`, `import` の使い方
 
 <img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
-Twitter **@hkoba**  
+本名: 小林 弘明  
+Twitter: **@hkoba**  
 Github: hkoba  
-本名: 小林弘明
 
----
+___
 
 ## スライド URL:
 
@@ -19,16 +19,12 @@ Github: hkoba
 
 ## 自己紹介 `@hkoba` 
 
-* プログラマー(フリーランス)
-* 主に Perl, Tcl/Tk, Zsh  <span style="font-size: small;">(←老害？)</span>
-* 代表作:
-  * `YATT::Lite` - "use strict なテンプレートエンジン"
-  * `App::perlminlint` - "perl -wc をもっと手軽に"
-  * `MOP4Import::Declare` - "import() を書きやすく"
+* 個人事業主 <div style="display: inline-block; text-align: right; width: 13em; margin-left: auto;">⇔主に<a href="https://www.ssri.com/"><img style="box-shadow: none; margin: 0 5px;" src="ssri_logo.gif" alt=SSRI></a>さんのお仕事</div>
+  * Perl 書きたいプログラマ、募集中
 
 ---
 
-## 今日お伝えしたい3つのこと
+## 今日お伝えしたいこと
 
 #### それは…
 
@@ -50,6 +46,16 @@ __
 
 
 #### の３つです。
+
+---
+
+
+### 注: 個人的に編み出した技なので
+
+
+## 何をバカなことを！
+### って思った人は `是非ツッコミ` を！
+
 
 ---
 
@@ -103,7 +109,7 @@ ___
 ---
 
 #### 豆知識： `%FIELDS` 検査は
-#### 実行時の変数の内容には無関係
+#### 実行時の変数の `内容には無関係`
 ### => 生HASHにすら使える
 
 ```perl
@@ -231,10 +237,11 @@ ___
 
 ### `perl -wc` (又は他の lint) してますか？
 
+1. そもそも Perl を書いてない
 1. 全然 (又は、知らなかった)
 2. 気が向いた時
 3. エディタに統合済み (**syntastic(vim)** ,  **flycheck(emacs)** ...)
-4. その他
+
 
 
 ---
@@ -316,7 +323,8 @@ cpanm App::perlminlint
 
 ---
 
-### perlminlint をエディタから呼ぶには
+## デモ
+### perlminlint を `ファイル保存時` に呼ぶ
 
 ___
 
@@ -567,7 +575,9 @@ ___
 
 ```perl
 package MyBaseObject;
-use MOP4Import::Declare -as_base, [fields => qw/db_user db_pass/];
+use MOP4Import::Declare
+   -as_base,
+   [fields => qw/db_user db_pass/];
 ```
 
 ↓大体、以下と同じ
@@ -584,12 +594,14 @@ ___
 
 ### 定義済みプラグマの例
 
-* `[fields => name1, name2, ...]`
-  * `fields.pm` と同等
-  * getter も自動生成
+* `-strict`
+  * `use strict` 相当
 * `-as_base`
   * `use parent` + `use base` 相当
   * `MY()` も自動生成
+* `[fields => name1, name2, ...]`
+  * `fields.pm` と同等
+  * getter も自動生成
 
 
 ___
