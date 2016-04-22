@@ -135,7 +135,8 @@ __SUBST__
         history: true,
         center: true,
         theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
-        transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+        transitionSpeed: Reveal.getQueryHash().speed || 'fast', // 
+        transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/fade/none
         // Optional libraries used to extend on reveal.js
         dependencies: [
           { src: '/revealjs/lib/js/classList.js', condition: function() { return !document.body.classList; } },
