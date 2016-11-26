@@ -40,6 +40,11 @@ END
     open STDOUT, '>', $tmpfn;
   }
 
+  if ($o_outfn and -r (my $cssfn = cssfn($o_outfn))) {
+    $top =~ s{<style>.*</style>}{<link rel="stylesheet" type="text/css" href="$cssfn">}s
+      or die "Can't replace style tag!";
+  }
+
   local $/;
   print $top;
   while (<>) {
@@ -79,6 +84,12 @@ sub md_section (&) {
 
 sub ensure_nl {
   s/\n*\z/\n/;
+}
+
+sub cssfn {
+  my ($fn) = @_;
+  $fn =~ s/\.\w+$/.css/;
+  $fn;
 }
 
 __END__
