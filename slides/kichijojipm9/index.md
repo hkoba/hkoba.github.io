@@ -25,10 +25,16 @@ ___
 
 ## あらすじ
 
-* Exporter とは
-  * (hkoba 定義)
-* Exporter 作者の悩みどころ
+* (perl5 の) Exporter のおさらい
+* Exporter を書く時に悩むこと
 * `て` `い` `あ` `ん`
+
+---
+
+## 一番の問題意識
+
+### Exporter だって『ニコイチ』したい！ <!-- .element: class="fragment" -->
+### したくない？ <!-- .element: class="fragment" -->
 
 ---
 
@@ -42,7 +48,7 @@ ___
 
 ---
 
-### 例：Exporter.pm で Exporter (MyUtil)を作る
+### 例：Exporter を作る
 
 ```perl
 package MyUtil {
@@ -55,16 +61,19 @@ package MyUtil {
   our $bar = "BAR";
   our @baz = ('BAZ');
 
-}
-1;
+} 1;
 ```
+
+* `import` 関数を用意する
+  * (ここでは Exporter.pm から拝借)
+* `foo`, `$bar`, `@baz` 3つを (use 出来るよう) 公開する
 
 ---
 
-### use で import する
+### 例：この Exporter を使う
 
 ```perl
-use MyUtil qw/foo $bar @baz/;
+use MyUtil qw/foo $bar @baz/;  # 以後 foo(), $bar, @baz が使えるようになる
 
 print foo(), $bar, @baz;
 
@@ -74,30 +83,41 @@ print MyUtil::foo(), $MyUtil::bar, @MyUtil::baz;
 
 ```
 
----
+___
 
 ### Exporter の呼び方のバリエーション
 
 ```perl
 use MyUtil qw/foo $bar @baz/;  # 欲しい物だけ import
+
 use MyUtil;                    # @EXPORT に書かれた全てを import
+
 use MyUtil ();                 # import を呼ばない
 ```
 
+___
 
+### Exporter でバージョン検査
+
+```perl
+use MyUtil 0.5;
+```
+
+* この話はしません(使ったこと無い…)
 
 ---
 
 ### `use` の働き
 
 ```perl
-use MyUtil qw/foo $bar @baz/;  # 欲しい物だけ import
+use MyUtil qw/foo $bar @baz/;
 
 # ↓と等価
 
 BEGIN { require MyUtil; import MyUtil qw/foo $bar @baz/ }
 ```
 
+* `MyUtil->import()` が呼ばれる
 * `BEGIN { }` の中なので、先に実行される。
 * 以後の行のコンパイルに作用できる。
 
@@ -135,7 +155,9 @@ ___
 
 ---
 
-* import を定義してある module.
+## (改) Exporter とは
+
+* `import` メソッドを持つ module である
 
 ```perl
 package Foo;
@@ -144,6 +166,30 @@ sub import {
   ...
 }
 1;
+```
+
+---
+
+## 例: `strict.pm`
+
+```perl
+#  perl 5.001m から抜粋
+package strict;
+
+sub import {
+    shift;
+    $^H |= bits(@_ ? @_ : qw(refs subs vars));
+}
+
+sub bits {
+    my $bits = 0;
+    foreach $sememe (@_) {
+        $bits |= 0x00000002 if $sememe eq 'refs';
+        $bits |= 0x00000200 if $sememe eq 'subs';
+        $bits |= 0x00000400 if $sememe eq 'vars';
+    }
+    $bits;
+}
 ```
 
 ---

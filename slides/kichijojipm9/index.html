@@ -15,21 +15,7 @@
     <!--[if lt IE 9]>
       <script src="/revealjs/lib/js/html5shiv.js"></script>
     <![endif]-->
-    <style>
-    .reveal h2, .reveal h3, .reveal h4, .reveal h5 {text-transform: none;}
-    .reveal a {color: #BB1515;}
-    .reveal a:hover {color: #0a8624;}
-    .reveal section img {border-width: 0px;}
-       .reveal li { margin-bottom: .5ex; }
-       .reveal code {
-           background: #0e1560;
-           color: #32f33b;
-           padding: 0 .5ex;
-           border-radius: .3ex;
-	   text-transform: none;
-	 }
-         .reveal h2 code { font-size: 60%; }
-    </style>
+    <link rel="stylesheet" type="text/css" href="index.css">
   </head>
 
   <body>
@@ -69,10 +55,17 @@ Twitter: **@hkoba**
 <script type='text/template'>
 ## あらすじ
 
-* Exporter とは
-  * (hkoba 定義)
-* Exporter 作者の悩みどころ
+* (perl5 の) Exporter のおさらい
+* Exporter を書く時に悩むこと
 * `て` `い` `あ` `ん`
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+## 一番の問題意識
+
+### Exporter だって『ニコイチ』したい！ <!-- .element: class="fragment" -->
+### したくない？ <!-- .element: class="fragment" -->
 </script>
 </section>
 <section data-markdown>
@@ -88,7 +81,7 @@ Twitter: **@hkoba**
 </section>
 <section data-markdown>
 <script type='text/template'>
-### 例：Exporter.pm で Exporter (MyUtil)を作る
+### 例：Exporter を作る
 
 ```perl
 package MyUtil {
@@ -101,17 +94,21 @@ package MyUtil {
   our $bar = "BAR";
   our @baz = ('BAZ');
 
-}
-1;
+} 1;
 ```
+
+* `import` 関数を用意する
+  * (ここでは Exporter.pm から拝借)
+* `foo`, `$bar`, `@baz` 3つを (use 出来るよう) 公開する
 </script>
 </section>
+<section>
 <section data-markdown>
 <script type='text/template'>
-### use で import する
+### 例：この Exporter を使う
 
 ```perl
-use MyUtil qw/foo $bar @baz/;
+use MyUtil qw/foo $bar @baz/;  # 以後 foo(), $bar, @baz が使えるようになる
 
 print foo(), $bar, @baz;
 
@@ -128,10 +125,24 @@ print MyUtil::foo(), $MyUtil::bar, @MyUtil::baz;
 
 ```perl
 use MyUtil qw/foo $bar @baz/;  # 欲しい物だけ import
+
 use MyUtil;                    # @EXPORT に書かれた全てを import
+
 use MyUtil ();                 # import を呼ばない
 ```
 </script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### Exporter でバージョン検査
+
+```perl
+use MyUtil 0.5;
+```
+
+* この話はしません(使ったこと無い…)
+</script>
+</section>
 </section>
 <section>
 <section data-markdown>
@@ -139,13 +150,14 @@ use MyUtil ();                 # import を呼ばない
 ### `use` の働き
 
 ```perl
-use MyUtil qw/foo $bar @baz/;  # 欲しい物だけ import
+use MyUtil qw/foo $bar @baz/;
 
 # ↓と等価
 
 BEGIN { require MyUtil; import MyUtil qw/foo $bar @baz/ }
 ```
 
+* `MyUtil->import()` が呼ばれる
 * `BEGIN { }` の中なので、先に実行される。
 * 以後の行のコンパイルに作用できる。
 </script>
@@ -187,7 +199,9 @@ BEGIN { require MyUtil }
 </section>
 <section data-markdown>
 <script type='text/template'>
-* import を定義してある module.
+## (改) Exporter とは
+
+* `import` メソッドを持つ module である
 
 ```perl
 package Foo;
@@ -196,6 +210,31 @@ sub import {
   ...
 }
 1;
+```
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+## 例: `strict.pm`
+
+```perl
+#  perl 5.001m から抜粋
+package strict;
+
+sub import {
+    shift;
+    $^H |= bits(@_ ? @_ : qw(refs subs vars));
+}
+
+sub bits {
+    my $bits = 0;
+    foreach $sememe (@_) {
+        $bits |= 0x00000002 if $sememe eq 'refs';
+        $bits |= 0x00000200 if $sememe eq 'subs';
+        $bits |= 0x00000400 if $sememe eq 'vars';
+    }
+    $bits;
+}
 ```
 </script>
 </section>
