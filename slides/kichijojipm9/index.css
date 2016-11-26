@@ -15,3 +15,21 @@
 .reveal li > ul {
     margin-top: .8ex; margin-bottom: .8ex;
 }
+
+.reveal section > ul, .reveal section > ol {
+    padding: .3em .5em .3em 1.5em;
+
+/* Generator: http://www.bad-company.jp/box-shadow/ */
+/* box-shadow */
+box-shadow:0px 0px 6px 3px #928aa8;
+-moz-box-shadow:0px 0px 6px 3px #928aa8;
+-webkit-box-shadow:0px 0px 6px 3px #928aa8;
+
+/* border-radius */
+border-radius:6px;
+-moz-border-radius:6px;
+-webkit-border-radius:6px;
+
+/* border */
+border:1px solid #cccccc;
+}

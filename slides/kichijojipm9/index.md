@@ -25,9 +25,13 @@ ___
 
 ## あらすじ
 
-* (perl5 の) Exporter のおさらい
-* Exporter を書く時に悩むこと
-* `て` `い` `あ` `ん`
+1. (perl5 の) Exporter のおさらい
+2. Exporter を書く時に悩むこと
+3. `て` `い` `あ` `ん`
+
+---
+
+### …おさらいが長いので、先に…
 
 ---
 
@@ -35,6 +39,10 @@ ___
 
 ### Exporter だって『ニコイチ』したい！ <!-- .element: class="fragment" -->
 ### したくない？ <!-- .element: class="fragment" -->
+
+---
+
+## 1. Exporter おさらい
 
 ---
 
@@ -168,7 +176,7 @@ sub import {
 1;
 ```
 
----
+___
 
 ## 例: `strict.pm`
 
@@ -191,6 +199,98 @@ sub bits {
     $bits;
 }
 ```
+
+* perl5 のコンパイル時ヒント変数 `$^H` を操作している  
+  <small>(`$^H` はスクリプトのパース時に、 {ブロック} 単位で save/restore される)</small>
+
+---
+
+### 豆知識
+
+`import` の作用対象は `caller` で取得
+
+```perl
+package Bar {
+  sub import {
+    my ($class, @args) = @_;
+
+    my $callpack = caller;
+
+    no strict 'refs';
+    *{$callpack."::bar"} = sub { "BAR" };
+  }
+} 1;
+```
+
+`perl -Isrc3 -le 'use Bar; print bar()'`
+
+---
+
+## 2. Exporter 書く時の悩み
+
+## ニコイチできない  <!-- .element: class="fragment" -->
+
+---
+
+### 例えば…
+
+`use 自作モジュールX;` だけで
+
+* 関数の取り込み  
+  <small>Exporter.pm みたいに…</small>
+* `@ISA` (親クラス) の設定  
+  <small>parent.pm みたいに…</small>
+* `use strict; use warnings ...` も on  
+  <small>Mojo::Base.pm みたいに…</small>
+
+にしたい。
+
+---
+
+## `Mojo::Base` はどうなってるの？
+
+---
+
+```perl
+package Mojo::Base;
+...
+sub import {
+  my $class = shift;
+  return unless my $flag = shift;
+
+  # Base
+  if ($flag eq '-base') { $flag = $class }
+
+  # Strict
+  elsif ($flag eq '-strict') { $flag = undef }
+
+  # Module
+  elsif ((my $file = $flag) && !$flag->can('new')) {
+    $file =~ s!::|'!/!g;
+    require "$file.pm";
+  }
+```
+
+---
+
+```perl
+  # ISA
+  if ($flag) {
+    my $caller = caller;
+    no strict 'refs';
+    push @{"${caller}::ISA"}, $flag;
+    _monkey_patch $caller, 'has', sub { attr($caller, @_) };
+  }
+
+  # Mojo modules are strict!
+  $_->import for qw(strict warnings utf8);
+  feature->import(':5.10');
+}
+```
+
+---
+
+## 3. 提案
 
 ---
 
