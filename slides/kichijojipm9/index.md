@@ -39,11 +39,13 @@ package MyApp {
 }
 ```
 
-#### …特に… <!-- .element: class="fragment" data-fragment-index="0" -->
+#### …特に… <!-- .element: class="fragment" -->
 
-<h3 class="fragment visible" data-fragment-index="1">Exporter だって<code>ニコイチ</code>したい！ </h3>
+<h3 class="fragment" >Exporter だって<code>ニコイチ</code>したい！ </h3>
 
-#### という話です <!-- .element: class="fragment" data-fragment-index="2" -->
+<h4 class="fragment" >だって Class Builder 楽に作りたいし！</h4>
+
+#### という話です <!-- .element: class="fragment" -->
 
 
 ---
@@ -66,8 +68,9 @@ package MyApp {
 
 ## Exporter とは(広義)
 
-* `use` することで
-  * (use する側のパッケージに)
+* `use` することで  
+  <small>(use する側のパッケージに)</small>
+* `コンパイルの途中`で
 * 関数や変数を加える、などの変更を加えてくれる
 * モジュール、のこと。
 * 代表例： `Exporter.pm`, `lib.pm`, `strict.pm`
@@ -132,6 +135,15 @@ use MyUtil 0.5;
 ```
 
 * この話はしません(使ったこと無い…)
+
+---
+
+### コンパイルの途中、が大事
+
+* typo 検査はコンパイル時(どころか `yylex` の中！)
+* 変数宣言を足すには、実行時では手遅れ
+* ∴コンパイルの途中で即座に実行される、  
+ `BEGIN {...}` が必要
 
 ---
 
@@ -237,6 +249,16 @@ package Bar {
 
 ```sh
 % perl -Isrc3 -le 'use Bar; print bar()'
+```
+
+---
+
+### 例：クラスを生やす
+
+```perl
+sub import {
+  
+}
 ```
 
 ---
@@ -386,6 +408,18 @@ sub real_job {
 }
 ```
 
+<h4 class="fragment">既存のモジュールは、ほぼ <code>全滅</code></h4>
+
+---
+
+<!-- .slide: class="lead" data-background-color="#C0F0B6" -->
+
+### 既存のモジュールは、ほぼ全滅！
+### だから <!-- .element: class="fragment" -->
+## `これから` <!-- .element: class="fragment" -->
+### の話をしましょう <!-- .element: class="fragment" -->
+
+
 ---
 
 ### importの分離だけじゃ不十分
@@ -417,17 +451,18 @@ use MyUtil
 ;
 ```
 
----
+↓
 
-### 既存のモジュールは、ほぼ `全滅`
+```perl
+MyUtil->import_symbol(__PACKAGE__, qw/croak/);
 
-#### ∴ 自力で再実装するしか無い <!-- .element: class="fragment" -->
+MyUtil->import_lib(__PACKAGE__,    qw/lib/);
 
----
+MyUtil->import_parent(__PACKAGE__, qw/Foo/);
 
-<!-- .slide: class="lead" data-background-color="#C0F0B6" -->
+MyUtil->import_fields(__PACKAGE__, qw/bar baz/);
+```
 
-## どう再実装する？
 
 ---
 
