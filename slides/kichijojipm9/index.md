@@ -23,35 +23,39 @@ ___
 
 ---
 
+### perl5 の <small>(広義の)</small> Exporter の話です
+
+```
+use Carp;                  # 以後 carp() と書くだけで Carp::carp() を呼べる
+```
+
+```
+use strict;                # プログラムの検査を厳格に
+use warnings;              # 落とし穴には警告を出す
+use lib "./lib";           # @INC に "./lib" を加える
+
+package MyApp {
+  use parent "MyParent";   # "MyParent" モジュールをロードして @ISA に
+}
+```
+
+<h3 id="exporter-element-class-fragment-" class="fragment visible" data-fragment-index="0">Exporter だって<code>ニコイチ</code>したい！ </h3>
+#### という話です <!-- .element: class="fragment" -->
+
+
+---
+
 ## あらすじ
 
 1. (perl5 の) Exporter のおさらい
 2. Exporter を書く時に悩むこと
 3. `て` `い` `あ` `ん`
 
----
-
-#### …おさらいが長いので、先に…
-
-## 一番の問題意識  <!-- .element: class="fragment" -->
-
-### Exporter だって『ニコイチ』したい！ <!-- .element: class="fragment" -->
-#### したくない？ <!-- .element: class="fragment" -->
 
 ---
 
 ## 1. Exporter おさらい
 
-```
-use strict;                # プログラムの検査を厳格に
-use warnings;              # 落とし穴には警告を出す
-use lib "./lib";           # @INC に "./lib" を加える
-use Carp;                  # 以後 carp() と書くだけで Carp::carp() を呼べる
-
-package MyApp {
-  use parent "MyParent";   # "MyParent" モジュールをロードして @ISA に
-}
-```
 
 ---
 
