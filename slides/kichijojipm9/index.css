@@ -2,7 +2,11 @@
 .reveal a {color: #BB1515;}
 .reveal a:hover {color: #0a8624;}
 .reveal section img {border-width: 0px;}
+.reveal small { vertical-align: middle; }
+
 .reveal li { margin-bottom: .5ex; }
+.reveal li:last-child { margin-bottom: 0; }
+
 .reveal code {
     background: #0e1560;
     color: #32f33b;
