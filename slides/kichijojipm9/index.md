@@ -1,8 +1,8 @@
 ## kichijoji.pm #9
 
-## 俺々 `Exporter` を
+## `俺々 Exporter` を
 ### 楽に定義したい時
-### どうしますん？
+#### どうしますん？
 
 <img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
 Twitter: **@hkoba**  
@@ -31,28 +31,39 @@ ___
 
 ---
 
-### …おさらいが長いので、先に…
+#### …おさらいが長いので、先に…
 
----
-
-## 一番の問題意識
+## 一番の問題意識  <!-- .element: class="fragment" -->
 
 ### Exporter だって『ニコイチ』したい！ <!-- .element: class="fragment" -->
-### したくない？ <!-- .element: class="fragment" -->
+#### したくない？ <!-- .element: class="fragment" -->
 
 ---
 
 ## 1. Exporter おさらい
 
+```
+use strict;                # プログラムの検査を厳格に
+use warnings;              # 落とし穴には警告を出す
+use lib "./lib";           # @INC に "./lib" を加える
+use Carp;                  # 以後 carp() と書くだけで Carp::carp() を呼べる
+
+package MyApp {
+  use parent "MyParent";   # "MyParent" モジュールをロードして @ISA に
+}
+```
+
 ---
 
-## Exporter とは
+## Exporter とは(広義)
 
 * `use` することで
   * (use する側のパッケージに)
 * 関数や変数を加える、などの変更を加えてくれる
 * モジュール、のこと。
 * 代表例： `Exporter.pm`, `lib.pm`, `strict.pm`
+
+export(輸出)、import(輸入)
 
 ---
 
@@ -122,12 +133,15 @@ use MyUtil qw/foo $bar @baz/;
 
 # ↓と等価
 
-BEGIN { require MyUtil; import MyUtil qw/foo $bar @baz/ }
+BEGIN {
+  require MyUtil;
+  import MyUtil qw/foo $bar @baz/
+}
 ```
 
 * `MyUtil->import()` が呼ばれる
-* `BEGIN { }` の中なので、先に実行される。
-* 以後の行のコンパイルに作用できる。
+* `BEGIN { }` の中なので、即座に、先に実行される。
+* 以後の行のコンパイルに影響できる
 
 ___
 
@@ -161,21 +175,6 @@ ___
 %
 ```
 
----
-
-## (改) Exporter とは
-
-* `import` メソッドを持つ module である
-
-```perl
-package Foo;
-
-sub import {
-  ...
-}
-1;
-```
-
 ___
 
 ## 例: `strict.pm`
@@ -205,16 +204,15 @@ sub bits {
 
 ---
 
-### 豆知識
-
-`import` の作用対象は `caller` で取得
+#### 『use する側のパッケージ』を perl で知る方法
 
 ```perl
 package Bar {
   sub import {
     my ($class, @args) = @_;
 
-    my $callpack = caller;
+    my $callpack = caller; # 『use する側のパッケージ名』を取得
+    print "$class is used from $callpack\n";
 
     no strict 'refs';
     *{$callpack."::bar"} = sub { "BAR" };
