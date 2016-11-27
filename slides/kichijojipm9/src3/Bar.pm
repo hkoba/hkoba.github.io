@@ -1,3 +1,4 @@
+use strict;
 package Bar {
   sub import {
     my ($class, @args) = @_;
@@ -5,7 +6,10 @@ package Bar {
     my $callpack = caller;
     print "$class is used from $callpack\n";
 
+    my $newname = $callpack."::bar";
+    print "Installing $newname...\n";
+
     no strict 'refs';
-    *{$callpack."::bar"} = sub { "BAR" };
+    *{$newname} = sub { "BAR" };
   }
 } 1;

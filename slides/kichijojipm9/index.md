@@ -1,7 +1,7 @@
 ## kichijoji.pm #9
 
 ## `俺々 Exporter` を
-### 楽に定義したい時
+### <s>楽に</s> `モジュラーに` 定義したい時
 #### どうしますん？
 
 <img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
@@ -39,8 +39,11 @@ package MyApp {
 }
 ```
 
-<h3 id="exporter-element-class-fragment-" class="fragment visible" data-fragment-index="0">Exporter だって<code>ニコイチ</code>したい！ </h3>
-#### という話です <!-- .element: class="fragment" -->
+#### …特に… <!-- .element: class="fragment" data-fragment-index="0" -->
+
+<h3 class="fragment visible" data-fragment-index="1">Exporter だって<code>ニコイチ</code>したい！ </h3>
+
+#### という話です <!-- .element: class="fragment" data-fragment-index="2" -->
 
 
 ---
@@ -210,21 +213,29 @@ sub bits {
 
 #### 『use する側のパッケージ』を perl で知る方法
 
+<h4 class="fragment"><code>caller</code>を使う</h4>
+
+
 ```perl
 package Bar {
   sub import {
     my ($class, @args) = @_;
 
-    my $callpack = caller; # 『use する側のパッケージ名』を取得
+    my $callpack = caller;
     print "$class is used from $callpack\n";
 
+    my $newname = $callpack."::bar";
+    print "Installing $newname...\n";
+
     no strict 'refs';
-    *{$callpack."::bar"} = sub { "BAR" };
+    *{$newname} = sub { "BAR" };
   }
 } 1;
 ```
 
-`perl -Isrc3 -le 'use Bar; print bar()'`
+```sh
+% perl -Isrc3 -le 'use Bar; print bar()'
+```
 
 ---
 
@@ -249,46 +260,93 @@ package Bar {
 
 ---
 
-## `Mojo::Base` はどうなってるの？
-
----
+### 組み合わせたら？
 
 ```perl
-package Mojo::Base;
-...
-sub import {
-  my $class = shift;
-  return unless my $flag = shift;
+package MyUtil2 {
+  ... # 全部 require して
 
-  # Base
-  if ($flag eq '-base') { $flag = $class }
+  sub import {
+    my ($class, @args) = @_;
 
-  # Strict
-  elsif ($flag eq '-strict') { $flag = undef }
-
-  # Module
-  elsif ((my $file = $flag) && !$flag->can('new')) {
-    $file =~ s!::|'!/!g;
-    require "$file.pm";
+    strict  ->import();
+    warnings->import();
+    parent  ->import();
+    Exporter->import(@args);
   }
+
+  our @EXPORT_OK = qw/baz/;
+  sub baz { "BAZ" }
+
+} 1;
 ```
 
 ---
 
+```sh
+% perl -Isrc4 -le 'use MyUtil2; print $unknown_var'
+```
+
+strict.pm ←◯  <!-- .element: class="fragment" -->
+
+```sh
+% perl -Isrc4 -le 'use MyUtil2; print undef()+undef()'
+```
+
+warnings.pm ←◯  <!-- .element: class="fragment" -->
+
+```sh
+% perl -Isrc4 -le 'use MyUtil2; print @main::ISA'
+```
+
+parent.pm ←✕  <!-- .element: class="fragment" -->
+
+
+```sh
+% perl -Isrc4 -e 'use MyUtil2 qw/baz/; print baz()'
+```
+
+Exporter.pm ←✕  <!-- .element: class="fragment" -->
+
+---
+
+### parent.pm, Exporter.pm が効かない理由
+
+<h3 class="fragment"><code>caller</code> が変わるから</h3>
+
 ```perl
-  # ISA
-  if ($flag) {
-    my $caller = caller;
-    no strict 'refs';
-    push @{"${caller}::ISA"}, $flag;
-    _monkey_patch $caller, 'has', sub { attr($caller, @_) };
+package MyUtil3 {
+  require parent;
+  require Bar;
+
+  sub import {
+    my ($class, @args) = @_;
+    parent ->import();
+    Bar    ->import(@args);
   }
 
-  # Mojo modules are strict!
-  $_->import for qw(strict warnings utf8);
-  feature->import(':5.10');
-}
+} 1;
 ```
+
+```sh
+% perl -Isrc5 -le 'use MyUtil3; print @main::ISA; print bar()'
+```
+
+___
+
+## 余談
+### `Sub::Uplevel` で
+
+CORE::GLOBAL::caller を差し替えれば行ける?
+
+←ダメでした。 <!-- .element: class="fragment" -->
+
+---
+
+### strict.pm, warnings.pm だけは効くのは何故？
+
+<h4 class="fragment">効くように最初から設計されているから</h4>
+<h4 class="fragment"><code>$^H</code> の save/restore 範囲を上手く設計してあるから</h4>
 
 ---
 
