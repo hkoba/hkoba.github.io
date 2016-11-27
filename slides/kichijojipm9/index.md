@@ -50,12 +50,14 @@ package MyApp {
 
 ## あらすじ
 
-1. (perl5 の) Exporter のおさらい
+1. Exporter のおさらい
 2. Exporter を書く時に悩むこと
-3. `て` `い` `あ` `ん`
+3. 解決策の提案
 
 
 ---
+
+<!-- .slide: class="lead" data-background-color="#C0F0B6" -->
 
 ## 1. Exporter おさらい
 
@@ -239,6 +241,8 @@ package Bar {
 
 ---
 
+<!-- .slide: class="lead" data-background-color="#C0F0B6" -->
+
 ## 2. Exporter 書く時の悩み
 
 ## ニコイチできない  <!-- .element: class="fragment" -->
@@ -284,33 +288,40 @@ package MyUtil2 {
 ---
 
 ```sh
-% perl -Isrc4 -le 'use MyUtil2; print $unknown_var'
+% perl -le 'use MyUtil2; print $unknown_var'
 ```
 
-strict.pm ←◯  <!-- .element: class="fragment" -->
+strict.pm → ◯  <!-- .element: class="fragment" -->
 
 ```sh
-% perl -Isrc4 -le 'use MyUtil2; print undef()+undef()'
+% perl -le 'use MyUtil2; print undef()+undef()'
 ```
 
-warnings.pm ←◯  <!-- .element: class="fragment" -->
+warnings.pm → ◯  <!-- .element: class="fragment" -->
 
 ```sh
-% perl -Isrc4 -le 'use MyUtil2; print @main::ISA'
+% perl -le 'use MyUtil2; print @main::ISA'
 ```
 
-parent.pm ←✕  <!-- .element: class="fragment" -->
+parent.pm → ✕  <!-- .element: class="fragment" -->
 
 
 ```sh
-% perl -Isrc4 -e 'use MyUtil2 qw/baz/; print baz()'
+% perl -e 'use MyUtil2 qw/baz/; print baz()'
 ```
 
-Exporter.pm ←✕  <!-- .element: class="fragment" -->
+Exporter.pm → ✕  <!-- .element: class="fragment" -->
 
 ---
 
-### parent.pm, Exporter.pm が効かない理由
+### strict.pm, warnings.pm → ◯
+
+#### 効くように最初から設計されているから
+#### `$^H` の save/restore 範囲を上手く設計してあるから
+
+---
+
+### parent.pm, Exporter.pm → ✕
 
 <h3 class="fragment"><code>caller</code> が変わるから</h3>
 
@@ -322,7 +333,7 @@ package MyUtil3 {
   sub import {
     my ($class, @args) = @_;
     parent ->import();
-    Bar    ->import(@args);
+    Bar    ->import(@args);   # Bar::import() にとって、 caller は MyUtil3
   }
 
 } 1;
@@ -343,14 +354,103 @@ CORE::GLOBAL::caller を差し替えれば行ける?
 
 ---
 
-### strict.pm, warnings.pm だけは効くのは何故？
+<!-- .slide: class="lead" data-background-color="#C0F0B6" -->
 
-<h4 class="fragment">効くように最初から設計されているから</h4>
-<h4 class="fragment"><code>$^H</code> の save/restore 範囲を上手く設計してあるから</h4>
+## 3. 問題の分析と解決案
 
 ---
 
-## 3. 提案
+ <!-- .slide: id="root-of-the-problem" -->
+
+## 問題の根幹
+
+`import` の中に処理を埋め込んでいること
+
+```perl
+sub import {
+  my $callpack = caller;
+  ... do real job ...
+}
+```
+
+↓分けるべき(最低限)
+
+```perl
+sub import {
+  shift->real_job(scalar caller, @_);
+}
+
+sub real_job {
+  my ($class, $callpack, @args);
+  ... do real job ...
+}
+```
+
+---
+
+### importの分離だけじゃ不十分
+
+```perl
+use Carp   qw/croak/;    # 関数名
+
+use lib    qw/lib/;      # ディレクトリ・パス名
+
+use parent qw/Foo/;      # クラス名
+
+use fields qw/foo bar/;  # $self の key
+```
+
+import の引数仕様レベルで、共存不能なものも多い <!-- .element: class="fragment" -->
+
+∴共存出来る引数仕様を考えたい <!-- .element: class="fragment" -->
+
+---
+
+### 引数仕様の一案
+
+```perl
+use MyUtil
+   qw/croak/                  # 関数名
+   , [lib    => qw/lib/]      # ディレクトリ・パス名
+   , [parent => qw/Foo/]      # クラス名
+   , [fields => qw/bar baz/]  # $self の key
+;
+```
+
+---
+
+### 既存のモジュールは、ほぼ `全滅`
+
+#### ∴ 自力で再実装するしか無い <!-- .element: class="fragment" -->
+
+---
+
+<!-- .slide: class="lead" data-background-color="#C0F0B6" -->
+
+## どう再実装する？
+
+---
+
+```perl
+use MyUtil
+   qw/croak/                  # 関数名
+   , [lib    => qw/lib/]      # ディレクトリ・パス名
+   , [parent => qw/Foo/]      # クラス名
+   , [fields => qw/bar baz/]  # $self の key
+;
+```
+
+* 文字列は `Exporter.pm` と同じ import 扱い
+* `[プラグマ => 引数]` をメソッド呼び出しに変換
+
+### ある種の、MetaObject プロトコル <!-- .element: class="fragment" style="margin-top: .5em;" -->
+
+---
+
+## MOP4Import
+
+* MetaObject Protocol for `Import`
+
 
 ---
 
