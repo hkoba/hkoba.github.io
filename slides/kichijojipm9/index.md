@@ -411,9 +411,41 @@ sub real_job {
 ### 私からの実装例: `MOP4Import::Declare`
 
 * MetaObject Protocol for `import`
-* `declare` style.
+* 従来の `use X` 相当をメソッド `declare_X` として  
+  再実装
+* use 時の引数の内、 `-X` と `[X => ...]` を `declare_X` へ dispatch.
 
 ---
+
+MOP4Import::Declare の元々の使い方
+
+```perl
+package MyApp {
+  use MOP4Import::Declare -as_base
+    , -strict
+    , [parent => 'MyUtilX']
+    , qw/croak/;
+
+  croak "hoehoe";
+};
+```
+
+↓ 中で起きていること
+
+```perl
+  BEGIN {
+    require MOP4Import::Declare;
+    my $callpack = caller;
+    my $opts = MOP4Import::Declare->Opts->new([caller]);
+    MOP4Import::Declare->declare_strict($opts, $callpack);
+    MOP4Import::Declare->declare_parent($opts, $callpack, 'MyUtilX');
+    MOP4Import::Declare->import_NAME($opts, $callpack, 'croak');
+  }
+```
+
+---
+
+MyUtilX を MOP4Import::Declare で実装してみる
 
 ```perl
 package MyUtilX {
@@ -438,6 +470,30 @@ package MyUtilX {
   our @baz = "BAZ";
 
 } 1;
+```
+
+___
+
+```perl
+  use MOP4Import::Declare -as_base;
+
+  sub import {
+    my ($myPack, @args) = @_;
+
+    my $opts = $myPack->Opts->new([caller]);
+
+    $myPack->dispatch_declare($opts, $opts->{destpkg}
+                              , -strict                # use strict
+                              , [parent => $myPack]    # use parent MyUtilX
+                              , @args);                # Exporter.pm +α
+  }
+```
+
+```perl
+  use MOP4Import::Declare -as_base
+    , -strict
+    , [parent => 'MyUtilX']
+    , qw/foo $bar @baz/;
 ```
 
 ---
