@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-package MyUtil2 {
+package MyUtilX {
   use Sub::Uplevel;
   require strict;
   require warnings;
@@ -20,6 +20,6 @@ package MyUtil2 {
   sub baz { "BAZ" }
 } 1;
 
-# % perl -Isrc4.2 -e 'use MyUtil2 qw/baz/; print @main::ISA,"\n"; print baz()'
+# % perl -Isrc4.2 -e 'use MyUtilX qw/baz/; print @main::ISA,"\n"; print baz()'
 #
 # Undefined subroutine &main::baz called at -e line 1.

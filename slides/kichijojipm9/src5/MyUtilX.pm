@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-package MyUtil3 {
+package MyUtilX {
   require parent;
   require Bar;
 

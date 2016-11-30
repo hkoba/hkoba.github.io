@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-package MyUtil2 {
+package MyUtilX {
   require strict;
   require warnings;
   require parent;
@@ -12,7 +12,7 @@ package MyUtil2 {
     strict  ->import();
     warnings->import();
     parent  ->import();
-    Exporter->import(@args);
+    goto &Exporter::import;
   }
 
   our @EXPORT_OK = qw/baz/;
