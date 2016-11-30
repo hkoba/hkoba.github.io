@@ -10,7 +10,7 @@
 
 ---
 
-## 自己紹介 `@hkoba` 
+## 自己紹介 `@hkoba` <img src="img/myfistrect.jpg" style="margin-top: 0px; margin-bottom: 0px; width: 64px; height: 64px">
 
 * 個人事業主 <div style="display: inline-block; text-align: right; width: 13em; margin-left: auto;">⇔主に<a href="https://www.ssri.com/recruit/opbu/"><img style="box-shadow: none; margin: 0 5px;" src="ssri_logo.gif" alt=SSRI></a>さんのお仕事</div>
   * Perl 書きたいプログラマ、募集中
@@ -38,8 +38,6 @@ package MyApp {
 <h3 class="fragment" >Exporter だって<code>ニコイチ</code>したい！ </h3>
 
 <h4 class="fragment" >だって `Class Builder` 楽に作りたいし！</h4>
-
-#### という話です <!-- .element: class="fragment" -->
 
 
 ---
@@ -73,7 +71,7 @@ export(輸出)、import(輸入)
 
 ---
 
-### 例：Exporter を作る
+### 例：典型的な Exporter の作り方
 
 ```perl
 package MyUtil {
@@ -96,6 +94,10 @@ package MyUtil {
 ---
 
 ### 例：この Exporter を使う
+
+```perl
+print foo(), $bar, @baz; # XXX: $bar, @baz がコンパイルエラー
+```
 
 ```perl
 use MyUtil qw/foo $bar @baz/;  # 以後 foo(), $bar, @baz が使えるようになる
@@ -131,9 +133,9 @@ BEGIN {
 
 ### コンパイルの途中、が大事
 
-* 例えば typo 検査はコンパイル時  
+* 例えば変数名の typo 検査はコンパイル時！  
   <small>(どころか `yylex` の中！)</small>
-* 記号表に変数を足すにはコンパイル後では手遅れ
+* <small>記号表に変数を足すには</small>コンパイル後では手遅れ
 * ∴コンパイルの途中で即座に実行される、  
  `BEGIN {...}` が必要
 
@@ -167,13 +169,70 @@ package Bar {
 
 ---
 
-### 例：クラスを生やす Exporter
+### Class Generator の例 `AddInnerClass`
+
+こんな↓ Foo があるとして
 
 ```perl
-sub import {
-  
-}
+package Foo {
+  sub foo { "FOO" }
+} 1;
 ```
+
+Foo を継承した内部クラスを生やす exporter を作りたい
+
+```perl
+package MyApp {
+  use AddInnerClass Bar => 'Foo'; # MyApp::Bar を生やす。親は Foo.
+
+  print MyApp::Bar->foo, "\n";
+};
+```
+
+---
+
+### AddInnerClass の実装例
+
+```perl
+package AddInnerClass {
+  sub import {
+    my ($class, $innerName, $parent) = @_;
+
+    my $callpack = caller;
+
+    require "$parent.pm"; # XXX: 手抜き
+
+    my $isa = do {
+      my $isa_sym = globref($callpack, $innerName, 'ISA');
+      *{$isa_sym}{ARRAY} // do {
+        *$isa_sym = my $array = [];
+        $array;
+      };
+    };
+    push @$isa, $parent;
+  }
+```
+
+(続)
+
+___
+
+### globref() の実装例
+
+```perl
+  sub globref {
+    my $name = join "::", @_;
+    no strict 'refs';
+    \*{$name};
+  }
+} 1;
+```
+
+`no strict 'refs'` を局所化出来て便利。
+
+---
+
+
 
 ---
 
@@ -187,7 +246,7 @@ sub import {
 
 ### 例えば…
 
-`use 自作モジュールX;` だけで
+自作モジュール MyUtilX を `use MyUtilX;` するだけで
 
 * 関数の取り込み  
   <small>Exporter.pm みたいに…</small>
@@ -196,14 +255,15 @@ sub import {
 * `use strict; use warnings ...` も on  
   <small>Mojo::Base.pm みたいに…</small>
 
-にしたい。
+になるような exporter を作りたい。  
+既存の exporter の `組み合わせで` 作りたい。
 
 ---
 
 ### 組み合わせたら？
 
 ```perl
-package MyUtil2 {
+package MyUtilX {
   ... # 全部 require して
 
   sub import {
@@ -224,26 +284,26 @@ package MyUtil2 {
 ---
 
 ```sh
-% perl -le 'use MyUtil2; print $unknown_var'
+% perl -le 'use MyUtilX; print $unknown_var'
 ```
 
 strict.pm → ◯  <!-- .element: class="fragment" -->
 
 ```sh
-% perl -le 'use MyUtil2; print undef()+undef()'
+% perl -le 'use MyUtilX; print undef()+undef()'
 ```
 
 warnings.pm → ◯  <!-- .element: class="fragment" -->
 
 ```sh
-% perl -le 'use MyUtil2; print @main::ISA'
+% perl -le 'use MyUtilX; print @main::ISA'
 ```
 
 parent.pm → ✕  <!-- .element: class="fragment" -->
 
 
 ```sh
-% perl -e 'use MyUtil2 qw/baz/; print baz()'
+% perl -e 'use MyUtilX qw/baz/; print baz()'
 ```
 
 Exporter.pm → ✕  <!-- .element: class="fragment" -->
@@ -262,21 +322,21 @@ Exporter.pm → ✕  <!-- .element: class="fragment" -->
 <h3 class="fragment"><code>caller</code> が変わるから</h3>
 
 ```perl
-package MyUtil3 {
+package MyUtilX {
   require parent;
   require Bar;
 
   sub import {
     my ($class, @args) = @_;
     parent ->import();
-    Bar    ->import(@args);   # Bar::import() にとって、 caller は MyUtil3
+    Bar    ->import(@args);   # Bar::import() にとって、 caller は MyUtilX
   }
 
 } 1;
 ```
 
 ```sh
-% perl -Isrc5 -le 'use MyUtil3; print @main::ISA; print bar()'
+% perl -Isrc5 -le 'use MyUtilX; print "ISA: ", @main::ISA; print bar()'
 ```
 
 ___
@@ -328,78 +388,25 @@ sub real_job {
 
 <!-- .slide: class="lead" data-background-color="#C0F0B6" -->
 
-### 既存のモジュールは、ほぼ全滅！
-### だから <!-- .element: class="fragment" -->
-## `これから` <!-- .element: class="fragment" -->
-### の話をしましょう <!-- .element: class="fragment" -->
+#### 既存のモジュールは、ほぼ全滅！ だから…
+
+<h3 class="fragment"><code>これから</code>の話をしましょう</h3>
 
 
 ---
 
-### importの分離だけじゃ不十分
+### 提案：望ましいExporter 実装のあり方
 
-```perl
-use Carp   qw/croak/;    # 関数名
-
-use lib    qw/lib/;      # ディレクトリ・パス名
-
-use parent qw/Foo/;      # クラス名
-
-use fields qw/foo bar/;  # $self の key
-```
-
-import の引数仕様レベルで、共存不能なものも多い <!-- .element: class="fragment" -->
-
-∴共存出来る引数仕様を考えたい <!-- .element: class="fragment" -->
-
----
-
-### 引数仕様の一案
-
-```perl
-use MyUtil
-   qw/croak/                  # 関数名
-   , [lib    => qw/lib/]      # ディレクトリ・パス名
-   , [parent => qw/Foo/]      # クラス名
-   , [fields => qw/bar baz/]  # $self の key
-;
-```
-
-↓
-
-```perl
-MyUtil->import_symbol(__PACKAGE__, qw/croak/);
-
-MyUtil->import_lib(__PACKAGE__,    qw/lib/);
-
-MyUtil->import_parent(__PACKAGE__, qw/Foo/);
-
-MyUtil->import_fields(__PACKAGE__, qw/bar baz/);
-```
+* import には caller + dispatch だけ
+* 処理本体を別メソッドとして公開
 
 
 ---
 
-```perl
-use MyUtil
-   qw/croak/                  # 関数名
-   , [lib    => qw/lib/]      # ディレクトリ・パス名
-   , [parent => qw/Foo/]      # クラス名
-   , [fields => qw/bar baz/]  # $self の key
-;
-```
+### 私からの実装例: `MOP4Import::Declare`
 
-* 文字列は `Exporter.pm` と同じ import 扱い
-* `[プラグマ => 引数]` をメソッド呼び出しに変換
-
-### ある種の、MetaObject プロトコル <!-- .element: class="fragment" style="margin-top: .5em;" -->
-
----
-
-## MOP4Import
-
-* MetaObject Protocol for `Import`
-
+* MetaObject Protocol for `import`
+* `declare` style.
 
 ---
 

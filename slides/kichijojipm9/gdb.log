@@ -1,0 +1,58 @@
+Z-chaika(pts/6)% nm -D /lib64/libperl.so.5.22 |grep qerror
+0000000000114830 T Perl_qerror
+Z-chaika(pts/6)% gdb --args /usr/bin/perl -Mstrict -le 'print $foo'
+GNU gdb (GDB) Fedora 7.11.1-86.fc24
+Copyright (C) 2016 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-redhat-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+<http://www.gnu.org/software/gdb/documentation/>.
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from /usr/bin/perl...Reading symbols from /usr/lib/debug/usr/bin/perl5.22.2.debug...done.
+done.
+(gdb) b main
+Breakpoint 1 at 0x400bd0: file perlmain.c, line 62.
+(gdb) run
+Starting program: /usr/bin/perl -Mstrict -le print\ \$foo
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib64/libthread_db.so.1".
+
+Breakpoint 1, main (argc=4, argv=0x7fffffffdc18, env=0x7fffffffdc40)
+    at perlmain.c:62
+62      {
+(gdb) b Perl_qerror
+Breakpoint 2 at 0x7ffff7b06830: file pp_ctl.c, line 1558.
+(gdb) c
+Continuing.
+
+Breakpoint 2, Perl_qerror (my_perl=my_perl@entry=0x603010, err=0x62dc90)
+    at pp_ctl.c:1558
+1558    {
+(gdb) bt
+#0  Perl_qerror (my_perl=my_perl@entry=0x603010, err=0x62dc90) at pp_ctl.c:1558
+#1  0x00007ffff7a51c5b in S_find_default_stash (sv_type=<optimized out>,
+    add=<optimized out>, is_utf8=<optimized out>, len=<optimized out>,
+    name=<optimized out>, stash=<optimized out>, my_perl=<optimized out>)
+    at gv.c:1770
+#2  Perl_gv_fetchpvn_flags (my_perl=my_perl@entry=0x603010,
+    nambeg=0x632e59 "foo", full_len=full_len@entry=3, flags=<optimized out>,
+    sv_type=SVt_PV) at gv.c:2277
+#3  0x00007ffff7a5fa7a in S_pending_ident (my_perl=0x603010) at toke.c:8354
+#4  Perl_yylex (my_perl=my_perl@entry=0x603010) at toke.c:4347
+#5  0x00007ffff7a7563c in Perl_yyparse (my_perl=my_perl@entry=0x603010,
+    gramtype=gramtype@entry=258) at perly.c:322
+#6  0x00007ffff7a4c8b4 in S_parse_body (xsinit=0x400e30 <xs_init>, env=0x0,
+    my_perl=<optimized out>) at perl.c:2296
+#7  perl_parse (my_perl=<optimized out>,
+    xsinit=xsinit@entry=0x400e30 <xs_init>, argc=<optimized out>,
+    argv=<optimized out>, env=env@entry=0x0) at perl.c:1626
+#8  0x0000000000400c7b in main (argc=<optimized out>, argv=<optimized out>,
+    env=<optimized out>) at perlmain.c:114
+(gdb)
