@@ -5,13 +5,7 @@
 #### どうしますん？
 
 <img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
-Twitter: **@hkoba**  
-
-___
-
-## スライド URL:
-
-[hkoba.github.io](http://hkoba.github.io/)
+**@hkoba** [hkoba.github.io](http://hkoba.github.io/)
 → [`kichijojipm` `#9`](http://hkoba.github.io/slides/kichijojipm9/)
 
 ---
@@ -43,7 +37,7 @@ package MyApp {
 
 <h3 class="fragment" >Exporter だって<code>ニコイチ</code>したい！ </h3>
 
-<h4 class="fragment" >だって Class Builder 楽に作りたいし！</h4>
+<h4 class="fragment" >だって `Class Builder` 楽に作りたいし！</h4>
 
 #### という話です <!-- .element: class="fragment" -->
 
@@ -114,37 +108,6 @@ print MyUtil::foo(), $MyUtil::bar, @MyUtil::baz;
 
 ```
 
-___
-
-### Exporter の呼び方のバリエーション
-
-```perl
-use MyUtil qw/foo $bar @baz/;  # 欲しい物だけ import
-
-use MyUtil;                    # @EXPORT に書かれた全てを import
-
-use MyUtil ();                 # import を呼ばない
-```
-
-___
-
-### Exporter でバージョン検査
-
-```perl
-use MyUtil 0.5;
-```
-
-* この話はしません(使ったこと無い…)
-
----
-
-### コンパイルの途中、が大事
-
-* typo 検査はコンパイル時(どころか `yylex` の中！)
-* 変数宣言を足すには、実行時では手遅れ
-* ∴コンパイルの途中で即座に実行される、  
- `BEGIN {...}` が必要
-
 ---
 
 ### `use` の働き
@@ -162,66 +125,17 @@ BEGIN {
 
 * `MyUtil->import()` が呼ばれる
 * `BEGIN { }` の中なので、即座に、先に実行される。
-* 以後の行のコンパイルに影響できる
+* `コンパイル途中`で、ここだけ先に実行される
 
-___
+---
 
-特例：
+### コンパイルの途中、が大事
 
-```perl
-use MyUtil ();                 # import を呼ばない
-
-# ↓と等価
-
-BEGIN { require MyUtil }
-```
-
-___
-
-### オマケ: 5.001m の exporter 一覧
-
-```sh
-% find -name \*.pm | xargs grep -l 'sub import '|sort
-./ext/POSIX/POSIX.pm
-./lib/AutoLoader.pm
-./lib/English.pm
-./lib/Env.pm
-./lib/Exporter.pm
-./lib/Shell.pm
-./lib/integer.pm
-./lib/lib.pm
-./lib/sigtrap.pm
-./lib/strict.pm
-./lib/subs.pm
-%
-```
-
-___
-
-## 例: `strict.pm`
-
-```perl
-#  perl 5.001m から抜粋
-package strict;
-
-sub import {
-    shift;
-    $^H |= bits(@_ ? @_ : qw(refs subs vars));
-}
-
-sub bits {
-    my $bits = 0;
-    foreach $sememe (@_) {
-        $bits |= 0x00000002 if $sememe eq 'refs';
-        $bits |= 0x00000200 if $sememe eq 'subs';
-        $bits |= 0x00000400 if $sememe eq 'vars';
-    }
-    $bits;
-}
-```
-
-* perl5 のコンパイル時ヒント変数 `$^H` を操作している  
-  <small>(`$^H` はスクリプトのパース時に、 {ブロック} 単位で save/restore される)</small>
+* 例えば typo 検査はコンパイル時  
+  <small>(どころか `yylex` の中！)</small>
+* 記号表に変数を足すにはコンパイル後では手遅れ
+* ∴コンパイルの途中で即座に実行される、  
+ `BEGIN {...}` が必要
 
 ---
 
@@ -253,7 +167,7 @@ package Bar {
 
 ---
 
-### 例：クラスを生やす
+### 例：クラスを生やす Exporter
 
 ```perl
 sub import {
