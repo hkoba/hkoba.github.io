@@ -369,13 +369,18 @@ sub import {
 }
 ```
 
-↓分けるべき(最低限)
+
+---
+
+### import と実処理は分けるべき(最低限)
 
 ```perl
 sub import {
   shift->real_job(scalar caller, @_);
 }
+```
 
+```perl
 sub real_job {
   my ($class, $callpack, @args);
   ... do real job ...
@@ -397,7 +402,7 @@ sub real_job {
 
 ### 提案：望ましいExporter 実装のあり方
 
-* import には caller + dispatch だけ
+* import には caller取得 + dispatch だけ
 * 処理本体を別メソッドとして公開
 
 
@@ -410,8 +415,48 @@ sub real_job {
 
 ---
 
+```perl
+package MyUtilX {
+  use MOP4Import::Declare -as_base;
+
+  sub import {
+    my ($myPack, @args) = @_;
+
+    my $opts = $myPack->Opts->new([caller]);
+
+    $myPack->declare_strict($opts, scalar caller);          # use strict
+
+    $myPack->declare_parent($opts, scalar caller, $myPack); # use parent MyUtilX
+
+    $myPack->dispatch_declare($opts, scalar caller, @args); # Exporter.pm +α
+  }
+```
+
+```perl
+  sub foo {"FOO"}
+  our $bar = "BAR";
+  our @baz = "BAZ";
+
+} 1;
+```
+
+---
+
+### MyUtilX を使う側
+
+```perl
+use MyUtilX qw/foo $bar @baz/;
+
+print "ISA: ", our @ISA, "\n";  # => ISA: MyUtilX
+print foo(), $bar, @baz, "\n";  # => FOOBARBAZ
+```
+
+
+
+---
+
 ### まとめ
 
 * Exporter 便利だよね〜
 * 便利な Exporter 作るの面倒だよね〜
-* MOP4Import みたいに mixin 化すると良いんでは？
+* import と実処理を分ければモジュラーに出来るからオススメ
