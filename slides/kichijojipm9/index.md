@@ -1,6 +1,6 @@
 ## kichijoji.pm #9
 
-## `俺々 Exporter` を
+## `俺々 exporter` を
 ### <s>楽に</s> `モジュラーに` 定義したい時
 #### どうしますん？
 
@@ -17,7 +17,7 @@
 
 ---
 
-### perl5 の <small>(広義の)</small> Exporter の話です
+### perl5 の <small>(広義の)</small> exporter <small>モジュール</small>の話です
 
 ```
 use Carp;                  # 以後 carp() と書くだけで Carp::carp() を呼べる
@@ -33,9 +33,9 @@ package MyApp {
 }
 ```
 
-#### …特に… <!-- .element: class="fragment" -->
+#### …一番の問題意識は… <!-- .element: class="fragment" -->
 
-<h3 class="fragment" >Exporter だって<code>ニコイチ</code>したい！ </h3>
+<h3 class="fragment" >exporter だって<code>ニコイチ</code>したい！ </h3>
 
 <h4 class="fragment" >だって `Class Builder` 楽に作りたいし！</h4>
 
@@ -44,8 +44,8 @@ package MyApp {
 
 ## あらすじ
 
-1. Exporter のおさらい
-2. Exporter を書く時に悩むこと
+1. exporter のおさらい
+2. exporter を書く時に悩むこと
 3. 解決策の提案
 
 
@@ -53,12 +53,12 @@ package MyApp {
 
 <!-- .slide: class="lead" data-background-color="#C0F0B6" -->
 
-## 1. Exporter おさらい
+## 1. exporter おさらい
 
 
 ---
 
-## Exporter とは(広義)
+## exporter とは(広義)
 
 * `use` することで  
   <small>(use する側のパッケージに)</small>
@@ -71,7 +71,7 @@ export(輸出)、import(輸入)
 
 ---
 
-### 例：典型的な Exporter の作り方
+### 例：典型的な exporter の作り方
 
 ```perl
 package MyUtil {
@@ -93,7 +93,7 @@ package MyUtil {
 
 ---
 
-### 例：この Exporter を使う
+### 例：この exporter を使う
 
 ```perl
 print foo(), $bar, @baz; # XXX: $bar, @baz がコンパイルエラー
@@ -169,7 +169,7 @@ package Bar {
 
 ---
 
-### Class Generator の例 `AddInnerClass`
+### Class Generator の例
 
 こんな↓ Foo があるとして
 
@@ -179,7 +179,8 @@ package Foo {
 } 1;
 ```
 
-Foo を継承した内部クラスを生やす exporter を作りたい
+Foo を継承した内部クラスを生やす exporter を作りたい  
+名づけて `AddInnerClass`
 
 ```perl
 package MyApp {
@@ -212,33 +213,19 @@ package AddInnerClass {
     push @$isa, $parent;
   }
 ```
-
-(続)
-
-___
-
-### globref() の実装例
-
 ```perl
   sub globref {
-    my $name = join "::", @_;
     no strict 'refs';
-    \*{$name};
+    \*{join "::", @_};
   }
 } 1;
 ```
-
-`no strict 'refs'` を局所化出来て便利。
-
----
-
-
 
 ---
 
 <!-- .slide: class="lead" data-background-color="#C0F0B6" -->
 
-## 2. Exporter 書く時の悩み
+## 2. exporter 書く時の悩み
 
 ## ニコイチできない  <!-- .element: class="fragment" -->
 
@@ -249,7 +236,7 @@ ___
 自作モジュール MyUtilX を `use MyUtilX;` するだけで
 
 * 関数の取り込み  
-  <small>Exporter.pm みたいに…</small>
+  <small>exporter.pm みたいに…</small>
 * `@ISA` (親クラス) の設定  
   <small>parent.pm みたいに…</small>
 * `use strict; use warnings ...` も on  
@@ -365,7 +352,9 @@ CORE::GLOBAL::caller を差し替えれば行ける?
 ```perl
 sub import {
   my $callpack = caller;
-  ... do real job ...
+  ...
+  do real job
+  ...
 }
 ```
 
@@ -383,7 +372,9 @@ sub import {
 ```perl
 sub real_job {
   my ($class, $callpack, @args);
-  ... do real job ...
+  ...
+  do real job
+  ...
 }
 ```
 
@@ -400,7 +391,7 @@ sub real_job {
 
 ---
 
-### 提案：望ましいExporter 実装のあり方
+### 提案：望ましいexporter 実装のあり方
 
 * import には caller取得 + dispatch だけ
 * 処理本体を別メソッドとして公開
@@ -421,7 +412,7 @@ MOP4Import::Declare の元々の使い方
 
 ```perl
 package MyApp {
-  use MOP4Import::Declare -as_base
+  use MOP4Import::Declare
     , -strict
     , [parent => 'MyUtilX']
     , qw/croak/;
@@ -435,13 +426,15 @@ package MyApp {
 ```perl
   BEGIN {
     require MOP4Import::Declare;
-    my $callpack = caller;
+    my $callpack = caller; # 'MyApp'
     my $opts = MOP4Import::Declare->Opts->new([caller]);
     MOP4Import::Declare->declare_strict($opts, $callpack);
     MOP4Import::Declare->declare_parent($opts, $callpack, 'MyUtilX');
     MOP4Import::Declare->import_NAME($opts, $callpack, 'croak');
   }
 ```
+
+<small class="fragment">API 変更予定あり :bow:！</small>
 
 ---
 
@@ -471,6 +464,8 @@ package MyUtilX {
 
 } 1;
 ```
+
+<small>API 変更予定あり :bow:！</small>
 
 ___
 
@@ -513,6 +508,6 @@ print foo(), $bar, @baz, "\n";  # => FOOBARBAZ
 
 ### まとめ
 
-* Exporter 便利だよね〜
-* 便利な Exporter 作るの面倒だよね〜
+* exporter 便利だよね〜
+* 既存の exporter はニコイチ出来なくて不便！
 * import と実処理を分ければモジュラーに出来るからオススメ
