@@ -1,22 +1,15 @@
 use strict;
 use Getopt::Long;
 
-GetOptions("o|output=s" => \ (my $o_output))
+my %opts;
+GetOptions(\%opts, "output|o=s")
   or usage("Unknown options");
 
-
-my $outfh = setup_outfh(
-  $o_output  # ←←←←←←←←←←←  XXX
-);
-
-sub setup_outfh {
-  my ($o_output) = @_;   # ←←←←←← XXX
-
-  if ($o_output) {
-    open my $outfh, '>', $o_output or die $!;
-    $outfh;
-  } else {
-    # $outfh = \*STDOUT; # ←←←←←← YYY
-    \*STDOUT;
-  }
+my $outfh;
+if ($opts{output}) {
+  open $outfh, '>', $opts{output} or die $!;
+} else {
+  $outfh = \*STDOUT; # ←←←←←← YYY
 }
+
+print $outfh "Hello world!\n";

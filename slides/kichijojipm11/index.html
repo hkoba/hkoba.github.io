@@ -15,21 +15,7 @@
     <!--[if lt IE 9]>
       <script src="/revealjs/lib/js/html5shiv.js"></script>
     <![endif]-->
-    <style>
-    .reveal h2, .reveal h3, .reveal h4, .reveal h5 {text-transform: none;}
-    .reveal a {color: #BB1515;}
-    .reveal a:hover {color: #0a8624;}
-    .reveal section img {border-width: 0px;}
-       .reveal li { margin-bottom: .5ex; }
-       .reveal code {
-           background: #0e1560;
-           color: #32f33b;
-           padding: 0 .5ex;
-           border-radius: .3ex;
-	   text-transform: none;
-	 }
-         .reveal h2 code { font-size: 60%; }
-    </style>
+    <link rel="stylesheet" type="text/css" href="index.css">
   </head>
 
   <body>
@@ -42,15 +28,85 @@
 ### ええんやで
 
 <img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
-**@hkoba** [hkoba.github.io](http://hkoba.github.io/)
+**@hkoba**
+
+[hkoba.github.io](http://hkoba.github.io/)
 → [`kichijojipm` `#11`](http://hkoba.github.io/slides/kichijojipm11/)
 </script>
 </section>
 <section data-markdown>
 <script type='text/template'>
-#### `fields.pm`
-### おさらい
+<!-- .slide: class="code-big" -->
 
+#### おさらい: `fields` とは
+
+```perl
+$hash->{'ここのtypoを'}
+```
+
+コンパイル時に検出する <!-- .element: class="fragment" -->
+
+ためのもの、デース <!-- .element: class="fragment" -->
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+<!-- .slide: class="code-big" -->
+
+### fields を使うには
+### 予め ２種類の宣言
+
+* `use fields`
+* `my 型名 $変数` 
+
+が必要です
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+<!-- .slide: class="code-big" -->
+
+### まず fields で
+### クラスに属する要素を宣言します
+
+```perl
+package CD;
+
+use fields
+  qw/title artist year/;
+```
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+<!-- .slide: class="code-big" -->
+
+### あとは my 宣言にも型を加えます
+
+```perl
+my CD $hash = +{};
+```
+
+これで $hash に typo 検査が働きます。 <!-- .element: class="fragment" -->
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+<!-- .slide: class="code-big" -->
+
+### OK
+```perl
+say $hash->{title};
+```
+
+### COMPILE ERROR!
+```perl
+say $hash->{titleee};
+```
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
 ```perl
 use strict;
 
@@ -64,7 +120,7 @@ $cd->{title} = "bar";   # Ok
 $cd->{titleee} = "bar"; # COMPILE ERROR!
 ```
 
-( `デモ` するよ)
+( [demo1.pl](demo1.pl) )
 </script>
 </section>
 <section data-markdown>
@@ -88,10 +144,37 @@ $cd->{titleee} = "bar"; # COMPILE ERROR!
 </section>
 <section data-markdown>
 <script type='text/template'>
-### typo がツラいものは他にも有る
+#### 本題: typo がツラいものは他にも有る
 
-* コマンド行オプションも、そう。
-* 普通は my 変数を使う
+### CLI ツールのオプション<!-- .element: class="fragment" -->
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+```perl
+use strict;
+use Getopt::Long;
+
+my %opts;
+GetOptions(\%opts, "output|o=s")
+  or usage("Unknown options");
+
+my $outfh;
+if ($opts{output}) {
+  open $outfh, '>', $opts{output} or die $!;
+} else {
+  $outfh = \*STDOUT;
+}
+
+print $outfh "Hello world!\n";
+```
+
+`$opts{output}` …打ち間違ったらツラい
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+* ツラい時は my 変数を使う。
 
 ```perl
 use strict;
@@ -206,9 +289,10 @@ sub setup_outfh {
 }
 ```
 
-( `デモ` しようね)
+( [demo3.pl](demo3.pl) )
 </script>
 </section>
+<section>
 <section data-markdown>
 <script type='text/template'>
 ### グローバル変数を fields で置換え
@@ -236,6 +320,23 @@ sub setup {...}
 * `$o_output` → `$opts->{output}`
 * `$outfh` → `$opts->{_outfh}`
 </script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+これもあり
+
+```perl
+{
+  my Opts $opts = fields::new('Opts');
+
+  GetOptions($opts, "output|o=s")
+    or usage("Unknown options");
+    
+  setup($opts);
+}
+```
+</script>
+</section>
 </section>
 <section data-markdown>
 <script type='text/template'>
@@ -281,7 +382,7 @@ sub setup {
 }
 ```
 
-( `デモ` しようね)
+( [demo4.pl](demo4.pl) )
 </script>
 </section>
 <section data-markdown>
@@ -299,9 +400,10 @@ sub setup {
 ### まとめ
 
 * fields → `コンパイル時` に typoを検出
-  * flycheck 等と併用
+  * IDE からのコード検査に最適
 * `CLIのオプションにも` fields は役に立つよ〜
-* main とサブルーチン, `スコープ絶縁` しつつ `strict` 検査
+* main とサブルーチン, `スコープ絶縁` しつつ  
+`strict` 検査
 </script>
 </section>
 <section data-markdown>

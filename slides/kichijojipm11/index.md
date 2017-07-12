@@ -3,13 +3,79 @@
 ### ええんやで
 
 <img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
-**@hkoba** [hkoba.github.io](http://hkoba.github.io/)
+**@hkoba**
+
+[hkoba.github.io](http://hkoba.github.io/)
 → [`kichijojipm` `#11`](http://hkoba.github.io/slides/kichijojipm11/)
 
 ---
 
-#### `fields.pm`
-### おさらい
+<!-- .slide: class="code-big" -->
+
+#### おさらい: `fields` とは
+
+```perl
+$hash->{'ここのtypoを'}
+```
+
+コンパイル時に検出する <!-- .element: class="fragment" -->
+
+ためのもの、デース <!-- .element: class="fragment" -->
+
+---
+
+<!-- .slide: class="code-big" -->
+
+### fields を使うには
+### 予め ２種類の宣言
+
+* `use fields`
+* `my 型名 $変数` 
+
+が必要です
+
+---
+
+<!-- .slide: class="code-big" -->
+
+### まず fields で
+### クラスに属する要素を宣言します
+
+```perl
+package CD;
+
+use fields
+  qw/title artist year/;
+```
+
+---
+
+<!-- .slide: class="code-big" -->
+
+### あとは my 宣言にも型を加えます
+
+```perl
+my CD $hash = +{};
+```
+
+これで $hash に typo 検査が働きます。 <!-- .element: class="fragment" -->
+
+---
+
+<!-- .slide: class="code-big" -->
+
+### OK
+```perl
+say $hash->{title};
+```
+
+### COMPILE ERROR!
+```perl
+say $hash->{titleee};
+```
+
+---
+
 
 ```perl
 use strict;
@@ -24,7 +90,7 @@ $cd->{title} = "bar";   # Ok
 $cd->{titleee} = "bar"; # COMPILE ERROR!
 ```
 
-( `デモ` するよ)
+( [demo1.pl](demo1.pl) )
 
 ---
 
@@ -48,10 +114,36 @@ $cd->{titleee} = "bar"; # COMPILE ERROR!
 
 ---
 
-### typo がツラいものは他にも有る
+#### 本題: typo がツラいものは他にも有る
 
-* コマンド行オプションも、そう。
-* 普通は my 変数を使う
+### CLI ツールのオプション<!-- .element: class="fragment" -->
+
+
+---
+
+```perl
+use strict;
+use Getopt::Long;
+
+my %opts;
+GetOptions(\%opts, "output|o=s")
+  or usage("Unknown options");
+
+my $outfh;
+if ($opts{output}) {
+  open $outfh, '>', $opts{output} or die $!;
+} else {
+  $outfh = \*STDOUT;
+}
+
+print $outfh "Hello world!\n";
+```
+
+`$opts{output}` …打ち間違ったらツラい
+
+--
+
+* ツラい時は my 変数を使う。
 
 ```perl
 use strict;
@@ -167,7 +259,7 @@ sub setup_outfh {
 }
 ```
 
-( `デモ` しようね)
+( [demo3.pl](demo3.pl) )
 
 ---
 
@@ -195,6 +287,21 @@ sub setup {...}
 
 * `$o_output` → `$opts->{output}`
 * `$outfh` → `$opts->{_outfh}`
+
+___
+
+これもあり
+
+```perl
+{
+  my Opts $opts = fields::new('Opts');
+
+  GetOptions($opts, "output|o=s")
+    or usage("Unknown options");
+    
+  setup($opts);
+}
+```
 
 ---
 
@@ -238,7 +345,7 @@ sub setup {
 }
 ```
 
-( `デモ` しようね)
+( [demo4.pl](demo4.pl) )
 
 ___
 
@@ -256,9 +363,10 @@ ___
 ### まとめ
 
 * fields → `コンパイル時` に typoを検出
-  * flycheck 等と併用
+  * IDE からのコード検査に最適
 * `CLIのオプションにも` fields は役に立つよ〜
-* main とサブルーチン, `スコープ絶縁` しつつ `strict` 検査
+* main とサブルーチン, `スコープ絶縁` しつつ  
+`strict` 検査
 
 
 

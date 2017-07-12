@@ -1,35 +1,22 @@
-#!/usr/bin/env perl
 use strict;
 use Getopt::Long;
 
-package Opts {
-  use fields qw/output _outfh/
-}
+GetOptions("o|output=s" => \ (my $o_output))
+  or usage("Unknown options");
 
-{
-  my Opts $opts = +{};
 
-  GetOptions("o|output=s" => \ $opts->{output})
-    or usage("Unknown options");
+my $outfh = setup_outfh(
+  $o_output  # ←←←←←←←←←←←  XXX
+);
 
-  setup($opts);
+sub setup_outfh {
+  my ($o_output) = @_;   # ←←←←←← XXX
 
-  print {$opts->{_outfh}} "Hello world!\n";
-}
-
-sub setup {
-  (my Opts $opts) = @_;
-  if ($opts->{output}) {
-    open $opts->{_outfh}, '>', $opts->{output} or die $!;
+  if ($o_output) {
+    open my $outfh, '>', $o_output or die $!;
+    $outfh;
   } else {
-    $opts->{_outfh} = \*STDOUT;
+    # $outfh = \*STDOUT; # ←←←←←← YYY
+    \*STDOUT;
   }
-}
-
-sub usage {
-  die <<END;
-Usage: $0 [--output=OUTPUT_FILENAME]
-
-Yet another hello world!
-END
 }
