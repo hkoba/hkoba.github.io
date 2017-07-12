@@ -127,6 +127,11 @@ $cd->{title} = "bar";   # Ok
 
 ## CLI ツールのオプション<!-- .element: class="fragment" -->
 
+---
+
+### 例: オプション付きの `Hello world`
+
+* `--output=ファイル名` 指定時はファイルに出力
 
 ---
 
@@ -142,7 +147,7 @@ my %opts;
 GetOptions(\%opts, "output|o=s")
   or usage("Unknown options");
 
-# 出力先設定
+# 出力先を $outfh へ設定
 my $outfh;
 if ($opts{output}) {
   open $outfh, '>', $opts{output} or die $!;
@@ -153,12 +158,105 @@ if ($opts{output}) {
 print $outfh "Hello world!\n";
 ```
 
-`$opts{output}` の output を打ち間違っても、  
-只のHASH なのでコンパイルエラーには `ならない`
+---
 
---
+### 問題
 
-### この typo は my 変数で退治できる
+`%opts` が素の HASH なので `output` を打ち間違っても  
+コンパイルエラーに `ならない`
+
+```perl
+# オプション解析
+my %opts;
+GetOptions(\%opts, "output|o=s")
+  or usage("Unknown options");
+
+# 出力先を $outfh へ設定
+my $outfh;
+if ($opts{output}) {
+  open $outfh, '>', $opts{output} or die $!;
+} else {
+  $outfh = \*STDOUT;
+}
+
+print $outfh "Hello world!\n";
+```
+
+オプションを[個別の my 変数に変えて](#my_scalar_option) typo 検査を
+効かせる方法もあります。が… `そこを fields で` ！
+
+---
+
+### fields による改良案(1/2)
+
+( [demo4.pl](demo4.pl) )
+
+```perl
+package Opts {
+  use fields qw/output/; # まずクラスの要素を宣言
+}
+
+# main 相当の処理
+{
+  my Opts $opts = fields::new('Opts'); # 次にmy変数を型付きで宣言
+
+  GetOptions($opts, "output|o=s")
+    or usage("Unknown options");
+
+  my $outfh = prepare_outfh($opts);
+
+  print $outfh "Hello world!\n";
+}
+
+# 以下、サブルーチン
+```
+
+---
+
+### 改良案、続き(2/2)
+
+
+```perl
+sub prepare_outfh {
+  (my Opts $opts) = @_;
+
+  if ($opts->{output}) {
+    open my $outfh, '>', $opts->{output} or die $!;
+    return $outfh;
+
+  } else {
+    return \*STDOUT;
+  }
+}
+```
+
+ほとんど、メソッド定義
+
+( [demo4.pl](demo4.pl) )
+
+---
+
+### 何が嬉しいか
+
+* オプションのtypoをコンパイル時に検出できる
+* サブルーチンの変数スコープを (main) と分離出来る
+
+引数・戻り値だけが参照・操作対象であることを  
+`Perl が保証してくれる`
+
+( [demo4.pl](demo4.pl) )
+
+
+---
+
+### 他のアプローチとの比較
+#### (時間がないので省略)
+
+___
+
+ <!-- .slide: id="my_scalar_option" -->
+
+### $opts{output} の typo は my 変数で退治できる
 
 `$opts{output}` → `$o_output`
 
@@ -182,9 +280,11 @@ if ($o_output) {
 …ただし…
 
 
----
+___
 
 ### 変数scope広すぎ問題は、残る
+
+→サブルーチン化する時、困る<!-- .element: class="fragment" -->
 
 ```perl
 GetOptions("o|output=s" => \ (my $o_output))
@@ -199,12 +299,9 @@ if ($o_output) {
 }
 ```
 
-→サブルーチン化する時、困る<!-- .element: class="fragment" -->
+例えば: 出力先設定のサブルーチン化
 
-例えば: 出力先設定のサブルーチン化<!-- .element: class="fragment" -->
-
-
----
+___
 
 ### 悪いサブルーチン化の例
 
@@ -227,7 +324,7 @@ sub setup_outfh {
 * `ソースを全部読まないと` 分からない
 * 他人がメンテ出来ない
 
----
+___
 
 
 ### 引数と戻り値を明示したコード
@@ -253,7 +350,7 @@ sub setup_outfh {
 →でも、外側の $o_output や $outfh が  
 `setup_outfh の中まで` **伝わっていること** は残る
 
----
+___
 
 <!-- .slide: class="ul-small" -->
 
@@ -285,103 +382,10 @@ sub setup_outfh {
 
 ---
 
-### fields で置換え
-
-* `$o_output` → `$opts->{output}`
-* `$outfh` → `$opts->{_outfh}`
-
-```perl
-use strict;
-use Getopt::Long;
-
-package Opts {
-  use fields qw/output _outfh/;
-}
-
-{
-  my Opts $opts = +{}; # (bless するのも有り)
-
-  GetOptions("o|output=s" => \ $opts->{output})
-    or usage("Unknown options");
-    
-  setup_outfh($opts); ...
-}
-
-sub setup_outfh {...}
-```
-
-___
-
-これもあり
-
-```perl
-{
-  my Opts $opts = fields::new('Opts');
-
-  GetOptions($opts, "output|o=s")
-    or usage("Unknown options");
-    
-  setup_outfh($opts);
-}
-```
-
----
-
-### setup_outfh の中身
-
-
-```perl
-sub setup_outfh {
-
-  (my Opts $opts) = @_;
-
-  if ($opts->{output}) {
-
-    open $opts->{_outfh}, '>', $opts->{output} or die $!;
-
-  } else {
-
-    $opts->{_outfh} = \*STDOUT;
-
-  }
-
-}
-```
-
-もはやメソッド定義
-
----
-
-### (main) と setup_outfh が、別スコープに！
-
-```perl
-{
-  my Opts $opts = +{};
-
-  ...
-  setup_outfh($opts);
-}
-
-sub setup_outfh {
-  (my Opts $opts) = @_;
-  ...
-}
-```
-
-引数・戻り値として渡したものだけが、  
-参照・操作対象であることを、  
-`Perl が保証してくれる`。
-
-( [demo4.pl](demo4.pl) )
-
-
----
-
-
 ### まとめ
 
 * fields → `コンパイル時` に typoを検出
-  * IDE からのコード検査に最適
+  * エディタ・IDE 保存時のコード検査に最適
 * `CLIのオプションにも` fields は役に立つよ〜
 * main とサブルーチン, `スコープ絶縁` しつつ  
 `strict` 検査

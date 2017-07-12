@@ -1,16 +1,18 @@
 #!/usr/bin/env perl
 use strict;
+
+package Opts;
 use Getopt::Long;
 
-package Opts {
-  use fields qw/output/;
+BEGIN {
+  our %FIELDS = (
+    output => [s => 'o']
+  );
 }
-
-# main 相当の処理
 {
-  my Opts $opts = fields::new('Opts');
+  my Opts $opts = +{};
 
-  GetOptions($opts, "output|o=s")
+  GetOptions($opts, make_opts(\ our %FIELDS))
     or usage("Unknown options");
 
   my $outfh = prepare_outfh($opts);
@@ -18,7 +20,6 @@ package Opts {
   print $outfh "Hello world!\n";
 }
 
-# 以下、サブルーチン
 sub prepare_outfh {
   (my Opts $opts) = @_;
   if ($opts->{output}) {
@@ -27,6 +28,14 @@ sub prepare_outfh {
   } else {
     return \*STDOUT;
   }
+}
+
+sub make_opts {
+  my ($fields) = @_;
+  map {
+    my ($type, @alias) = @{$fields->{$_}};
+    join("=", join("|", $_, @alias), $type);
+  } keys %$fields;
 }
 
 sub usage {
