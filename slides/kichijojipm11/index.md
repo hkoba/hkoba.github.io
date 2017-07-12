@@ -76,22 +76,23 @@ say $hash->{titleee};
 
 ---
 
-#### 例: 音楽CD
+#### コード例
 
 ```perl
 use strict;
 
+# ↓↓ここで宣言↓↓
 package CD {
-  # ↓↓ここで宣言↓↓
   use fields qw/title artist year/;
 }
 
 # ↓↓ my変数宣言にクラスを結びつけると…
 my CD $cd = +{};
 
-# HASH要素の参照に typo 検査が！
+# ↓↓HASH要素の参照に typo 検査が！
 $cd->{title} = "bar";   # Ok
 
+# ↓↓間違えるとコンパイルエラー
 # $cd->{titleee} = "bar"; # COMPILE ERROR!
 ```
 
