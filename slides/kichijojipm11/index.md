@@ -89,7 +89,7 @@ package CD {
 # ↓↓ my変数宣言にクラス CD を結びつけると…
 my CD $cd = +{};
 
-# ↓↓HASH要素の参照に typo 検査が、効くようになる
+# ↓↓HASHの要素参照に typo 検査が、効くようになる
 $cd->{title} = "bar";   # Ok
 
 # ↓↓このように typo するとコンパイルエラー
@@ -98,7 +98,7 @@ $cd->{title} = "bar";   # Ok
 
 ( [demo1.pl](demo1.pl) )
 
----
+___
 
 ```perl
 use strict;
@@ -117,9 +117,9 @@ $cd->{title} = "bar";   # Ok
 # $cd->{titleee} = "bar"; # COMPILE ERROR!
 ```
 
-* 動かす前の、保存時に、つづり間違いが分かる
-* **エラー行ジャンプ** と合わせると強力
-
+* 保存した瞬間に、つづり間違いが分かる
+* エラー箇所にカーソルが自動で飛んでくれると、  
+  さらに楽ちん
 
 ---
 
@@ -153,11 +153,12 @@ if ($opts{output}) {
 print $outfh "Hello world!\n";
 ```
 
-`$opts{output}` …打ち間違っても、Runtimeエラー
+`$opts{output}` の output を打ち間違っても、  
+只のHASH なのでコンパイルエラーには `ならない`
 
 --
 
-### この typo は my 変数で倒せる
+### この typo は my 変数で退治できる
 
 `$opts{output}` → `$o_output`
 

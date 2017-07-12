@@ -8,7 +8,7 @@ package CD {
 # ↓↓ my変数宣言にクラス CD を結びつけると…
 my CD $cd = +{};
 
-# ↓↓HASH要素の参照に typo 検査が、効く
+# ↓↓HASHの要素参照に typo 検査が、効く
 $cd->{title} = "bar";   # Ok
 
 # ↓↓このように typo するとコンパイルエラー
