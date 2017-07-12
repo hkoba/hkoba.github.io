@@ -1,10 +1,17 @@
 use strict;
 
 package CD {
-  use fields qw/title artist year/; # ←←← ここで宣言
+  # ↓↓ここで宣言↓↓
+  use fields qw/title artist year/;
 }
 
-my CD $cd = +{}; # ←←←変数宣言にクラスを結びつけると…
+# ↓↓ my変数宣言にクラスを結びつけると…
+my CD $cd = +{};
 
+# HASH要素の参照に typo 検査が！
 $cd->{title} = "bar";   # Ok
+
 # $cd->{titleee} = "bar"; # COMPILE ERROR!
+
+
+

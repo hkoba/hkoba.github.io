@@ -22,7 +22,7 @@ $hash->{'ここのtypoを'}
 
 ためのもの、デース <!-- .element: class="fragment" -->
 
----
+___
 
 <!-- .slide: class="code-big" -->
 
@@ -34,7 +34,7 @@ $hash->{'ここのtypoを'}
 
 が必要です
 
----
+___
 
 <!-- .slide: class="code-big" -->
 
@@ -48,7 +48,7 @@ use fields
   qw/title artist year/;
 ```
 
----
+___
 
 <!-- .slide: class="code-big" -->
 
@@ -60,7 +60,7 @@ my CD $hash = +{};
 
 これで $hash に typo 検査が働きます。 <!-- .element: class="fragment" -->
 
----
+___
 
 <!-- .slide: class="code-big" -->
 
@@ -76,50 +76,61 @@ say $hash->{titleee};
 
 ---
 
+#### 例: 音楽CD
 
 ```perl
 use strict;
 
 package CD {
-  use fields qw/title artist year/; # ←←← ここで宣言
+  # ↓↓ここで宣言↓↓
+  use fields qw/title artist year/;
 }
 
-my CD $cd = +{}; # ←←←変数宣言にクラスを結びつけると…
+# ↓↓ my変数宣言にクラスを結びつけると…
+my CD $cd = +{};
 
+# HASH要素の参照に typo 検査が！
 $cd->{title} = "bar";   # Ok
-$cd->{titleee} = "bar"; # COMPILE ERROR!
+
+# $cd->{titleee} = "bar"; # COMPILE ERROR!
 ```
 
 ( [demo1.pl](demo1.pl) )
 
 ---
 
-
 ```perl
 use strict;
 
 package CD {
-  use fields qw/title artist year/; # ←←← ここで宣言
+  # ↓↓ここで宣言↓↓
+  use fields qw/title artist year/;
 }
 
-my CD $cd = +{}; # ←←←変数宣言にクラスを結びつけると…
+# ↓↓ my変数宣言にクラスを結びつけると…
+my CD $cd = +{};
 
+# HASH要素の参照に typo 検査が！
 $cd->{title} = "bar";   # Ok
-$cd->{titleee} = "bar"; # COMPILE ERROR!
+
+# $cd->{titleee} = "bar"; # COMPILE ERROR!
 ```
 
-* **実行前にエラーが** 分かって嬉しい！
-* flycheck とかで **Save 時検査** がオススメ
+* **実行前にtypoエラーが** 分かって嬉しい！
+* IDE などの **保存時検査** と  
+**エラー行ジャンプ** がオススメ
 
 
 ---
 
-#### 本題: typo がツラいものは他にも有る
+### 本題: typo がツラいものは他にも有る
 
-### CLI ツールのオプション<!-- .element: class="fragment" -->
+## CLI ツールのオプション<!-- .element: class="fragment" -->
 
 
 ---
+
+#### 例: Hello world, `--output=ファイル名` オプション付き
 
 ```perl
 use strict;
