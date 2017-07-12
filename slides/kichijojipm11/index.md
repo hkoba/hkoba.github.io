@@ -15,7 +15,7 @@
 #### おさらい: `fields` とは
 
 ```perl
-$hash->{'ここのtypoを'}
+$hash->{'要素参照のtypoを'}
 ```
 
 コンパイル時に検出する <!-- .element: class="fragment" -->
@@ -81,18 +81,18 @@ say $hash->{titleee};
 ```perl
 use strict;
 
-# ↓↓ここで宣言↓↓
 package CD {
+  # ↓↓ここでクラス CD の要素を宣言↓↓
   use fields qw/title artist year/;
 }
 
-# ↓↓ my変数宣言にクラスを結びつけると…
+# ↓↓ my変数宣言にクラス CD を結びつけると…
 my CD $cd = +{};
 
-# ↓↓HASH要素の参照に typo 検査が！
+# ↓↓HASH要素の参照に typo 検査が、効くようになる
 $cd->{title} = "bar";   # Ok
 
-# ↓↓間違えるとコンパイルエラー
+# ↓↓このように typo するとコンパイルエラー
 # $cd->{titleee} = "bar"; # COMPILE ERROR!
 ```
 
@@ -117,9 +117,8 @@ $cd->{title} = "bar";   # Ok
 # $cd->{titleee} = "bar"; # COMPILE ERROR!
 ```
 
-* **実行前にtypoエラーが** 分かって嬉しい！
-* IDE などの **保存時検査** と  
-**エラー行ジャンプ** がオススメ
+* 動かす前の、保存時に、つづり間違いが分かる
+* **エラー行ジャンプ** と合わせると強力
 
 
 ---
@@ -131,16 +130,19 @@ $cd->{title} = "bar";   # Ok
 
 ---
 
-#### 例: Hello world, `--output=ファイル名` オプション付き
+#### 例: オプション付きの `Hello world`
+
+* `--output=ファイル名` 指定時はファイルに出力
 
 ```perl
-use strict;
 use Getopt::Long;
 
+# オプション解析
 my %opts;
 GetOptions(\%opts, "output|o=s")
   or usage("Unknown options");
 
+# 出力先設定
 my $outfh;
 if ($opts{output}) {
   open $outfh, '>', $opts{output} or die $!;
@@ -151,11 +153,13 @@ if ($opts{output}) {
 print $outfh "Hello world!\n";
 ```
 
-`$opts{output}` …打ち間違ったらツラい
+`$opts{output}` …打ち間違っても、Runtimeエラー
 
 --
 
-* ツラい時は my 変数を使う。
+### この typo は my 変数で倒せる
+
+`$opts{output}` → `$o_output`
 
 ```perl
 use strict;
@@ -165,6 +169,7 @@ GetOptions("o|output=s" => \ (my $o_output))
   or usage("Unknown options");
   
 
+# 出力先設定
 my $outfh;
 if ($o_output) {
   open $outfh, '>', $o_output or die $!;
@@ -173,16 +178,18 @@ if ($o_output) {
 }
 ```
 
+…ただし…
+
 
 ---
 
-### my 変数でオプション、引き回しの害
+### 変数scope広すぎ問題は、残る
 
 ```perl
 GetOptions("o|output=s" => \ (my $o_output))
   or usage("Unknown options");
 
-
+# 出力先設定
 my $outfh;
 if ($o_output) {
   open $outfh, '>', $o_output or die $!;
@@ -191,14 +198,14 @@ if ($o_output) {
 }
 ```
 
-サブルーチン化と衝突する
+→サブルーチン化する時、困る<!-- .element: class="fragment" -->
 
-ex. `$outfh` 設定処理のサブルーチン化
+例えば: 出力先設定のサブルーチン化<!-- .element: class="fragment" -->
 
 
 ---
 
-### 嫌なコード
+### 悪いサブルーチン化の例
 
 ```perl
 my $outfh;
@@ -213,15 +220,16 @@ sub setup_outfh {
 }
 ```
 
-`$outfh` や `$o_output` が丸見え
+<small>入力`$o_output` が暗黙渡し,  出力 `$outfh` も暗黙返し</small>
 
-* 誰が、いつ、書き換えてるか分からない！
-
+* setup_outfh `以外の関数も` 参照・更新するかも？
+* `ソースを全部読まないと` 分からない
+* 他人がメンテ出来ない
 
 ---
 
 
-### 正しいけど、自己満足臭いコード
+### 引数と戻り値を明示したコード
 
 ```perl
 my $outfh = setup_outfh(
@@ -229,60 +237,64 @@ my $outfh = setup_outfh(
 );
 
 sub setup_outfh {
-  my ($o_output) = @_;   # ←←←←←← XXX
+  my ($o_output) = @_;   # ←←←←←← YYY
 
   if ($o_output) {
     open my $outfh, '>', $o_output or die $!;
-    $outfh;
+    return $outfh;
   } else {
-    # $outfh = \*STDOUT; # ←←←←←← YYY
-    \*STDOUT;
+    return \*STDOUT;
+    # $outfh = \*STDOUT; # ←←←←←← ZZZ
   }
 }
 ```
 
-結局、外側の `$o_output` や `$outfh` が setup_outfh の中まで
-**伝わっていること** は同じ
+→でも、外側の $o_output や $outfh が  
+`setup_outfh の中まで` **伝わっていること** は残る
 
 ---
 
+<!-- .slide: class="ul-small" -->
 
-* `XXX` (の二行とも) を削っても
-* `YYY` にしても
+```perl
+my $outfh = setup_outfh(
+  $o_output  # ←←←←←←←←←←←  XXX
+);
+
+sub setup_outfh {
+  my ($o_output) = @_;   # ←←←←←← YYY
+
+  if ($o_output) {
+    open my $outfh, '>', $o_output or die $!;
+    return $outfh;
+  } else {
+    return \*STDOUT;
+    # $outfh = \*STDOUT; # ←←←←←← ZZZ
+  }
+}
+```
+
+* XXX: 引数を渡し忘れたり
+* YYY: 引数を受け忘れたり
+* ZZZ: 代入を return に書き換え忘れたり
 
 ### コンパイル時エラーにはならない！
-
-
-```perl
-my $outfh = setup_outfh(
-  $o_output  # ←←←←←←←←←←←  XXX
-);
-
-sub setup_outfh {
-  my ($o_output) = @_;   # ←←←←←← XXX
-
-  if ($o_output) {
-    open my $outfh, '>', $o_output or die $!;
-    $outfh;
-  } else {
-    # $outfh = \*STDOUT; # ←←←←←← YYY
-    \*STDOUT;
-  }
-}
-```
 
 ( [demo3.pl](demo3.pl) )
 
 ---
 
-### グローバル変数を fields で置換え
+### fields で置換え
+
+* `$o_output` → `$opts->{output}`
+* `$outfh` → `$opts->{_outfh}`
 
 ```perl
 use strict;
 use Getopt::Long;
 
 package Opts {
-  use fields qw/output _outfh/
+  use fields qw/output _outfh/;
 }
 
 {
@@ -291,14 +303,11 @@ package Opts {
   GetOptions("o|output=s" => \ $opts->{output})
     or usage("Unknown options");
     
-  setup($opts);
+  setup_outfh($opts); ...
 }
 
-sub setup {...}
+sub setup_outfh {...}
 ```
-
-* `$o_output` → `$opts->{output}`
-* `$outfh` → `$opts->{_outfh}`
 
 ___
 
@@ -311,17 +320,17 @@ ___
   GetOptions($opts, "output|o=s")
     or usage("Unknown options");
     
-  setup($opts);
+  setup_outfh($opts);
 }
 ```
 
 ---
 
-### setup の中身
+### setup_outfh の中身
 
 
 ```perl
-sub setup {
+sub setup_outfh {
 
   (my Opts $opts) = @_;
 
@@ -342,31 +351,27 @@ sub setup {
 
 ---
 
-### (main) と setup が、別スコープに！
+### (main) と setup_outfh が、別スコープに！
 
 ```perl
 {
   my Opts $opts = +{};
 
   ...
+  setup_outfh($opts);
 }
 
-sub setup {
+sub setup_outfh {
   (my Opts $opts) = @_;
   ...
 }
 ```
 
+引数・戻り値として渡したものだけが、  
+参照・操作対象であることを、  
+`Perl が保証してくれる`。
+
 ( [demo4.pl](demo4.pl) )
-
-___
-
-### 依然、グローバル状態に依存。されど…
-
-* 一個のハッシュ表 `$opts` に閉じ込めることが出来た。
-* `$opts` を渡した sub だけが、書き換えを行える。
-* オプション名の typo は `コンパイル時に検出` される
-
 
 
 ---

@@ -12,12 +12,12 @@ package Opts {
   GetOptions($opts, "output|o=s")
     or usage("Unknown options");
 
-  setup($opts);
+  setup_outfh($opts);
 
   print {$opts->{_outfh}} "Hello world!\n";
 }
 
-sub setup {
+sub setup_outfh {
   (my Opts $opts) = @_;
   if ($opts->{output}) {
     open $opts->{_outfh}, '>', $opts->{output} or die $!;

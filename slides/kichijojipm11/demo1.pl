@@ -1,17 +1,18 @@
 use strict;
 
-# ↓↓ここでクラスの要素を宣言↓↓
 package CD {
-  use fields qw/title artist year/;
+  # ↓↓ここでクラス CD の要素を宣言↓↓
+  use fields qw/tile artist year/;
 }
 
-# ↓↓ my変数宣言にクラスを結びつけると…
+# ↓↓ my変数宣言にクラス CD を結びつけると…
 my CD $cd = +{};
 
-# ↓↓HASH要素の参照に typo 検査が！
-$cd->{title} = "bar";   # Ok
+# ↓↓HASH要素の参照に typo 検査が、効く
+$cd->{tile} = "bar";   # Ok
 
-# ↓↓間違えるとコンパイルエラー
-# $cd->{titleee} = "bar"; # COMPILE ERROR!
+# ↓↓このように typo するとコンパイルエラー
+$cd->{tile} = "bar"; # COMPILE ERROR!
+
 
 

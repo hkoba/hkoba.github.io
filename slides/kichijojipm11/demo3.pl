@@ -16,7 +16,7 @@ sub setup_outfh {
     open my $outfh, '>', $o_output or die $!;
     $outfh;
   } else {
-    # $outfh = \*STDOUT; # ←←←←←← YYY
     \*STDOUT;
+    # $outfh = \*STDOUT; # ←←←←←← YYY
   }
 }
