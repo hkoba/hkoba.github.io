@@ -193,12 +193,12 @@ print $outfh "Hello world!\n";
 
 ```perl
 package Opts {
-  use fields qw/output/; # まずクラスの要素を宣言
+  use fields qw/output/; # ここでクラスOptsの要素'output'を宣言
 }
 
 # main 相当の処理
 {
-  my Opts $opts = fields::new('Opts'); # 次にmy変数を型付きで宣言
+  my Opts $opts = fields::new('Opts'); # 次にmy変数をOpts型付きで宣言
 
   GetOptions($opts, "output|o=s")
     or usage("Unknown options");
@@ -218,9 +218,11 @@ package Opts {
 
 ```perl
 sub prepare_outfh {
-  (my Opts $opts) = @_;
+  (my Opts $opts) = @_; # my変数をOpts型付きで宣言
 
+  # 　　　　　　↓するとここでtypo検査が有効に！
   if ($opts->{output}) {
+    # 　　　　　　　　　　　　　　↓ ここも検査されます！
     open my $outfh, '>', $opts->{output} or die $!;
     return $outfh;
 
@@ -244,13 +246,13 @@ sub prepare_outfh {
 引数・戻り値だけが参照・操作対象であることを  
 `Perl が保証してくれる`
 
-( [demo4.pl](demo4.pl) )
+( [demo4.pl](demo4.pl), 他 [demo5.pl](demo5.pl), [demo6.pl](demo6.pl) )
 
 
 ---
 
 ### 他のアプローチとの比較
-#### (時間がないので省略)
+#### (時間がないので `省略` )
 
 ___
 
@@ -385,10 +387,10 @@ sub setup_outfh {
 ### まとめ
 
 * fields → `コンパイル時` に typoを検出
-  * エディタ・IDE 保存時のコード検査に最適
+  * エディタ・IDE `保存時のコード検査` に最適
 * `CLIのオプションにも` fields は役に立つよ〜
-* main とサブルーチン, `スコープ絶縁` しつつ  
-`strict` 検査
+  * main とサブルーチン, `スコープ絶縁` しつつ  
+    `strict` 検査
 
 
 

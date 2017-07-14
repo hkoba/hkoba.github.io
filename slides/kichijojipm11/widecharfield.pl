@@ -6,4 +6,4 @@ sub MY () {__PACKAGE__}
 
 my MY $hash = +{};
 
-print $hash->{お名前};
+print $hash->{お名前え};
