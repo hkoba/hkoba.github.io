@@ -9,20 +9,19 @@ package Opts {
 
 # main 相当の処理
 {
-  # 次にmy変数をOpts型付きで宣言
-  my Opts $opts = fields::new('Opts');
-
-  GetOptions($opts, "output|o=s")
+  # Note: このスコープでは fields 未使用
+  my %opts;
+  GetOptions(\%opts, "output|o=s")
     or usage("Unknown options");
 
-  my $outfh = prepare_outfh($opts);
+  my $outfh = prepare_outfh(\%opts);
 
   print $outfh "Hello world!\n";
 }
 
 # 以下、サブルーチン
 sub prepare_outfh {
-  # my変数をOpts型付きで宣言
+  # 次に、my変数をOpts型付きで宣言
   (my Opts $opts) = @_;
 
   #            ↓するとここでtypo検査が有効に！

@@ -196,24 +196,22 @@ package Opts {
   use fields qw/output/; # ここでクラスOptsの要素'output'を宣言
 }
 
-# main 相当の処理
 {
-  my Opts $opts = fields::new('Opts'); # 次にmy変数をOpts型付きで宣言
-
-  GetOptions($opts, "output|o=s")
+  my %opts; # このスコープでは fields 未使用(使っても良し)
+  GetOptions(\%opts, "output|o=s")
     or usage("Unknown options");
 
-  my $outfh = prepare_outfh($opts);
+  my $outfh = prepare_outfh(\%opts);
 
   print $outfh "Hello world!\n";
 }
 
-# 以下、サブルーチン
+sub prepare_outfh {...} # 以下、サブルーチン
 ```
 
 ---
 
-### 改良案、続き(2/2)
+### 続き(2/2)
 
 
 ```perl
@@ -240,12 +238,8 @@ sub prepare_outfh {
 
 ### 何が嬉しいか
 
-* サブルーチンの変数スコープを (main) と分離し  
-  `同時に`
-* オプションのtypoをコンパイル時に検出できる
-
-引数・戻り値だけが参照・操作対象であることを  
-`Perl が保証してくれる`
+* `サブルーチン内`の`オプションのtypo` を  
+  `コンパイル時に` 検出できる
 
 ( [demo4.pl](demo4.pl), 他 [demo5.pl](demo5.pl), [demo6.pl](demo6.pl) )
 
