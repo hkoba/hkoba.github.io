@@ -223,7 +223,7 @@ print $outfh "Hello world!\n";
 ```
 
 オプションを[個別の my 変数に変えて](#my_scalar_option) typo 検査を
-効かせる方法もあります。が… `そこを fields で` ！
+効かせる方法([demo3.pl](demo3.pl))もあります。が… `そこを fields で` ！
 </script>
 </section>
 <section data-markdown>
@@ -283,8 +283,9 @@ sub prepare_outfh {
 <script type='text/template'>
 ### 何が嬉しいか
 
+* サブルーチンの変数スコープを (main) と分離し  
+  `同時に`
 * オプションのtypoをコンパイル時に検出できる
-* サブルーチンの変数スコープを (main) と分離出来る
 
 引数・戻り値だけが参照・操作対象であることを  
 `Perl が保証してくれる`
