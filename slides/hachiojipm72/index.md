@@ -20,7 +20,9 @@
 
 #### Tcl/Tk + Emacs で簡易IDE作ったり
 
-<video src="img/tcltk_emacs.ogv" controls>
+<video controls autoplay>
+<source src="img/tcltk_emacs.webm" type="video/webm">
+<source src="img/tcltk_emacs.ogv" type="video/ogg">
 再生できるかな？
 </video>
 
