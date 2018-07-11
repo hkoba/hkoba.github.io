@@ -67,10 +67,6 @@ ___
 
 ---
 
-## デモ
-
----
-
 `MyScript.pm` の中身の例 ([ex1](./ex1/MyScript.pm))
 
 ```perl
@@ -97,9 +93,18 @@ unless (caller) {
 
 ---
 
+## デモ
+
+---
+
 ### <small>モジュールを CLI から実行できて</small>嬉しいこと
 
 * 様々な入力パターンを即興で試せる
+```sh
+% ./MyScript.pm x 10 y 100 -- aaaaaaa bbbb
+% ./MyScript.pm x 100 y 30 -- aa bb
+```
+    * Unit Test を書く以前のテスト
     * REPL の弱い言語<small>(ex. perl)</small>では価値が大
 * デバッガで試しやすくなる<small>(ex. perl)</small>
 ```sh
@@ -108,9 +113,14 @@ unless (caller) {
 
 ---
 
-Runnable Module を書き始めると気づくこと
+## 即興で試せる
+# ＝楽
 
-#### `main()` 以外も CLI で気軽に試したい
+---
+
+Runnable Module を書き始めると気づくこと:
+
+### = `main()` 以外も CLI で気軽に試したい
 
 ---
 
@@ -129,44 +139,175 @@ Runnable Module を書き始めると気づくこと
 なら、 **method をサブコマンドに** してしまおう！
 
 ```sh
-% ./MyScript.pm foo
+% ./MyScript2.pm foo
 ```
 
 <small>(ファイル名は補完できるから)</small> 実質 8キー程
 
 ---
 
+直接にマップすると困る method もある (eg. `import`)  
+→ `cmd_XXX` があれば優先させよう([ex2](./ex2/MyScript2.pm))
+
+```perl
+sub cmd_import {...}
+
+unless (caller) {
+  my $self = __PACKAGE__->new(parse_opts(\@ARGV));
+
+  my $cmd = shift || 'help';
+
+  if (my $sub = $self->can("cmd_$cmd")) {
+    $sub->($self, @ARGV);
+
+  } elsif ($sub = $self->can($cmd)) {
+    print Dumper($sub->($self, @ARGV));
+
+  } else {
+    $self->cmd_help("No such command: $cmd");
+
+  }
+}
+```
+
+---
+
+`cmd_XXX` は中で print を呼ぶ
+
+一般の method の結果はシリアライズして出力
+
+```sh
+% ./MyScript2.pm list_dirs_with_mtime . ..
+$VAR1 = {
+          'mtime' => 1531301232,
+          'dir' => '.'
+        };
+$VAR2 = {
+          'mtime' => 1531283508,
+          'dir' => '..'
+        };
+%         
+```
+
+---
+
 デバッガからも method に直行出来て便利
 
 ```sh
-% perl -d ./MyScript.pm foo
+% perl -d ./MyScript2.pm foo
 ```
 
 ---
 
-ならオプションは Object の属性に
+Object の属性はどうする？  
+← posix style long option で渡すことにしよう
+
 
 ```sh
-% ./MyScript.pm --loglevel=3 foo
+% ./MyScript2.pm --loglevel=3 foo
 ```
 
 ---
 
-## デモ
+欲が出る
+
+---
+
+### 属性に構造(hash表や配列)を渡したい
+
+```perl
+my $obj = MyScript2->new(
+  to => ['someone@example.com', 'otherguy@example.com'],
+  dbi => ["dbi:SQLite:dbname=foo.db", '', '', {sqlite_unicode => 1}],
+);
+```
+
+先の仕組みでは CLI から試せない
+
+---
+
+### 構造を期待する method も試したい
+
+```perl
+$obj->list_changed_project(
+  {project_dir => "/var/www/inst1"},
+  {project_dir => "/var/www/inst2"},
+);
+```
+
+これも、先の仕組みでは CLI から試せない
+
+---
+
+構造を CLI から渡したい
+
+けど引数 eval は危うい、使いどころが減る…
+
+---
+
+eval が駄目なら JSON を使えば良いじゃない？？
+
+---
+
+### JSON らしき引数は deserialize しよう！
+
+```sh
+% ./MyScript9.pm --to='["hkoba@cpan.org","foobar@example.com"]' xxx
+```
+
+出力も JSON で出す！
+```sh
+% ./MyScript9.pm list_dirs_with_mtime /var/www/html / | jq .
+[
+  {
+    "dir": "/var/www/html",
+    "mtime": 1525164879
+  },
+  {
+    "dir": "/",
+    "mtime": 1525583450
+  }
+]
+```
+
+---
+
+### JSON-Aware
+### Subcommand-dispatching
+### Runnable Module
+
+# 爆誕
+
+---
+
+というパターンが boilerplate 化してきたので  
+モジュールにまとめました＞
+
+MOP4Import::Base::CLI_JSON
 
 ---
 
 ### よくある誤解
 
-___
+---
 
-### 誤解: CLI アプリを作るための手法？
+### `☓` CLI アプリを作るための手法？
 
-逆。モジュールの開発を楽にするための手法
+↓
+
+### `○` モジュールの開発を楽にするため
 
 * 細部を一つずつ、小さく試せる
 * すぐ結果が見られる
 * 試した部品を積み上げる, ボトムアップ開発の手段
+
+---
+
+### CLI から呼べるけど
+
+* public からの入力を直接渡すためのものではない。
+* あくまで開発支援。
+* public 向けのタフな CLI を作ることは out of scope
 
 ---
 
