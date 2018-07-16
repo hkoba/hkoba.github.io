@@ -1,5 +1,5 @@
 ### 書いて即座に試す
-### Runnable Moduleパターン(仮)
+### Runnable Moduleパターン <b class="kari">(仮)</b>
 
 <img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
 **@hkoba** [hkoba.github.io](http://hkoba.github.io/)
@@ -7,62 +7,69 @@
 
 ---
 
+## 自己紹介 `@hkoba` <img src="img/myfistrect.jpg" style="margin-top: 0px; margin-bottom: 0px; width: 64px; height: 64px">
+
+* <small>(名ばかりの)</small>フリーランス・プログラマー
+  * ⇔主に<a style="padding: 0 .3em;" href="https://www.ssri.com/recruit/opbu/"><img style="box-shadow: none; margin: 0" src="ssri_logo.gif" alt=SSRI></a>さんのお仕事
+  * Perl 書きたいプログラマ、募集中
+
+
+---
+
+## 今日の内容
+
+1. Runnable Moduleパターン<b class="kari">(仮)</b>とは？
+2. どう嬉しいか
+3. もっと便利にするには？
+
+___
+
+元記事
+
 ![hatenablog の記事](hatenablog.png)
 <!-- https://twitter.com/hkoba/status/905367840663814145 -->
 
 
-* https://hkoba.hatenablog.com/entry/2017/09/06/185029
-* https://github.com/hkoba/perl-mop4import-declare/blob/master/intro_runnable_module.pod
+<small>https://hkoba.hatenablog.com/entry/2017/09/06/185029</small>
 
 ___
 
 
 おまけ
 
-https://github.com/hkoba/p5-File-AddInc
-
----
-
-## 内容
-
-* Runnable Moduleパターン(仮)とは？
-* 何に役立つか？
-* もっと便利にするには？
+* https://github.com/hkoba/perl-mop4import-declare/blob/master/intro_runnable_module.pod
+* https://github.com/hkoba/p5-File-AddInc
 
 ---
 
 ### お断り
 
-* このパターンは広い範囲の言語に適用可能
+* 広い範囲の言語に適用可能
 * ただし、今日は Perl で書きます
 
 ---
 
-## Runnable Moduleパターン(仮)<small>とは？</small>
+## Runnable Moduleパターン<b class="kari">(仮)</b><small>とは？</small>
 
-* `モジュール` として利用できる
+---
+
+#### Runnable Moduleパターン<b class="kari">(仮)</b><small>とは？</small>
+
+<small>(一つのプログラムファイルを)</small>
+
+* _**モジュール**_ として利用できる
 ```sh
 # モジュールとしてロードして new し、メソッド foo() を呼ぶ
 % perl -I. -MMyScript -le 'print MyScript->new->foo'
 ```
-* かつ、CLI から `コマンド` として実行もできる
+* かつ、CLI から _**コマンド**_ として実行もできる
 ```sh
 # コマンドとして起動、 MyScript->new(x=>100,y=>100)->main('foo','bar')を呼ぶ
 % ./MyScript.pm x 100 y 100 -- foo bar
 ```
 
 
-ようにプログラムを書くこと
-
-___
-
-## Runnable Moduleパターン(仮)<small>とは？</small>
-
-* 昔からある
-   * Perl 界隈では modulino という呼び名が提唱されている(Brian d foy, 2004).
-   * ただし hkoba の記憶ではもっと以前から存在。
-   * hkoba は仮に Runnable Module と呼んでいる
-* [Stackoverflowで質問してみた](https://stackoverflow.com/questions/51165434/do-the-if-name-main-like-idioms-have-a-name-of-design-pattern) 範囲では、言語を超えた用語は定まっていなさそう。
+ように書くこと
 
 
 ---
@@ -93,7 +100,48 @@ unless (caller) {
 
 ---
 
-## デモ
+## <b class="kari">(仮)</b><small>？</small>
+
+* 昔からある
+   * Perl 界隈では **modulino** という呼び名が提唱されている(Brian d foy, 2004).
+   * ただし hkoba の記憶では **1990年代** から存在。
+   * Perl に限った概念でもない
+   * ∴hkoba は<b class="kari">仮に</b> Runnable Module と呼んでいる
+
+---
+
+Stackoverflowで質問してみた
+
+<a href="https://stackoverflow.com/questions/51165434/do-the-if-name-main-like-idioms-have-a-name-of-design-pattern
+"><img src="stackoverflow.png" height=300></a>
+
+<small>
+https://stackoverflow.com/questions/51165434/do-the-if-name-main-like-idioms-have-a-name-of-design-pattern
+</small>
+
+→言語を超えた用語は定まっていなさそう。
+
+
+---
+
+## 2. どう嬉しいか
+
+---
+
+### MyScript.pm
+
+
+* _**モジュール**_ として利用できる
+```sh
+# モジュールとしてロードして new し、メソッド foo() を呼ぶ
+% perl -I. -MMyScript -le 'print MyScript->new->foo'
+```
+* かつ、CLI から _**コマンド**_ として実行もできる
+```sh
+# コマンドとして起動、 MyScript->new(x=>100,y=>100)->main('foo','bar')を呼ぶ
+% ./MyScript.pm x 100 y 100 -- foo bar
+```
+
 
 ---
 
@@ -118,6 +166,10 @@ unless (caller) {
 
 ---
 
+## 3. もっと便利にするには？
+
+---
+
 Runnable Module を書き始めると気づくこと:
 
 ### = `main()` 以外も CLI で気軽に試したい
@@ -130,7 +182,7 @@ Runnable Module を書き始めると気づくこと:
 % perl -I. -MMyScript -le 'print MyScript->new->foo'
 ```
 
-`50 文字`
+**50 文字**
 
 長い、ダルい
 
