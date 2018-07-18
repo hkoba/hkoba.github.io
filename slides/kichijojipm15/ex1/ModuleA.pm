@@ -18,7 +18,7 @@ sub as_string {
   join(" ", map {"$_:$self->{$_}"} sort keys %$self)
 }
 
-sub count_pairs {
+sub sum_pairs {
   my ($self, @pairList) = @_;
   foreach my $pair (@pairList) {
     my ($k, $v) = @$pair;
@@ -37,7 +37,7 @@ sub main {
 
   my $obj = $class->new;
 
-  $obj->count_pairs(pairs @args);
+  $obj->sum_pairs(pairs @args);
 
   print $obj->as_string, "\n";
 

@@ -39,7 +39,7 @@
 
 /*************************************************/
 
-.reveal .left-align h3 {
+.reveal .left-align h3, .reveal .left-align h4, .reveal .left-align p {
     text-align: left;
 }
 

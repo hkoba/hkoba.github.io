@@ -63,19 +63,23 @@ ___
 
 ---
 
+<!-- .slide: class="left-align" -->
+
 #### Runnable Moduleパターン<b class="kari">(仮)</b><small>とは？</small>
 
 <small>(一つのプログラムファイルを)</small>
 
-* _**モジュール**_ として利用できる
+#### _**モジュール**_ として利用できる
 ```perl
 use ModuleA;
 my $obj = ModuleA->new;
-$obj->count_pairs([x => 3], [y => 8], [x => 1]);
+
+$obj->sum_pairs([x => 3], [y => 8], [x => 1]);
 print $obj->as_string, "\n";
 # => x:4 y:8
 ```
-* かつ、CLI から _**コマンド**_ として実行もできる
+
+#### かつ、CLI から _**コマンド**_ として実行もできる
 ```sh
 % ./ModuleA.pm x 3 y 8 x 1
 # => x:4 y:8
@@ -141,18 +145,23 @@ https://stackoverflow.com/questions/51165434/do-the-if-name-main-like-idioms-hav
 
 ---
 
-### ModuleA.pm (再掲)
 
 
-* _**モジュール**_ として利用できる
+<!-- .slide: class="left-align" -->
+
+#### ModuleA.pm <small>(再掲 [ex1](./ex1/ModuleA.pm))</small>
+
+#### _**モジュール**_ として利用できる
 ```perl
 use ModuleA;
 my $obj = ModuleA->new;
-$obj->count_pairs([x => 3], [y => 8], [x => 1]);
+
+$obj->sum_pairs([x => 3], [y => 8], [x => 1]);
 print $obj->as_string, "\n";
 # => x:4 y:8
 ```
-* かつ、CLI から _**コマンド**_ として実行もできる
+
+#### かつ、CLI から _**コマンド**_ として実行もできる
 ```sh
 % ./ModuleA.pm x 3 y 8 x 1
 # => x:4 y:8
