@@ -16,6 +16,8 @@
 
 ---
 
+<!-- .slide: class="sparse-list" -->
+
 ## 今日の内容
 
 1. Runnable Moduleパターン<b class="kari">(仮)</b>とは？
@@ -69,11 +71,14 @@ ___
 ```perl
 use ModuleA;
 my $obj = ModuleA->new;
-$obj->foo;
+$obj->count_pairs([x => 3], [y => 8], [x => 1]);
+print $obj->as_string, "\n";
+# => x:4 y:8
 ```
 * かつ、CLI から _**コマンド**_ として実行もできる
 ```sh
-% ./ModuleA.pm x 100 y 100 -- foo bar
+% ./ModuleA.pm x 3 y 8 x 1
+# => x:4 y:8
 ```
 
 
@@ -93,29 +98,10 @@ unless (caller) {
 
   # コマンドとして起動した時の処理
 
-  ModuleA->main()
+  ModuleA->main(@ARGV)
 }
 
 1
-```
-
-___
-
-コマンドとして起動した時の処理(例)
-
-```perl
-unless (caller) {
-
-   # 超手抜き。 '--' が出るまでを new の引数に、残りを main の引数にする
-
-   my @opts;
-   while (@ARGV) {
-     last if (my $o = shift) eq '--';
-     push @opts, $o;
-   }
-   my $app = __PACKAGE__->new(@opts);
-   $app->main(@ARGV);
-}
 ```
 
 ---
@@ -162,16 +148,15 @@ https://stackoverflow.com/questions/51165434/do-the-if-name-main-like-idioms-hav
 ```perl
 use ModuleA;
 my $obj = ModuleA->new;
-$obj->foo;
+$obj->count_pairs([x => 3], [y => 8], [x => 1]);
+print $obj->as_string, "\n";
+# => x:4 y:8
 ```
 * かつ、CLI から _**コマンド**_ として実行もできる
 ```sh
-#
-# コマンドとして起動、 ModuleA->new(x=>100,y=>100)->main('foo','bar')を呼ぶ
-#
-% ./ModuleA.pm x 100 y 100 -- foo bar
+% ./ModuleA.pm x 3 y 8 x 1
+# => x:4 y:8
 ```
-
 
 ---
 

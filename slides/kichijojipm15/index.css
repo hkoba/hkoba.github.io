@@ -43,3 +43,6 @@
     text-align: left;
 }
 
+.reveal .sparse-list li {
+    margin-top: .7em;
+}

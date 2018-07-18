@@ -1,41 +1,52 @@
 #!/usr/bin/env perl
-package MyScript;
+package ModuleA;
 use strict;
 use warnings;
+use List::Util qw/pairs sum/;
 
 sub new {
-  my $pack = shift;
-  bless {@_}, $pack;
-}
-
-sub emit_tsv { shift; print join("\t", map {($_ // '') =~ s/[\t\n]/ /gr} @_), "\n"; }
-
-sub main {
-  my ($self, @args) = @_;
-  my @header = sort keys %$self;
-  $self->emit_tsv(@header);
-  foreach my $row (@args) {
-    $self->emit_tsv(map {
-      substr($row, 0, $self->{$header[$_]});
-    } 0 .. $#header);
-  }
+  my $class = shift;
+  bless {}, $class;
 }
 
 sub foo {
   'なにか'
 }
 
+sub as_string {
+  my ($self) = @_;
+  join(" ", map {"$_:$self->{$_}"} sort keys %$self)
+}
+
+sub count_pairs {
+  my ($self, @pairList) = @_;
+  foreach my $pair (@pairList) {
+    my ($k, $v) = @$pair;
+    $self->{$k} += $v;
+  }
+  $self;
+}
+
+sub total {
+  my ($self) = @_;
+  sum(values %$self);
+}
+
+sub main {
+  my ($class, @args) = @_;
+
+  my $obj = $class->new;
+
+  $obj->count_pairs(pairs @args);
+
+  print $obj->as_string, "\n";
+
+}
+
 unless (caller) {
-   # 超手抜き。 '--' が出るまでを new の引数に、残りを main の引数にする
 
-   my @opts;
-   while (@ARGV) {
-     last if (my $o = shift) eq '--';
-     push @opts, $o;
-   }
+  __PACKAGE__->main(@ARGV);
 
-   my $app = __PACKAGE__->new(@opts);
-   $app->main(@ARGV);
 }
 
 1;
