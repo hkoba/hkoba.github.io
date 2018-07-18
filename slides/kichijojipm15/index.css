@@ -36,3 +36,10 @@
 .reveal li.cursive {
     font-family: cursive;
 }
+
+/*************************************************/
+
+.reveal .left-align h3 {
+    text-align: left;
+}
+

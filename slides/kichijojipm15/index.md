@@ -19,9 +19,8 @@
 ## 今日の内容
 
 1. Runnable Moduleパターン<b class="kari">(仮)</b>とは？
-2. 何が嬉しいか
-3. もっと応用を広げるには？
-    * <small>サブコマンド, JSON引数...</small>
+2. サブコマンドと組み合わせるとどう嬉しいか
+3. Live Coding？
 
 ___
 
@@ -88,9 +87,23 @@ $obj->foo;
 ```perl
 #!/usr/bin/env perl
 package ModuleA;
-use strict; use warnings;
 ...
 
+unless (caller) {
+
+  # コマンドとして起動した時の処理
+
+  ModuleA->main()
+}
+
+1
+```
+
+___
+
+コマンドとして起動した時の処理(例)
+
+```perl
 unless (caller) {
 
    # 超手抜き。 '--' が出るまでを new の引数に、残りを main の引数にする
@@ -103,19 +116,16 @@ unless (caller) {
    my $app = __PACKAGE__->new(@opts);
    $app->main(@ARGV);
 }
-
-1;
 ```
 
 ---
 
 ## <b class="kari">(仮)</b><small>？</small>
 
-* 昔からある
+* 昔から存在
    * Perl 界隈では **modulino** という呼び名が提唱されている(Brian d foy, 2004).
-   * ただし hkoba の記憶では **1990年代** から存在。
-   * Perl に限った概念でもない
-   * ∴hkoba は<b class="kari">仮に</b> Runnable Module と呼んでいる
+       * <small>ただし hkoba の記憶では **1990年代** から存在</small>
+* Perl に限らない、一般的な概念
 
 ---
 
@@ -130,10 +140,18 @@ https://stackoverflow.com/questions/51165434/do-the-if-name-main-like-idioms-hav
 
 →言語を超えた用語は定まっていなさそう。
 
+---
+
+なので
+
+### <b class="kari">仮に</b> Runnable Module
+
+と呼ぶことにします
 
 ---
 
-## 2. 何が嬉しいか
+### 2. サブコマンドと組み合わせると
+### どう嬉しいか
 
 ---
 
@@ -359,11 +377,13 @@ MOP4Import::Base::CLI_JSON
 
 ---
 
-### `☓` CLI アプリを作るための手法？
+<!-- .slide: class="left-align" -->
 
-↓
+### **☓** CLI アプリを作るための手法？
 
-### `○` モジュールの開発を楽にするため
+↓<!-- .element: style="text-align: center;" -->
+
+### **○** モジュールを早く試すための手法
 
 * 細部を一つずつ、小さく試せる
 * すぐ結果が見られる
