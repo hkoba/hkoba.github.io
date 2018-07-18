@@ -19,8 +19,9 @@
 ## 今日の内容
 
 1. Runnable Moduleパターン<b class="kari">(仮)</b>とは？
-2. どう嬉しいか
-3. もっと便利にするには？
+2. 何が嬉しいか
+3. もっと応用を広げるには？
+    * <small>サブコマンド, JSON引数...</small>
 
 ___
 
@@ -47,6 +48,14 @@ ___
 * 広い範囲の言語に適用可能
 * ただし、今日は Perl で書きます
 
+___
+
+#### 適用可能な条件
+
+* モジュールが有る<small>(当然)</small>
+* `#!` などを用いて、スクリプトを直接実行できる
+* モジュールとして呼び出した時と、スクリプトとして呼び出した時の、挙動を変えることが出来る
+
 ---
 
 ## Runnable Moduleパターン<b class="kari">(仮)</b><small>とは？</small>
@@ -58,14 +67,14 @@ ___
 <small>(一つのプログラムファイルを)</small>
 
 * _**モジュール**_ として利用できる
-```sh
-# モジュールとしてロードして new し、メソッド foo() を呼ぶ
-% perl -I. -MMyScript -le 'print MyScript->new->foo'
+```perl
+use ModuleA;
+my $obj = ModuleA->new;
+$obj->foo;
 ```
 * かつ、CLI から _**コマンド**_ として実行もできる
 ```sh
-# コマンドとして起動、 MyScript->new(x=>100,y=>100)->main('foo','bar')を呼ぶ
-% ./MyScript.pm x 100 y 100 -- foo bar
+% ./ModuleA.pm x 100 y 100 -- foo bar
 ```
 
 
@@ -74,11 +83,11 @@ ___
 
 ---
 
-`MyScript.pm` の中身の例 ([ex1](./ex1/MyScript.pm))
+`ModuleA.pm` の中身の例 ([ex1](./ex1/ModuleA.pm))
 
 ```perl
 #!/usr/bin/env perl
-package MyScript;
+package ModuleA;
 use strict; use warnings;
 ...
 
@@ -124,22 +133,25 @@ https://stackoverflow.com/questions/51165434/do-the-if-name-main-like-idioms-hav
 
 ---
 
-## 2. どう嬉しいか
+## 2. 何が嬉しいか
 
 ---
 
-### MyScript.pm
+### ModuleA.pm (再掲)
 
 
 * _**モジュール**_ として利用できる
-```sh
-# モジュールとしてロードして new し、メソッド foo() を呼ぶ
-% perl -I. -MMyScript -le 'print MyScript->new->foo'
+```perl
+use ModuleA;
+my $obj = ModuleA->new;
+$obj->foo;
 ```
 * かつ、CLI から _**コマンド**_ として実行もできる
 ```sh
-# コマンドとして起動、 MyScript->new(x=>100,y=>100)->main('foo','bar')を呼ぶ
-% ./MyScript.pm x 100 y 100 -- foo bar
+#
+# コマンドとして起動、 ModuleA->new(x=>100,y=>100)->main('foo','bar')を呼ぶ
+#
+% ./ModuleA.pm x 100 y 100 -- foo bar
 ```
 
 
@@ -149,15 +161,19 @@ https://stackoverflow.com/questions/51165434/do-the-if-name-main-like-idioms-hav
 
 * 様々な入力パターンを即興で試せる
 ```sh
-% ./MyScript.pm x 10 y 100 -- aaaaaaa bbbb
-% ./MyScript.pm x 100 y 30 -- aa bb
+% ./ModuleA.pm x 10 y 100 -- aaaaaaa bbbb
+% ./ModuleA.pm x 100 y 30 -- aa bb
 ```
     * Unit Test を書く以前のテスト
     * REPL の弱い言語<small>(ex. perl)</small>では価値が大
 * デバッガで試しやすくなる<small>(ex. perl)</small>
 ```sh
-% perl -d ./MyScript.pm x 100 y 100 -- foo bar
+% perl -d ./ModuleA.pm x 100 y 100 -- foo bar
 ```
+
+---
+
+* プロファイラなども呼びやすくなる
 
 ---
 
@@ -179,7 +195,7 @@ Runnable Module を書き始めると気づくこと:
 例: foo() を試すための打鍵数
 
 ```sh
-% perl -I. -MMyScript -le 'print MyScript->new->foo'
+% perl -I. -MModuleA -le 'print ModuleA->new->foo'
 ```
 
 **50 文字**
@@ -191,7 +207,7 @@ Runnable Module を書き始めると気づくこと:
 なら、 **method をサブコマンドに** してしまおう！
 
 ```sh
-% ./MyScript2.pm foo
+% ./ModuleA2.pm foo
 ```
 
 <small>(ファイル名は補完できるから)</small> 実質 8キー程
