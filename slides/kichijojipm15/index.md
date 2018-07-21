@@ -1,5 +1,6 @@
-### 書いて即座に試す
-### Runnable Moduleパターン <b class="kari">(仮)</b>
+### Runnable Moduleパターン <b class="kari">(仮)</b><small>と</small>
+### サブコマンド<small>を組み合わせると</small>
+#### どう嬉しいか
 
 <img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
 **@hkoba** [hkoba.github.io](http://hkoba.github.io/)
@@ -59,6 +60,7 @@ ___
 
 ---
 
+# 1.
 ## Runnable Moduleパターン<b class="kari">(仮)</b><small>とは？</small>
 
 ---
@@ -74,7 +76,7 @@ ___
 use ModuleA;
 my $obj = ModuleA->new;
 
-$obj->sum_pairs([x => 3], [y => 8], [x => 1]);
+$obj->do_something([x => 3], [y => 8], [x => 1]);
 print $obj->as_string, "\n";
 # => x:4 y:8
 ```
@@ -110,12 +112,13 @@ unless (caller) {
 
 ---
 
-## <b class="kari">(仮)</b><small>？</small>
+## <small>この用語は</small><b class="kari">(仮)</b>
 
 * 昔から存在
-   * Perl 界隈では **modulino** という呼び名が提唱されている(Brian d foy, 2004).
+   * Perl 界隈では **modulino** という呼び名が提唱されている([brian d foy, 2004](http://www.drdobbs.com/scripts-as-modules/184416165)).
        * <small>ただし hkoba の記憶では **1990年代** から存在</small>
-* Perl に限らない、一般的な概念
+* 特定の言語に縛られない、一般的な概念
+    * ←用語はあるのか？
 
 ---
 
@@ -132,19 +135,48 @@ https://stackoverflow.com/questions/51165434/do-the-if-name-main-like-idioms-hav
 
 ---
 
-なので
+∴このスライドでは
 
-### <b class="kari">仮に</b> Runnable Module
+### Runnable Module パターン<b class="kari">(仮)</b>
+#### <small>又は単に Runnable Module</small>
 
 と呼ぶことにします
 
 ---
 
-### 2. サブコマンドと組み合わせると
+# 2.
+### サブコマンドと組み合わせると
 ### どう嬉しいか
 
 ---
 
+### サブコマンドとは
+
+```sh
+% git add -u
+% git commit -m init
+```
+
+↑ `add` , `commit` ... 等
+
+
+```sh
+% ./myscript.pl  サブコマンド名  本当の引数...
+```
+
+CLI の呼び出し仕様スタイルの一つ
+
+
+---
+
+その前に
+
+サブコマンド無しの
+
+### 素の Runnable Module
+#### でも、十分嬉しいこと
+
+---
 
 
 <!-- .slide: class="left-align" -->
@@ -156,7 +188,7 @@ https://stackoverflow.com/questions/51165434/do-the-if-name-main-like-idioms-hav
 use ModuleA;
 my $obj = ModuleA->new;
 
-$obj->sum_pairs([x => 3], [y => 8], [x => 1]);
+$obj->do_something([x => 3], [y => 8], [x => 1]);
 print $obj->as_string, "\n";
 # => x:4 y:8
 ```
@@ -173,34 +205,31 @@ print $obj->as_string, "\n";
 
 * 様々な入力パターンを即興で試せる
 ```sh
-% ./ModuleA.pm x 10 y 100 -- aaaaaaa bbbb
-% ./ModuleA.pm x 100 y 30 -- aa bb
+% ./ModuleA.pm foo 3 foo 0 foo 3
+% ./ModuleA.pm xx 3 -- 5 -- 8 xx 2
 ```
     * Unit Test を書く以前のテスト
     * REPL の弱い言語<small>(ex. perl)</small>では価値が大
+
+---
+
+### <small>モジュールを CLI から実行できて</small>嬉しいこと
+
+
 * デバッガで試しやすくなる<small>(ex. perl)</small>
 ```sh
-% perl -d ./ModuleA.pm x 100 y 100 -- foo bar
+% perl -d ./ModuleA.pm x 100 y 100 x -300
+```
+* プロファイラなども呼びやすくなる
+```sh
+% perl -d:NYTProf ./ModuleA.pm x 100 y 100 x -300
 ```
 
 ---
 
-* プロファイラなども呼びやすくなる
+#### 不満：
 
----
-
-## 即興で試せる
-# ＝楽
-
----
-
-## 3. もっと便利にするには？
-
----
-
-Runnable Module を書き始めると気づくこと:
-
-### = `main()` 以外も CLI で気軽に試したい
+### 楽に試せるのは `main()` だけ
 
 ---
 
@@ -216,7 +245,7 @@ Runnable Module を書き始めると気づくこと:
 
 ---
 
-なら、 **method をサブコマンドに** してしまおう！
+なら、 **サブコマンド** で **任意のメソッド** を呼べたら
 
 ```sh
 % ./ModuleA2.pm foo
