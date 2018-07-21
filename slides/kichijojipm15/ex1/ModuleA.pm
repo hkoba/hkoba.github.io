@@ -2,11 +2,12 @@
 package ModuleA;
 use strict;
 use warnings;
-use List::Util qw/pairs sum/;
+use fields qw/rowList columnList columnDict/;
+sub MY () {__PACKAGE__}
 
 sub new {
   my $class = shift;
-  bless {}, $class;
+  bless {rowList => [], columnList => [], columnDict => +{}}, $class;
 }
 
 sub foo {
@@ -14,22 +15,37 @@ sub foo {
 }
 
 sub as_string {
-  my ($self) = @_;
-  join(" ", map {"$_:$self->{$_}"} sort keys %$self)
+  (my MY $self) = @_;
+  join("\n", join("\t", '#' => @{$self->{columnList}}), map {
+    join("\t", map {$_ // ''} @$_);
+  } @{$self->{rowList}});
 }
 
 sub do_something {
-  my ($self, @pairList) = @_;
-  foreach my $pair (@pairList) {
-    my ($k, $v) = @$pair;
-    $self->{$k} += $v;
+  (my MY $self, my @records) = @_;
+  foreach my $rec (@records) {
+    my ($id, $colName, $value) = @$rec;
+    if (not @{$self->{rowList}} or $self->{rowList}[-1][0] ne $id) {
+      push @{$self->{rowList}}, [$id];
+    }
+    $self->{rowList}[-1][$self->intern_column($colName)] = $value
   }
   $self;
 }
 
-sub total {
-  my ($self) = @_;
-  sum(values %$self);
+sub intern_column {
+  (my MY $self, my $colName) = @_;
+  $self->{columnDict}{$colName} // do {
+    push @{$self->{columnList}}, $colName;
+    $self->{columnDict}{$colName} = @{$self->{columnList}};
+  };
+}
+
+sub parse_args {
+  shift;
+  map {
+    [split /[:=,]/, $_, -1]
+  } @_;
 }
 
 sub main {
@@ -37,7 +53,7 @@ sub main {
 
   my $obj = $class->new;
 
-  $obj->do_something(pairs @args);
+  $obj->do_something($class->parse_args(@args));
 
   print $obj->as_string, "\n";
 

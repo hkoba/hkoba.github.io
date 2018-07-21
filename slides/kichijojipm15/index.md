@@ -76,17 +76,14 @@ ___
 use ModuleA;
 my $obj = ModuleA->new;
 
-$obj->do_something([x => 3], [y => 8], [x => 1]);
+$obj->do_something([1, x => 3], [1, y => 8], [1, z => 3], [2, z => 1], [2, x => 1]);
 print $obj->as_string, "\n";
-# => x:4 y:8
 ```
 
 #### かつ、CLI から _**コマンド**_ として実行もできる
 ```sh
-% ./ModuleA.pm x 3 y 8 x 1
-# => x:4 y:8
+% ./ModuleA.pm 1:x:3 1:y:8 1:z:3 2:x:1 2:y:2
 ```
-
 
 ように書くこと
 
@@ -117,7 +114,7 @@ unless (caller) {
 * 昔から存在
    * Perl 界隈では **modulino** という呼び名が提唱されている([brian d foy, 2004](http://www.drdobbs.com/scripts-as-modules/184416165)).
        * <small>ただし hkoba の記憶では **1990年代** から存在</small>
-* 特定の言語に縛られない、一般的な概念
+* 特定の言語に縛られない、 **一般的な概念**
     * ←用語はあるのか？
 
 ---
@@ -157,7 +154,7 @@ https://stackoverflow.com/questions/51165434/do-the-if-name-main-like-idioms-hav
 % git commit -m init
 ```
 
-↑ `add` , `commit` ... 等
+↑ `add` , `commit` ... 等、操作の名前を引数として渡す、
 
 
 ```sh
@@ -188,15 +185,13 @@ CLI の呼び出し仕様スタイルの一つ
 use ModuleA;
 my $obj = ModuleA->new;
 
-$obj->do_something([x => 3], [y => 8], [x => 1]);
+$obj->do_something([1, x => 3], [1, y => 8], [1, z => 3], [2, z => 1], [2, x => 1]);
 print $obj->as_string, "\n";
-# => x:4 y:8
 ```
 
 #### かつ、CLI から _**コマンド**_ として実行もできる
 ```sh
-% ./ModuleA.pm x 3 y 8 x 1
-# => x:4 y:8
+% ./ModuleA.pm 1:x:3 1:y:8 1:z:3 2:x:1 2:y:2
 ```
 
 ---
@@ -205,8 +200,8 @@ print $obj->as_string, "\n";
 
 * 様々な入力パターンを即興で試せる
 ```sh
-% ./ModuleA.pm foo 3 foo 0 foo 3
-% ./ModuleA.pm xx 3 -- 5 -- 8 xx 2
+% ./ModuleA.pm ::
+% ./ModuleA.pm foo:bar:3 :x:3
 ```
     * Unit Test を書く以前のテスト
     * REPL の弱い言語<small>(ex. perl)</small>では価値が大
@@ -218,18 +213,24 @@ print $obj->as_string, "\n";
 
 * デバッガで試しやすくなる<small>(ex. perl)</small>
 ```sh
-% perl -d ./ModuleA.pm x 100 y 100 x -300
+% perl -d ./ModuleA.pm 1:x:3 1:y:8 1:z:3 2:x:1 2:y:2
 ```
 * プロファイラなども呼びやすくなる
 ```sh
-% perl -d:NYTProf ./ModuleA.pm x 100 y 100 x -300
+% perl -d:NYTProf ./ModuleA.pm foo:bar:3 :x:3
 ```
 
 ---
 
-#### 不満：
+### 残る不満
+
+---
+
+#### 残る不満：
 
 ### 楽に試せるのは `main()` だけ
+
+<small>他のメソッド試したい時は…</small>
 
 ---
 
@@ -245,7 +246,14 @@ print $obj->as_string, "\n";
 
 ---
 
-なら、 **サブコマンド** で **任意のメソッド** を呼べたら
+# サブコマンド
+
+で呼べたら、楽じゃね？
+
+
+---
+
+**サブコマンド** で **任意のメソッド** を呼べたら
 
 ```sh
 % ./ModuleA2.pm foo
