@@ -50,7 +50,7 @@
 
 1. Runnable Moduleパターン<b class="kari">(仮)</b>とは？
 2. サブコマンドと組み合わせるとどう嬉しいか
-3. Live Coding？
+3. 更なる深みへ…
 </script>
 </section>
 <section data-markdown>
@@ -125,7 +125,7 @@ print $obj->as_string, "\n";
 </section>
 <section data-markdown>
 <script type='text/template'>
-`ModuleA.pm` の中身の例 ([ex1](./ex1/ModuleA.pm))
+ファイルの抜粋 ([ex1 - ModuleA.pm](./ex1/ModuleA.pm))
 
 ```perl
 #!/usr/bin/env perl
@@ -239,7 +239,7 @@ print $obj->as_string, "\n";
 <script type='text/template'>
 ### <small>モジュールを CLI から実行できて</small>嬉しいこと
 
-* 様々な入力パターンを即興で試せる
+* 様々な入力パターンを **即興で** 試せる
 ```sh
 % ./ModuleA.pm ::
 % ./ModuleA.pm foo:bar:3 :x:3
@@ -265,6 +265,15 @@ print $obj->as_string, "\n";
 </section>
 <section data-markdown>
 <script type='text/template'>
+<small>つまり、Runnable Module で嬉しいのは</small>
+
+## 開発の補助
+
+<small>の側面が大</small>
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
 ### 残る不満
 </script>
 </section>
@@ -272,9 +281,9 @@ print $obj->as_string, "\n";
 <script type='text/template'>
 #### 残る不満：
 
-### 楽に試せるのは `main()` だけ
+### 即座に試せるのは `main()` だけ
 
-<small>他のメソッド試したい時は…</small>
+<small>他のメソッドを試したい時は…</small>
 </script>
 </section>
 <section data-markdown>
@@ -288,13 +297,19 @@ print $obj->as_string, "\n";
 **50 文字**
 
 長い、ダルい
+
+<small>Dumper 呼んだら更に長い</small>
+
+```sh
+% perl -I. -MModuleA -le 'use Data::Dumper; print Dumper(ModuleA->new->foo)'
+```
 </script>
 </section>
 <section data-markdown>
 <script type='text/template'>
-# サブコマンド
+そこで！
 
-で呼べたら、楽じゃね？
+## サブコマンド
 </script>
 </section>
 <section data-markdown>
@@ -302,7 +317,7 @@ print $obj->as_string, "\n";
 **サブコマンド** で **任意のメソッド** を呼べたら
 
 ```sh
-% ./ModuleA2.pm foo
+% ./ModuleA.pm foo
 ```
 
 <small>(ファイル名は補完できるから)</small> 実質 8キー程
@@ -310,25 +325,120 @@ print $obj->as_string, "\n";
 </section>
 <section data-markdown>
 <script type='text/template'>
-直接にマップすると困る method もある (eg. `import`)  
-→ `cmd_XXX` があれば優先させよう([ex2](./ex2/MyScript2.pm))
+コード例 [ex2 - ModuleB.pm](./ex2/ModuleB.pm)
 
 ```perl
-sub cmd_import {...}
-
 unless (caller) {
-  my $self = __PACKAGE__->new(parse_opts(\@ARGV));
+  my $obj = __PACKAGE__->new;
+
+  my $method = shift @ARGV; # XXX: 手抜き
+
+  my $res = [$obj->$method(@ARGV)];
+
+  print Data::Dumper->new([$res])->Terse(1)->Indent(0)->Dump, "\n";
+}
+```
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+実行結果
+
+```sh
+% ./ModuleB.pm foo
+['なにか']
+% ./ModuleB.pm parse_args 1:x:3 1:y:8 1:z:3 2:x:1 2:y:2
+[['1','x','3'],['1','y','8'],['1','z','3'],['2','x','1'],['2','y','2']]
+```
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+いいぞ！
+
+じゃぁ本来の処理！
+
+```sh
+% ./ModuleB.pm do_something 1:x:3 1:y:8 1:z:3 2:x:1 2:y:2
+Can't use string ("1:x:3") as an ARRAY ref while "strict refs" in use at ./ex2/ModuleB.pm line 29.
+```
+
+…残念…
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+<!-- .slide: class="sparse-list" -->
+
+<small>ここでは `do_something()` を CLI からサブコマンドとして使う場合は、本当は</small>
+
+* 引数を `parse_args()` し
+* `do_something()` を呼び
+* 出力は `$self->as_string`
+
+<small>にしたかった</small>
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+<!-- .slide: class="sparse-list" -->
+
+<small>これに限らず</small>
+CLIコマンドには **コマンド毎の事情** が有る
+
+* 引数・オプションをどう扱いたいか？
+* 出力フォーマットは？
+* `exit 0` or `exit 1`
+
+デフォルトの実装で全てカバーすることは不可能
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+<!-- .slide: class="sparse-list" -->
+
+<small>→そこで</small>
+
+サブコマンドとメソッドの対応付けを
+
+2種類に分ける
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+サブコマンド `FOO` が与えられた時：
+
+* `cmd_FOO` メソッドがある
+    * →  cmd_FOO 側で
+* `FOO` メソッドがある
+    * 呼び出し側で
+
+引数・出力・終了コードを処理する
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+[ex3 - ModuleC.pm](./ex3/ModuleC.pm)
+
+```perl
+unless (caller) {
+  my $obj = __PACKAGE__->new;
 
   my $cmd = shift || 'help';
 
-  if (my $sub = $self->can("cmd_$cmd")) {
-    $sub->($self, @ARGV);
+  if (my $sub = $obj->can("cmd_$cmd")) {
+    # cmd_FOO があるので、後は任せる
+    $sub->($obj, @ARGV);
 
-  } elsif ($sub = $self->can($cmd)) {
-    print Dumper($sub->($self, @ARGV));
+  } elsif ($sub = $obj->can($cmd)) {
+    # 一般の任意のメソッドを試すケース
+    my $res = [$sub->($obj, @ARGV)];
+
+    # 呼び出し側で、デフォルトのシリアライザを通して出力
+    print Data::Dumper->new([$res])->Terse(1)->Indent(0)->Dump, "\n";
 
   } else {
-    $self->cmd_help("No such command: $cmd");
+    $obj->cmd_help("No such command: $cmd");
 
   }
 }
@@ -337,31 +447,57 @@ unless (caller) {
 </section>
 <section data-markdown>
 <script type='text/template'>
-`cmd_XXX` は中で print を呼ぶ
+`cmd_do_something`
 
-一般の method の結果はシリアライズして出力
+```perl
+sub cmd_do_something {
+  my ($self, @args) = @_;
 
-```sh
-% ./MyScript2.pm list_dirs_with_mtime . ..
-$VAR1 = {
-          'mtime' => 1531301232,
-          'dir' => '.'
-        };
-$VAR2 = {
-          'mtime' => 1531283508,
-          'dir' => '..'
-        };
-%         
+  $self->do_something($self->parse_args(@args));
+
+  print $self->as_string, "\n";
+}
 ```
 </script>
 </section>
 <section data-markdown>
 <script type='text/template'>
-デバッガからも method に直行出来て便利
+```sh
+% ./ex3/ModuleC.pm do_something 1:x:3 1:y:8 1:z:3 2:x:1 2:y:2
+#       x       y       z
+1       3       8       3
+2       1       2
+```
+
+望みの出力が得られた！
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+注：<small>任意のメソッドを呼べるとは言ったが</small>
+
+<small>正しく</small>動かせるとは言ってない
 
 ```sh
-% perl -d ./MyScript2.pm foo
+% ./ModuleB.pm new
+Attempt to bless into a reference at ./ex2/ModuleB.pm line 12.
 ```
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+<small>任意メソッドの呼び出しは、あくまで</small>
+
+## 開発の補助
+
+<small>なので</small>
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+# 3.
+
+更なる深みへ…
 </script>
 </section>
 <section data-markdown>
@@ -373,11 +509,6 @@ Object の属性はどうする？
 ```sh
 % ./MyScript2.pm --loglevel=3 foo
 ```
-</script>
-</section>
-<section data-markdown>
-<script type='text/template'>
-欲が出る
 </script>
 </section>
 <section data-markdown>
@@ -412,7 +543,7 @@ $obj->list_changed_project(
 <script type='text/template'>
 構造を CLI から渡したい
 
-けど引数 eval は危うい、使いどころが減る…
+けど **引数 eval** は危うい、使いどころが減る…
 </script>
 </section>
 <section data-markdown>
@@ -446,16 +577,7 @@ eval が駄目なら JSON を使えば良いじゃない？？
 </section>
 <section data-markdown>
 <script type='text/template'>
-### JSON-Aware
-### Subcommand-dispatching
-### Runnable Module
-
-# 爆誕
-</script>
-</section>
-<section data-markdown>
-<script type='text/template'>
-というパターンが boilerplate 化してきたので  
+というパターンが定型化してきたので  
 モジュールにまとめました＞
 
 MOP4Import::Base::CLI_JSON
