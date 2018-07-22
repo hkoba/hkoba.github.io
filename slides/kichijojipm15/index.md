@@ -363,7 +363,7 @@ CLIコマンドには **コマンド毎の事情** が有る
 
 ---
 
-[ex3 - ModuleC.pm](./ex3/ModuleC.pm)
+コード例：[ex3 - ModuleC.pm](./ex3/ModuleC.pm)
 
 ```perl
 unless (caller) {
@@ -418,7 +418,7 @@ sub cmd_do_something {
 
 注：<small>任意のメソッドを呼べるとは言ったが</small>
 
-<small>正しく</small>動かせるとは言ってない
+<small>全てを正しく</small>動かせるとは言ってない
 
 ```sh
 % ./ModuleB.pm new
@@ -441,17 +441,21 @@ Attempt to bless into a reference at ./ex2/ModuleB.pm line 12.
 
 ---
 
-Object の属性はどうする？  
-← posix style long option で渡すことにしよう
+`new()` にも引数を渡したい
 
+```perl
+ my $obj = __PACKAGE__->new(foo => 3, bar => 'abc');
+```
+
+→サブコマンドの前に、 `--NAME=VALUE` で渡せば？
 
 ```sh
-% ./MyScript2.pm --loglevel=3 foo
+% ./MyScript2.pm --foo=3 --bar=abc foo
 ```
 
 ---
 
-### 属性に構造(hash表や配列)を渡したい
+### `new()` に構造(hash表や配列)を渡したい
 
 ```perl
 my $obj = MyScript2->new(
@@ -464,7 +468,7 @@ my $obj = MyScript2->new(
 
 ---
 
-### 構造を期待する method も試したい
+### 引数に構造を渡したい時
 
 ```perl
 $obj->list_changed_project(
@@ -479,11 +483,15 @@ $obj->list_changed_project(
 
 構造を CLI から渡したい
 
-けど **引数 eval** は危うい、使いどころが減る…
+けど **引数 eval** は危うい
+
+<small>使いどころが減る…</small>
 
 ---
 
-eval が駄目なら JSON を使えば良いじゃない？？
+eval が駄目なら
+
+JSON を使えば良いじゃない？？
 
 ---
 
@@ -527,7 +535,7 @@ MOP4Import::Base::CLI_JSON
 
 ↓<!-- .element: style="text-align: center;" -->
 
-### **○** モジュールを早く試すための手法
+### **○** モジュールを早く書くための手法
 
 * 細部を一つずつ、小さく試せる
 * すぐ結果が見られる
@@ -535,21 +543,36 @@ MOP4Import::Base::CLI_JSON
 
 ---
 
-### CLI から呼べるけど
+### 任意メソッドを CLI から呼べるけど
 
-* public からの入力を直接渡すためのものではない。
-* あくまで開発支援。
-* public 向けのタフな CLI を作ることは out of scope
+* それは、あくまで開発支援
+* public からの入力を直接渡すためのものではない
+* public 向けのタフな CLI を作る時は、要考察
 
 ---
 
+<!-- .slide: class="left-align" -->
+
 ### まとめ
 
-Runnable Module
+Runnable Module パターン<b class="kari">(仮)</b><small>と</small>
 
-* `サブコマンド` → `メソッド`
-* `オプション` → `属性`
+サブコマンドからメソッドへの dispatch <small>を組み合わせると</small>
 
-を用意すると捗るよ
+<small>細部を即座に試しながら開発出来るので、</small>楽ですよ
 
-デバッグ・プロトタイピング・探索的開発
+デバッグ・プロトタイピング・探索的開発<small>にどうぞ</small>
+
+---
+
+## FAQ
+
+* REPL が有れば、不要では？
+
+---
+
+### Q. 言語の REPL が有れば、不要では？
+
+* shell 力と、問題次第
+    * <small>ex. 入力が大量のファイル名の場合、zsh の glob で書きたくなる、ならない？</small>
+* CLI を作る手間が省ける面も
