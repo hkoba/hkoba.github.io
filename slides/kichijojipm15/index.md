@@ -107,6 +107,24 @@ unless (caller) {
 1
 ```
 
+___
+
+
+[python](https://stackoverflow.com/questions/419163/what-does-if-name-main-do)
+
+```python
+if __name__ == "__main__":
+    main()
+```
+
+[ruby](https://stackoverflow.com/questions/4687680/what-does-if-file-0-mean-in-ruby)
+
+```ruby
+if __FILE__ == $0
+  main()
+end
+```
+
 ---
 
 ## <small>この用語は</small><b class="kari">(仮)</b>
@@ -573,6 +591,9 @@ Runnable Module パターン<b class="kari">(仮)</b><small>と</small>
 
 ### Q. 言語の REPL が有れば、不要では？
 
+* State-less
+    * ☓ Jupyter みたいなことは難しい<!-- .element: style="list-style-type: none;" -->
+    * ○ 変なバグを入れにくい<!-- .element: style="list-style-type: none;" -->
 * shell 力と、問題次第
     * <small>ex. 入力が大量のファイル名の場合、zsh の glob で書きたくなる、ならない？</small>
 * CLI を作る手間が省ける面も
