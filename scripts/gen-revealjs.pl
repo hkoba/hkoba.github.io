@@ -40,9 +40,15 @@ END
     open STDOUT, '>', $tmpfn;
   }
 
-  if ($o_outfn and -r (my $cssfn = cssfn($o_outfn))) {
+  if ($o_outfn and -r (my $cssfn = extfn($o_outfn, 'css'))) {
     $top =~ s{<style>.*</style>}{<link rel="stylesheet" type="text/css" href="$cssfn">}s
       or die "Can't replace style tag!";
+  }
+
+  if ($o_outfn and -r (my $metafn = extfn($o_outfn, 'meta'))) {
+    my $meta = read_file($metafn);
+    $top =~ s{(?<=<meta charset="utf-8">)\n}{\n$meta}s
+      or die "Can't replace meta!";
   }
 
   local $/;
@@ -86,10 +92,17 @@ sub ensure_nl {
   s/\n*\z/\n/;
 }
 
-sub cssfn {
-  my ($fn) = @_;
-  $fn =~ s/\.\w+$/.css/;
+sub extfn {
+  my ($fn, $ext) = @_;
+  $fn =~ s/\.\w+$/.$ext/;
   $fn;
+}
+
+sub read_file {
+  my ($fn) = @_;
+  open my $fh, '<', $fn;
+  local $/;
+  scalar <$fh>;
 }
 
 __END__
