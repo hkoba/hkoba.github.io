@@ -150,7 +150,7 @@ https://stackoverflow.com/questions/51165434/do-the-if-name-main-like-idioms-hav
 
 ---
 
-∴このスライドでは
+→→→ このスライドでは
 
 ### Runnable Module パターン<b class="kari">(仮)</b>
 #### <small>又は単に Runnable Module</small>
@@ -214,15 +214,26 @@ print $obj->as_string, "\n";
 
 ---
 
-### <small>モジュールを CLI から実行できて</small>嬉しいこと
+### <small>モジュールを CLI から実行できて</small>嬉しいこと:
 
-* 様々な入力パターンを **即興で** 試せる
+様々な入力パターンを **即興で** 試せる
 ```sh
+% ./ModuleA.pm 1:x:3 1:y:8 1:z:3 2:x:1 2:y:2
+#       x       y       z
+1       3       8       3
+2       1       2
 % ./ModuleA.pm ::
+#
+
 % ./ModuleA.pm foo:bar:3 :x:3
+#       bar     x
+foo     3
+                3
+% 
 ```
-    * Unit Test を書く以前のテスト
-    * REPL の弱い言語<small>(ex. perl)</small>では価値が大
+
+* Unit Test を書く以前のテスト
+* REPL の弱い言語<small>(ex. perl)</small>では特に、価値が大
 
 ---
 
@@ -407,9 +418,11 @@ unless (caller) {
 }
 ```
 
+Perl の場合は [UNIVERSAL::can()](https://metacpan.org/pod/UNIVERSAL#obj--can--METHOD) を使用
+
 ---
 
-`cmd_do_something`
+`cmd_do_something` を定義すれば…
 
 ```perl
 sub cmd_do_something {
@@ -424,13 +437,40 @@ sub cmd_do_something {
 ---
 
 ```sh
-% ./ex3/ModuleC.pm do_something 1:x:3 1:y:8 1:z:3 2:x:1 2:y:2
+% ./ModuleC.pm do_something 1:x:3 1:y:8 1:z:3 2:x:1 2:y:2
 #       x       y       z
 1       3       8       3
 2       1       2
 ```
 
 望みの出力が得られた！
+
+---
+
+<small>ところで…</small>
+
+`do_something`
+
+<small>...って何よ?</small>
+
+---
+
+実データですぐ使うから…
+
+```sh
+% ./ModuleC.pm do_something ..
+#                 ↓
+% ./ModuleC.pm generate_report ..
+#                 ↓
+% ./ModuleC.pm report ..
+#     ↓
+% ./ReportGenerator.pm tabulate  ..
+# ↓
+```
+
+ → ドメインに即した **名前** を考える
+
+切っ掛けにもなる
 
 ---
 
@@ -536,14 +576,52 @@ JSON を使えば良いじゃない？？
 
 ---
 
-というパターンが定型化してきたので  
-モジュールにまとめました＞
+#### というパターンが便利なので
 
-MOP4Import::Base::CLI_JSON
+## 皆さんも好きな言語で
+## ご活用下さい〜
+
+Perl で良ければ[こちら↓](https://github.com/hkoba/perl-mop4import-declare/blob/master/Base/CLI_JSON.pod) のコードをどうぞ〜
+
+https://github.com/hkoba/perl-mop4import-declare/blob/master/Base/CLI_JSON.pod
+
+<small>↑継承するだけで使えます</small>
 
 ---
 
-### よくある誤解
+<!-- .slide: class="left-align" -->
+
+### まとめ
+
+Runnable Module パターン<b class="kari">(仮)</b><small>と</small>
+
+サブコマンドからメソッドへの dispatch <small>を組み合わせると</small>
+
+<small>細部を即座に試しながら開発出来るので、</small>楽ですよ
+
+デバッグ・プロトタイピング・探索的開発<small>にどうぞ</small>
+
+---
+
+## FAQ
+
+* REPL が有れば、不要では？
+* CLI アプリを作るための手法？
+
+---
+
+### Q. 言語の REPL が有れば、不要では？
+
+* State-less
+    * ☓ Jupyter みたいなことは難しい<!-- .element: style="list-style-type: none;" -->
+    * ○ 変なバグを入れにくい<!-- .element: style="list-style-type: none;" -->
+* shell 力と、問題次第
+    * <small>ex. 入力が大量のファイル名の場合、zsh の glob で書きたくなる、ならない？</small>
+* CLI を作る手間が省ける面も
+
+---
+
+### Q. CLI アプリを作るための手法？
 
 ---
 
@@ -567,33 +645,3 @@ MOP4Import::Base::CLI_JSON
 * public からの入力を直接渡すためのものではない
 * public 向けのタフな CLI を作る時は、要考察
 
----
-
-<!-- .slide: class="left-align" -->
-
-### まとめ
-
-Runnable Module パターン<b class="kari">(仮)</b><small>と</small>
-
-サブコマンドからメソッドへの dispatch <small>を組み合わせると</small>
-
-<small>細部を即座に試しながら開発出来るので、</small>楽ですよ
-
-デバッグ・プロトタイピング・探索的開発<small>にどうぞ</small>
-
----
-
-## FAQ
-
-* REPL が有れば、不要では？
-
----
-
-### Q. 言語の REPL が有れば、不要では？
-
-* State-less
-    * ☓ Jupyter みたいなことは難しい<!-- .element: style="list-style-type: none;" -->
-    * ○ 変なバグを入れにくい<!-- .element: style="list-style-type: none;" -->
-* shell 力と、問題次第
-    * <small>ex. 入力が大量のファイル名の場合、zsh の glob で書きたくなる、ならない？</small>
-* CLI を作る手間が省ける面も
