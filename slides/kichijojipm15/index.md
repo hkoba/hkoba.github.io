@@ -69,7 +69,7 @@ ___
 
 #### Runnable Moduleパターン<b class="kari">(仮)</b><small>とは？</small>
 
-<small>(一つのプログラムファイルを)</small>
+<small>(一つのプログラムファイル、 例えば _ModuleA.pm_ を)</small>
 
 #### _**モジュール**_ として利用できる
 ```perl
@@ -124,17 +124,17 @@ unless (caller) {
 1
 ```
 
-___
+---
 
 
-[python](https://stackoverflow.com/questions/419163/what-does-if-name-main-do)
+[python なら](https://stackoverflow.com/questions/419163/what-does-if-name-main-do):
 
 ```python
 if __name__ == "__main__":
     main()
 ```
 
-[ruby](https://stackoverflow.com/questions/4687680/what-does-if-file-0-mean-in-ruby)
+[ruby なら](https://stackoverflow.com/questions/4687680/what-does-if-file-0-mean-in-ruby):
 
 ```ruby
 if __FILE__ == $0
@@ -144,13 +144,13 @@ end
 
 ---
 
-## <small>この用語は</small><b class="kari">(仮)</b>
+## <small>定まった用語は無いぽい、ので</small><b class="kari">(仮)</b>
 
 * 昔から存在
    * Perl 界隈では **modulino** という呼び名が提唱されている([brian d foy, 2004](http://www.drdobbs.com/scripts-as-modules/184416165)).
        * <small>ただし hkoba の記憶では **1990年代** から存在</small>
 * 特定の言語に縛られない、 **一般的な、設計パターン**
-    * ←用語はあるのか？
+    * ←言語を超えた用語はあるのか？
 
 ---
 
@@ -365,11 +365,11 @@ Can't use string ("1:x:3") as an ARRAY ref while "strict refs" in use at ./ex2/M
 
 <!-- .slide: class="sparse-list" -->
 
-<small>ここでは `do_something()` を CLI からサブコマンドとして使う場合は、本当は</small>
+<small>本当は</small>
 
-* 引数を `parse_args()` し
-* `do_something()` を呼び
-* 出力は `$self->as_string`
+* CLI の引数を `parse_args()` し
+* <small>↑これを引数として</small> `do_something()` を呼び
+* 出力内容は `$self->as_string`
 
 <small>にしたかった</small>
 
@@ -381,8 +381,8 @@ Can't use string ("1:x:3") as an ARRAY ref while "strict refs" in use at ./ex2/M
 CLIコマンドには **コマンド毎の事情** が有る
 
 * 引数・オプションをどう扱いたいか？
-* 出力フォーマットは？
-* `exit 0` or `exit 1`
+* 出力内容は？ フォーマットは？
+* 最後は `exit 0` する？  `exit 1` する？
 
 デフォルトの実装で全てカバーすることは不可能
 
