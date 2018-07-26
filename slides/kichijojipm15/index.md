@@ -412,10 +412,7 @@ CLIコマンドには **コマンド毎の事情** が有る
 コード例：[ex3 - ModuleC.pm](./ex3/ModuleC.pm)
 
 ```perl
-unless (caller) {
-  my $obj = __PACKAGE__->new;
-
-  my $cmd = shift || 'help';
+  my $cmd = shift @ARGV || 'help';
 
   if (my $sub = $obj->can("cmd_$cmd")) {
     # cmd_FOO があるので、後は任せる
@@ -432,7 +429,6 @@ unless (caller) {
     $obj->cmd_help("No such command: $cmd");
 
   }
-}
 ```
 
 Perl の場合は [UNIVERSAL::can()](https://metacpan.org/pod/UNIVERSAL#obj--can--METHOD) を使用
@@ -593,14 +589,26 @@ JSON を使えば良いじゃない？？
 
 ---
 
+
+<small>もちろん、引数にオブジェクトを渡すことは、これでは出来ないけど</small>
+
+CLI から引数に `[..]` , `{..}` だけでも渡せると、
+
+試せることが増える
+
+
+
+
+---
+
 #### というパターンが便利なので
 
-## 皆さんも好きな言語で
-## ご活用下さい〜
+## 皆さんの好きな言語で
+## お試し下さい〜
 
-Perl で良ければ[こちら↓](https://github.com/hkoba/perl-mop4import-declare/blob/master/Base/CLI_JSON.pod) のコードをどうぞ〜
+Perl で良ければ[こちら↓](https://github.com/hkoba/perl-mop4import-declare/blob/master/Base/CLI_JSON.pm) のコードをどうぞ〜
 
-https://github.com/hkoba/perl-mop4import-declare/blob/master/Base/CLI_JSON.pod
+https://github.com/hkoba/perl-mop4import-declare/blob/master/Base/CLI_JSON.pm
 
 <small>↑継承するだけで使えます</small>
 
