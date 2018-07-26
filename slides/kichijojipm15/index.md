@@ -639,7 +639,7 @@ Runnable Module パターン<b class="kari">(仮)</b><small>と</small>
 
 * State-less
     * ☓ Jupyter みたいなことは難しい<!-- .element: style="list-style-type: none;" -->
-    * ○ 変なバグを入れにくい<!-- .element: style="list-style-type: none;" -->
+    * ○ (REPL で有りがちな)偶然動いてた、がまず無い<!-- .element: style="list-style-type: none;" -->
 * shell 力と、問題次第
     * <small>ex. 入力が大量のファイル名の場合、zsh の glob で書きたくなる、ならない？</small>
 * CLI を作る手間が省ける面も
