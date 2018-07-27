@@ -1,4 +1,5 @@
 GENERATOR := ../../scripts/gen-revealjs.pl
+GEN_META  := ../../scripts/OpenGraphMeta.pm og_tsv_to_meta
 
 HTMLS := $(patsubst %.md,%.html,$(wildcard *.md))
 
@@ -9,3 +10,6 @@ loop:
 
 %.html: %.md
 	$(GENERATOR) -r -o $@ $^
+
+%.meta: %.og.tsv
+	$(GEN_META) $^ > $@
