@@ -6,6 +6,22 @@ use autodie;
 
 use MOP4Import::Base::CLI_JSON -as_base;
 
+sub ogdict_to_meta {
+  (my MY $self, my $ogDict) = @_;
+  map {
+    my $key = /^og:/ ? "property" : "name";
+    $self->make_meta($key, $_, $ogDict->{$_});
+  } sort keys %$ogDict;
+}
+
+sub make_meta {
+  (my MY $self, my ($nameKey, $name, $value)) = @_;
+  # XXX: escape!
+  <<END;
+<meta $nameKey="$name" content="$value">
+END
+}
+
 sub add_twitter_card {
   (my MY $self, my $ogDict) = @_;
   $ogDict->{'twitter:card'} ||= 'summary';
