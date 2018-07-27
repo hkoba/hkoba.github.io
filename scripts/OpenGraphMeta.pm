@@ -6,6 +6,12 @@ use autodie;
 
 use MOP4Import::Base::CLI_JSON -as_base;
 
+sub cmd_og_tsv_to_meta {
+  (my MY $self, my ($fn)) = @_;
+  my $ogDict = $self->add_twitter_card($self->read_og_tsv($fn));
+  print for $self->ogdict_to_meta($ogDict);
+}
+
 sub ogdict_to_meta {
   (my MY $self, my $ogDict) = @_;
   map {
