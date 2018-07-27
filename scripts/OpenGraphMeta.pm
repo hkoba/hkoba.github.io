@@ -4,7 +4,11 @@ use strict;
 use warnings;
 use autodie;
 
-use MOP4Import::Base::CLI_JSON -as_base;
+use MOP4Import::Base::CLI_JSON -as_base
+  , [fields =>
+     [twitter => doc => "twitter account name"]
+   ]
+  ;
 
 sub cmd_og_tsv_to_meta {
   (my MY $self, my ($fn)) = @_;
@@ -31,6 +35,7 @@ END
 sub add_twitter_card {
   (my MY $self, my $ogDict) = @_;
   $ogDict->{'twitter:card'} ||= 'summary';
+  $ogDict->{'twitter:creator'} ||= $self->{twitter} || '@'.$self->find_account_from_git_origin;
   $ogDict;
 }
 
