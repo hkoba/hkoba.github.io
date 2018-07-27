@@ -9,7 +9,7 @@ use File::Slurp;
 
 sub read_tsv {
   (my MY $self, my $fn) = @_;
-  map {split "\t"} read_file($fn);
+  map {split "\t"} read_file($fn, binmode => ':utf8');
 }
 
 MY->run(\@ARGV) unless caller;
