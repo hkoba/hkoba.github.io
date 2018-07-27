@@ -4,7 +4,7 @@
 
 <img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
 **@hkoba** [hkoba.github.io](http://hkoba.github.io/)
-→ [`kichijojipm` `#15`](http://hkoba.github.io/slides/kichijojipm15/)
+→ [`kichijojipm` `#15`](https://hkoba.github.io/slides/kichijojipm15/)
 
 ---
 
