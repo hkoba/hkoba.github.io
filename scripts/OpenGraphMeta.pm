@@ -34,6 +34,16 @@ sub add_twitter_card {
   $ogDict;
 }
 
+sub find_account_from_git_origin {
+  (my MY $self) = @_;
+  chomp(my $url = qx(git config remote.origin.url));
+  if ($url =~ /^git\@github\.com:([^\/]+)/) {
+    $1;
+  } else {
+    die "Can't extract account from git url: $url"
+  }
+}
+
 sub read_og_tsv {
   (my MY $self, my $fn) = @_;
   +{
