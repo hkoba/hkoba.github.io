@@ -9,11 +9,13 @@ use File::Slurp;
 
 sub read_og_tsv {
   (my MY $self, my $fn) = @_;
-  map {
-    my ($name, $value) = @$_;
-    my $fullName = $name =~ /:/ ? $name : "og:$name";
-    ($fullName, $value);
-  } $self->read_tsv_as_tuples($fn)
+  +{
+    map {
+      my ($name, $value) = @$_;
+      my $fullName = $name =~ /:/ ? $name : "og:$name";
+      ($fullName, $value);
+    } $self->read_tsv_as_tuples($fn)
+  }
 }
 
 sub read_tsv_as_tuples {
