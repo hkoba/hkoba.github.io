@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="/revealjs/css/reveal.css">
+    <link rel="stylesheet" href="/revealjs/css/theme/beige.css" id="theme">
+    <link rel="stylesheet" href="/revealjs/lib/css/zenburn.css">
+    <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+    <script>
+      document.write( '<link rel="stylesheet" href="/revealjs/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    </script>
+    <!--[if lt IE 9]>
+      <script src="/revealjs/lib/js/html5shiv.js"></script>
+    <![endif]-->
+    <link rel="stylesheet" type="text/css" href="index.css">
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+<section data-markdown>
+<script type='text/template'>
+### こんなテンプレートエンジンは
+### 言語処理系に入りますか？
+#### テンプレートエンジン yatt の話
+
+<img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
+**@hkoba**
+
+#### 言語処理系勉強会 Vol.1 (2018-11-17)
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### 自己紹介: hkoba
+
+プログラミング言語ミーハー、自宅研究
+
+* 今の仕事では主に Perl, Tcl, Zsh, Emacs Lisp
+* 他 C++, OCaml, FSharp, APL/J, Smalltalk, Prolog, FORTH 色々好き
+* TypeScript 勉強中
+
+- - - - -
+
+#### 今日のスライドは↓こちら
+
+ [hkoba.github.io](https://hkoba.github.io/)
+→ [`言語処理系勉強会 Vol.1`](https://hkoba.github.io/slides/langimpl1/)
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### 発表内容
+
+1. 自作テンプレートエンジン yatt の概要
+2. 実装上の工夫
+3. 
+</script>
+</section>
+<section>
+<section data-markdown>
+<script type='text/template'>
+## [yatt](https://yl-podview.herokuapp.com/mod/YATT::Lite::docs::yatt_manual)  (Yet Another Template Toolkit)とは
+
+XML 風の独自構文 ([LRXML](https://yl-podview.herokuapp.com/mod/YATT::Lite::LRXML::Syntax)) で記述されたテンプレートを<br>
+別の言語 (主にperl) の手続き群へ変換する、<br>
+オンデマンド・トランスパイラー
+
+```html
+<yatt:layout title="Hello">
+  <h2>world!</h2>
+</yatt:layout>
+
+<!yatt:widget layout title>
+<title>&yatt:title;</title>
+<body>
+  <div id="content">
+    <yatt:body/>
+  </div>
+</body>
+```
+
+yatt で書いたテンプレートの例
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+```perl
+#line 1 "/home/hkoba/db/work/hkoba.github.io/slides/langimpl1/ex/ex1.yatt"
+package MyYATT::INST1::EntNS::ex1; use strict; use warnings; use 5.010; use mro 'c3'; our @ISA = qw(MyYATT::INST1::EntNS); use utf8; sub filename {__FILE__}; sub render_ { my ($this, $CON) = splice @_, 0, 2; my $body = $_[0];  $this->render_layout($CON, (undef, q|Hello|, sub {
+ print $CON (q|  <h2>world!</h2>|);}
+)[1, 2]); print $CON ("\n");}
+
+sub render_layout { my ($this, $CON) = splice @_, 0, 2; my $title = $_[0]; my $body = $_[1];
+ print $CON (q|<title>|, YATT::Lite::Util::escape($title), q|</title>|, "\n");
+ print $CON (q|<body>|, "\n");
+ print $CON (q|  <div id="content">|, "\n");
+  $body && $body->();
+ print $CON (q|  </div>
+</body>|); print $CON ("\n");}
+```
+
+変換結果 (perl)
+</script>
+</section>
+</section>
+
+      </div>
+    </div>
+
+    <script src="/revealjs/lib/js/head.min.js"></script>
+    <script src="/revealjs/js/reveal.js"></script>
+
+    <script>
+      Reveal.initialize({
+        width: 960,
+        height: 700,
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+        transitionSpeed: Reveal.getQueryHash().speed || 'fast', // 
+        transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/fade/none
+        // Optional libraries used to extend on reveal.js
+        dependencies: [
+          { src: '/revealjs/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: '/revealjs/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '/revealjs/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '/revealjs/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: '/revealjs/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+          { src: '/revealjs/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+        ]
+      });
+    </script>
+  </body>
+</html>
+
