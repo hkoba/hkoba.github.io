@@ -6,6 +6,7 @@ use fields qw/rowList columnList columnDict/;
 sub MY () {__PACKAGE__}
 use Data::Dumper;
 use JSON;
+our $VERSION = 0.001;
 
 sub new {
   my $class = shift;
