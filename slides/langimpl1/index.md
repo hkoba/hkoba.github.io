@@ -128,7 +128,7 @@ ___
 
 ---
 
-### 背景：お客様(![SSRI](ssri_logo.gif)さん)の事業
+### 背景：お客様([![SSRI](ssri_logo.gif)さん](https://www.ssri.com/))の事業
 
 * 医療従事者向け、アドホック・アンケート
 
@@ -186,7 +186,6 @@ ___
 実装とオペレーションは、 **プログラミング未経験** で採用して
 社内で教育した人たち
 
-
 ---
 
 ### CS未履修・実務経験なしでも
@@ -194,11 +193,6 @@ ___
 ### 安全に仕事できる言語が
 
 必要だった
-
----
-
-* 静的な typo の検出
-* 既知の知識との親和性
 
 ---
 
@@ -216,6 +210,12 @@ ___
 再生できるかな？
 </video>
 
+---
+
+### 設計目標
+
+* <small>(未経験者でも見慣れてる)</small>HTML との親和性
+* 静的な typo の検出
 
 ---
 
@@ -236,8 +236,10 @@ ___
 
 ### widget(画面部品) の定義
 
+<small>(ファイル名=部品名、の場合)</small>
+
 ```html
-<!yatt:widget 名前 引数名 [= "型 フラグ デフォルト値"] ...>
+<!yatt:args 引数名 [= "型 フラグ デフォルト値"] ...>
 定義の本体
 ```
 
@@ -328,31 +330,6 @@ sub render_ {
 |value|ホスト言語の生の式を書ける|
 |code|クロージャ|
 |delegate|継承の代わり|
-  
-
----
-
-### 名前付き引数 / 位置引数
-
-
----
-
-### 引数は <small>**:yatt:** 始まりの</small> タグでも書ける
-
-→引数の中にタグを書いても、HTMLぽさを失わない
-
-```html
-<yatt:layout >
-  <:yatt:title>
-    <b>H</b>ello
-  </:yatt:title>
-
-  <h2>world!</h2>
-</yatt:layout>
-```
-
-<small>(common-lisp の **:keyword** 引数からの着想)</small>
-
 
 ---
 
@@ -372,44 +349,6 @@ sub render_ {
 &yatt:query((select * from t)); -- 引数にスペースを含める時
 
 ```
-
----
-
-### XML/HTML に似せる(極力)
-
-HTML モードの有るエディタなら、そこそこ使える。
-
-```html
-<yatt:layout title="Hello">
-  <h2>world!</h2>
-</yatt:layout>
-
-<!yatt:widget layout title>
-<title>&yatt:title;</title>
-<body>
-  <div id="content">
-    <yatt:body/>
-  </div>
-</body>
-```
-
-(再掲)
-
----
-
-### typo を早期に、静的に検出する(極力)
-
----
-
-### 変数に(escapeの)型がある
-
----
-
-### 特徴1. XML/HTML 用の開発環境を流用できる
-
-普通に html/xml として認識させるだけでも、それなりに読める。
-
-
 
 ---
 
@@ -435,16 +374,88 @@ HTML モードの有るエディタなら、そこそこ使える。
 
 ---
 
-### yatt が使う名前空間は設定で変更可能
+#### 宣言かコメント<small>(の先頭)</small>にマッチする
+#### 正規表現を作っておく
 
-Ex. **`yatt:`** の代わりに **`conpass:`**
-
-```html
-<connpass:event id="104863">
-  言語処理系勉強会
-</conpass:event>
+```perl
+package YATT::Lite::LRXML;
+...
+sub after_new {
+  my MY $self = shift;
+  ...
+  $self->{cf_namespace} ||= [qw(yatt perl)];
+  my $nspat = qr!@{[join "|", $self->namespace]}!;
+  $self->{re_decl} ||= qr{<!(?:(?<declname>$nspat(?::\w++)+)
+			  |(?:--\#(?<comment>$nspat(?::\w++)*)))\b}xs;
+  ...
+}
 ```
 
-指定した名前空間の要素だけを触り、それ以外は素通し
 
+---
+
+入力を正規表現で削るループでパーサーを表現
+
+```perl
+package YATT::Lite::LRXML;
+...
+sub parse_decl {
+  (my MY $self, my Template $tmpl, my $str, my @config) = @_;
+  ...
+  ($self->{startpos}, $self->{curpos}, my $total) = (0, 0, length $str);
+
+  while ($str =~ s{^(.*?)($$self{re_decl})}{}s) {
+    ...
+```
+
+<small>(yatt の宣言には入れ子が無いのでループで十分)</small>
+
+
+---
+
+後は構造に詰めるだけ
+
+```perl
+  ...
+  while ($str =~ s{^(.*?)($$self{re_decl})}{}s) {
+    $self->add_text($part, $1) if length $1;
+    $self->{curpos} = $total - length $str;
+  
+    if (my $comment_ns = $+{comment}) {
+      ...
+      push @{$part->{toks}}, [TYPE_COMMENT, $self->posinfo($str)
+			      , $self->{startln}
+			      , $comment_ns, $nlines, $1];
+      next;
+    }
+    my ($ns, $kind) = split /:/, $+{declname}, 2;
+    ...
+  }
+}
+```
+
+___
+
+#### 余談： Perl にも型宣言あるんですよ知ってましたか？
+
+```perl
+use fields qw/re_decl
+	      template
+	      startln endln
+	      startpos curpos .../;
+...
+sub parse_decl {
+  (my MY $self, my Template $tmpl, my $str, my @config) = @_;
+  
+  $self->{template} = $tmpl;
+  $tmpl->reset if $tmpl->{product};
+```
+
+<small>
+field (インスタンス変数) 名の typo をコンパイル時に検出できます。
+
+これ抜きで言語処理系ぽいものを作るとか、無理だし…
+
+(20年前からある機能ですが、使う人少ないですね…)
+</small>
 
