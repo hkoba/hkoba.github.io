@@ -51,7 +51,7 @@ https://github.com/hkoba/yatt_lite
 
 * <small>(名ばかりの)</small>フリーランス・プログラマ
 * プログラミング言語ミーハー
-* 今の仕事では主に Perl, Tcl, Zsh, Emacs Lisp
+* 主な仕事言語： Perl, Tcl, Zsh, Emacs Lisp
 * <small>他、好きな言語： C++, OCaml, Lisp, Smalltalk, Prolog, FORTH…(雑食)</small>
 * <small>TypeScript 勉強中</small>
 </script>
@@ -61,8 +61,8 @@ https://github.com/hkoba/yatt_lite
 ### あらすじ
 
 1. yatt とは
-2. どうして自作？何のために？
-3. yatt について、もう少しkwsk
+2. 開発動機・背景
+3. yatt について、もう少し詳しく
 3. 実装上の工夫
 </script>
 </section>
@@ -157,8 +157,72 @@ sub render_layout { my ($this, $CON) = splice @_, 0, 2; my $title = $_[0]; my $b
 </section>
 <section data-markdown>
 <script type='text/template'>
-### 2. どうして自作？何のために？
+## 2. 開発動機・背景
 </script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+## 動機
+
+仕事の手離れを良くするため
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### 背景：お客様(![SSRI](ssri_logo.gif)さん)の事業
+
+* 医療従事者向け、アドホック・アンケート
+
+![](img/ssri_workflow.svg)
+
+ただし、件数が多い
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### 本数が多いのに、全部違う
+
+* 500本/年<small>以上</small>
+* フルカスタム<small>(基本、 **全部違う** )</small>
+  * <small>平均40ページ程</small>
+  * <small>分岐・絞り込みの条件も複雑</small>
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### 期間が短い
+
+* 開発: 一週間
+* 運用: 一週間
+* そして捨てる
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+## 全部に
+
+## 密に関わってたら
+
+## 人生が食い尽くされてしまう
+</script>
+</section>
+<section>
+<section data-markdown>
+<script type='text/template'>
+### 動機：顧客が自力で案件を回せる度合いを最大化したい
+
+自立のために、 **顧客に渡す武器** 、それが yatt
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### 隠れた動機：
+
+#### 言語好きとしての
+
+### 魂を殺さないため
+</script>
+</section>
 </section>
 <section data-markdown>
 <script type='text/template'>
