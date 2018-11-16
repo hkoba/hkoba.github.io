@@ -1,0 +1,10 @@
+<!yatt:args title x y z>
+&yatt:title;
+
+&yatt:query_string();
+
+&yatt:max(:x,:min(:y,:z));
+
+&yatt:CON:param();
+
+&yatt:query((select * from t));

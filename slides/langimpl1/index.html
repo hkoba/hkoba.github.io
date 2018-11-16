@@ -272,6 +272,7 @@ sub render_layout { my ($this, $CON) = splice @_, 0, 2; my $title = $_[0]; my $b
 
 * <small>(未経験者でも見慣れてる)</small>HTML との親和性
 * 静的な typo の検出
+* 案件ごとの特例的な拡張が行いやすいこと
 </script>
 </section>
 <section data-markdown>
@@ -281,7 +282,33 @@ sub render_layout { my ($this, $CON) = splice @_, 0, 2; my $title = $_[0]; my $b
 </section>
 <section data-markdown>
 <script type='text/template'>
-### <small>(yattの)</small> widget とは
+#### 未経験者から見て、yatt は
+
+### 自分のタグ<small>(=画面部品)</small>を作れる仕組み
+
+- - - - - -
+
+<small>(最も単純な使い方では)</small>ファイル名が、タグ名に
+
+<small>例([copyright.yatt](ex/copyright.yatt))</small>
+
+```html
+&copy; 2018 (株)ほえほえ
+```
+
+<small>呼ぶ側</small>
+
+```html
+...
+<yatt:copyright/>
+```
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+#### プログラマーの視点で
+
+### <small>(yattの)</small> widget<small>(部品)</small> とは
 
 * 引数として <small>(自身の名前空間 this と)</small> 出力ストリーム CON、他を受け取り
 * そのストリームに内容を書き込む関数
@@ -294,16 +321,16 @@ sub render_layout { my ($this, $CON) = splice @_, 0, 2; my $title = $_[0]; my $b
 <section>
 <section data-markdown>
 <script type='text/template'>
-### widget(画面部品) の定義
+### widget の定義
 
-<small>(ファイル名=部品名、の場合)</small>
+<small>(ファイル名=widget名、の場合)</small>
 
 ```html
 <!yatt:args 引数名 [= "型 フラグ デフォルト値"] ...>
 定義の本体
 ```
 
-例([mytest1.yatt](ex/mytest1.yatt))
+<small>例([mytest1.yatt](ex/mytest1.yatt))</small>
 
 ```html
 <!yatt:args foo bar="html?bar's default" class>
@@ -349,7 +376,7 @@ sub render_ {
 <yatt:部品名 引数名="値" ... > body 引数に渡す値 </yatt:部品名>
 ```
 
-例([ex3.yatt](ex/ex3.yatt))
+<small>例([ex3.yatt](ex/ex3.yatt))</small>
 
 ```html
 <yatt:mytest1 foo="hoge" class="content">
@@ -393,10 +420,11 @@ sub render_ {
 |html|escape 済みとして、そのまま print される|
 |attr|html の attribute=value を簡潔に書く仕組み|
 |value|ホスト言語の生の式を書ける|
-|code|クロージャ|
+|code|クロージャ。 <small>特に body 引数</small>|
 |delegate|継承の代わり|
 </script>
 </section>
+<section>
 <section data-markdown>
 <script type='text/template'>
 ### entity reference式(埋め込み要素)
@@ -413,9 +441,97 @@ sub render_ {
 &yatt:CON:param();              -- Object のメソッド呼び出し
 
 &yatt:query((select * from t)); -- 引数にスペースを含める時
-
 ```
 </script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+```perl
+ print $CON (YATT::Lite::Util::escape($title), "\n");
+ print $CON ("\n");
+ print $CON (YATT::Lite::Util::escape($this->entity_query_string()), "\n");
+ print $CON ("\n");
+ print $CON (YATT::Lite::Util::escape($this->entity_max($x, $this->entity_min($y, $z))), "\n");
+ print $CON ("\n");
+ print $CON (YATT::Lite::Util::escape($CON->param()), "\n");
+ print $CON ("\n");
+ print $CON (YATT::Lite::Util::escape($this->entity_query(qq|select * from t|)), "\n");}
+```
+
+変換結果(抜粋)
+</script>
+</section>
+</section>
+<section data-markdown>
+<script type='text/template'>
+## 静的検査
+
+* yatt の構文エラー
+* widget 名, 引数名, entity 名の typo
+* その他、トランスパイル後の Perl コードとしての構文エラー
+
+emacs の編集モードで保存時に検査<br>
+エラー個所へ即ジャンプ
+</script>
+</section>
+<section>
+<section data-markdown>
+<script type='text/template'>
+### 制御構文を<small>頑張れば</small>拡張可能
+
+<small>例: `($result, $error)` を返す entity の結果を束縛しつつ分岐するタグ</small>
+
+```html
+<yatt:ifok user="&yatt:current_user():can_reset_password(:email,:token);">
+  … &yatt:user; が束縛されている…
+<:yatt:else error/>
+  … &yatt:error; が束縛されている…
+</yatt:ifok>
+```
+
+<small>ディレクトリの `.htyattrc.pl` 内でコード生成クラスを拡張し、構文を追加できる</small>
+
+```perl
+use YATT::Lite::Macro;
+Macro ifok => sub {
+  my ($cgen, $node) = @_;
+  $cgen->node_sync_curline($node);
+  my ($path, $body, $primary, $head, $foot) = $cgen->node_extract($node);
+  ...
+```
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+#### <small>…頑張れば…</small>
+
+```perl
+  my ($oknode, $errnode) = map {$_->[0]} $primary, $foot;
+
+  my %spec = (ok => [$oknode, $body]
+	      , err => [$cgen->node_attlist($errnode)->[0], $errnode]);
+
+  my $fmt = q|{my ($%1$s, $%2$s) = %3$s; if (not $%2$s) %4$s else %5$s}|;
+
+  my @var_ok_ng = map {
+    my ($att, $body) = @{$spec{$_}};
+    $cgen->node_path($att) || $_;
+  } qw/ok err/;
+
+  my %scope; $scope{$_} = $cgen->mkvar_at(undef, value => $_) for @var_ok_ng;
+
+  my $if_expr = $cgen->as_list($cgen->node_body($spec{ok}[0]));
+
+  my $then_stat = $cgen->macro_scoped_block_of_tokens(\%scope, $cgen->node_value($spec{ok}[1]));
+
+  my $else_stat = $cgen->macro_scoped_block_of_tokens(\%scope, $cgen->node_value($spec{err}[1]));
+
+  \ sprintf($fmt, @var_ok_ng
+	    , $if_expr, $$then_stat, $$else_stat);
+};
+```
+</script>
+</section>
 </section>
 <section data-markdown>
 <script type='text/template'>
@@ -424,20 +540,31 @@ sub render_ {
 </section>
 <section data-markdown>
 <script type='text/template'>
-### それなりにチャレンジ
+### <small>それなりに</small>チャレンジ
 
-* FastCGI <small>(常駐プロセス)</small> だけでなく普通の CGI (リクエスト毎に起動)でも
-十分高速であること
+* Pure Perl で
+* FastCGI <small>(常駐プロセス)</small> だけでなく普通の CGI <small>(リクエスト毎に起動)</small>でも
+実用的な速度が出ること
 * エラーを可能な限り静的に検出できること
 </script>
 </section>
 <section data-markdown>
 <script type='text/template'>
+#### 言語処理系的なものを
+### Pure Perl で高速化したいなら
+
+* 一回の正規表現で読み飛ばせる量を増やす
+* AST のメモリーを節約したいなら HASH より ARRAY を使う
+  * 可読性・保守性が落ちるので、要素アクセスには定数関数を使う
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
 ### parse と typo 検出を軽くする
-### (仕様上の)工夫
+### <small>(仕様上の)</small>工夫
 
 * 指定した名前空間(デフォルトでは **`yatt:`**) の要素だけを触り、それ以外は素通し
-* 宣言( **`<!yatt:...>`**) を構文的に分けたので、そこだけ先に parse 出来る。
+* 宣言( **`<!yatt:...>`**) を構文的に分けた<br>→そこだけ先に parse 出来る。
   * <small>呼ばれたファイル内の widget 群の仕様が先に分かるので、フルのトランスパイルが走る前に、呼ぶ側の typo が判定できる</small>
 </script>
 </section>
@@ -531,6 +658,74 @@ field (インスタンス変数) 名の typo をコンパイル時に検出で�
 </small>
 </script>
 </section>
+</section>
+<section data-markdown>
+<script type='text/template'>
+#### AST node を配列で表現し、
+#### アクセスは定数関数を添字に使う
+
+```perl
+use YATT::Lite::Util::Enum
+  (NODE_ => [qw(TYPE BEGIN END LNO PATH REST=VALUE=BODY ATTLIST
+		  AELEM_HEAD AELEM_FOOT BODY_BEGIN BODY_END)]);
+
+sub node_value {
+  my ($self, $node) = @_;
+  wantarray ? YATT::Lite::Util::lexpand($node->[NODE_VALUE])
+    : $node->[NODE_VALUE];
+}
+```
+
+<small>YATT::Lite::Util::Enum は定数定義を生成する自作モジュール</small>
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### まとめ
+
+* 自作テンプレートエンジン yatt をご紹介
+  * 生まれた背景、仕様の由来
+* 速度を稼ぐための、実装上の工夫
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### おまけ(FAQ)
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### Q: yatt: て書くのは冗長では？
+
+* 標準 HTML に無いものが、ひと目で分かる
+  * チームの名前を名前空間に使う<br><small>例: **`yatt:`** の代わりに **`connpass:`**</small>
+```html
+<connpass:event id="104863">
+  言語処理系勉強会
+</connpass:event>
+```
+* パーサーも楽になる<small>(名前空間に属さないタグは無視して良い)</small>
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### Q: 引数宣言のフラグって？
+
+デフォルト値をいつ補うかを決めるものです。
+
+* `/` undef
+* `?` undef, ''
+* `|` undef, '', 0
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### Q: 〇〇のドキュメントがない
+
+
+
+twitter か discord で質問して頂ければ…
+</script>
 </section>
 
       </div>
