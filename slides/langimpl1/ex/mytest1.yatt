@@ -1,0 +1,6 @@
+<!yatt:args foo bar="html?bar's default" class>
+<div class="&yatt:class;">
+  <h2>&yatt:foo;</h2>
+  <h3>&yatt:bar;</h3>
+  <yatt:body/>
+</div>

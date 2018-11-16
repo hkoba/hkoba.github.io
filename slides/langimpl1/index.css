@@ -36,3 +36,7 @@
 .reveal li.cursive {
     font-family: cursive;
 }
+
+.reveal section.small table {
+    font-size: 80%
+}

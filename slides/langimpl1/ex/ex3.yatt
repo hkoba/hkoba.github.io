@@ -1,0 +1,3 @@
+<yatt:mytest1 foo="hoge" class="content">
+  <p>Hello world</p>
+</yatt:mytest1>
