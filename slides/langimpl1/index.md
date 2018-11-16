@@ -1,53 +1,58 @@
 ### こんなテンプレートエンジンは
 ### 言語処理系に入りますか？
-#### テンプレートエンジン yatt の話
+#### 自作テンプレートエンジン yatt の話
+
+##### [言語処理系勉強会 Vol.1](https://connpass.com/event/104863/) (2018-11-17)
 
 <img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
 **@hkoba**
 
-#### [言語処理系勉強会 Vol.1](https://connpass.com/event/104863/) (2018-11-17)
+https://github.com/hkoba/yatt_lite
 
+___
 
----
-
-### 自己紹介: hkoba
-
-プログラミング言語ミーハー、自宅研究
-
-ID: 多くは hkoba ([twitter](https://twitter.com/hkoba),
-[github](https://github.com/hkoba/),
-[はてなブログ](https://hkoba.hatenablog.com/))
-
-* 今の仕事では主に Perl, Tcl, Zsh, Emacs Lisp
-* 他 C++, OCaml, FSharp, APL/J, Smalltalk, Prolog, FORTH 色々好き
-* TypeScript 勉強中
-
-- - - - -
-
-#### 今日のスライドは↓こちら
+#### 今日のスライド↓
 
  [hkoba.github.io](https://hkoba.github.io/)
 → [`言語処理系勉強会 Vol.1`](https://hkoba.github.io/slides/langimpl1/)
 
 ---
 
-### 発表内容
+### 自己紹介: hkoba
 
-1. 自作テンプレートエンジン yatt の概要
-2. なぜこうした？設計意図は？背景は？
+* <small>(名ばかりの)</small>フリーランス・プログラマ
+* プログラミング言語ミーハー
+* 今の仕事では主に Perl, Tcl, Zsh, Emacs Lisp
+* <small>他、好きな言語： C++, OCaml, Lisp, Smalltalk, Prolog, FORTH…(雑食)</small>
+* <small>TypeScript 勉強中</small>
+
+---
+
+### あらすじ
+
+1. yatt とは
+2. どうして自作？何のために？
+3. yatt について、もう少しkwsk
 3. 実装上の工夫
 
 ---
 
-## 1. yatt の概要
+## 1. yatt とは
 
 ---
 
-## [yatt](https://yl-podview.herokuapp.com/mod/YATT::Lite::docs::yatt_manual)  (Yet Another Template Toolkit)とは
+## [yatt](https://yl-podview.herokuapp.com/mod/YATT::Lite::docs::yatt_manual)  <small>(Yet Another Template Toolkit)</small>とは
 
-XML 風の独自構文 ([LRXML](https://github.com/hkoba/yatt_lite/blob/dev/Lite/LRXML/Syntax.pod)) で記述されたテンプレートを<br>
-別の言語 (主にperl) の手続き群へ変換する、<br>
-オンデマンド・トランスパイラー
+* XML 風の独自構文
+<small>([LRXML](https://github.com/hkoba/yatt_lite/blob/dev/Lite/LRXML/Syntax.pod))で記述されたテンプレートを</small>
+* <small>(主にWebからのリクエストに応じて)</small>オンデマンドで、
+* ターゲット言語 (主にperl) の手続き群へ変換し実行する、
+
+**トランスパイラー** 兼、実行環境
+
+___
+
+### yatt で書いたテンプレートの例
 
 ```html
 <yatt:layout title="Hello">
@@ -62,8 +67,6 @@ XML 風の独自構文 ([LRXML](https://github.com/hkoba/yatt_lite/blob/dev/Lite
   </div>
 </body>
 ```
-
-yatt で書いたテンプレートの例
 
 ___
 
@@ -96,6 +99,34 @@ ___
 
 実行時の出力 (html)
 
+
+___
+
+#### yatt のコンセプト
+
+### <small>そこそこ</small>キレイな php
+
+<small>(怒られそう)</small>
+
+---
+
+* 実装: Pure perl
+* 開発: hkoba 一人
+* 規模: 8,700行ほど<small>(最新バージョン yatt_lite)</small>
+* 実績: hkoba のお客様が10年<small>(※)</small>ほど使用中
+<small>(※旧バージョン中心)</small>
+
+---
+
+### 2. どうして自作？何のために？
+
+
+
+---
+
+## 3. yatt について、もう少しkwsk
+
+
 ---
 
 ### yatt が使う名前空間は設定で変更可能
@@ -108,24 +139,7 @@ Ex. **`yatt:`** の代わりに **`conpass:`**
 </conpass:event>
 ```
 
-指定した名前空間だけを操作、それ以外は素通し
-
----
-
-### entity(埋め込み要素)
-
-```html
-&yatt:title;                <!-- 変数参照 -->
-
-&yatt:query_string();       <!-- ヘルパー関数の呼び出し -->
-
-&yatt:max(:x,:min(:y,:z));  <!-- 引数に関数呼び出し -->
-
-&yatt:CON:param();          <!-- Object のメソッド呼び出し -->
-
-&yatt:query((select * from t)); <!-- 引数にスペースを含める時 -->
-
-```
+指定した名前空間の要素だけを触り、それ以外は素通し
 
 ---
 
@@ -150,6 +164,25 @@ Ex. **`yatt:`** の代わりに **`conpass:`**
 
 ---
 
+### entity reference式(埋め込み要素)
+
+例
+
+```html
+&yatt:title;                <!-- 変数参照 -->
+
+&yatt:query_string();       <!-- ヘルパー関数の呼び出し -->
+
+&yatt:max(:x,:min(:y,:z));  <!-- 引数に関数呼び出し -->
+
+&yatt:CON:param();          <!-- Object のメソッド呼び出し -->
+
+&yatt:query((select * from t)); <!-- 引数にスペースを含める時 -->
+
+```
+
+---
+
 ### widget 呼び出し
 
 ```html
@@ -158,10 +191,34 @@ Ex. **`yatt:`** の代わりに **`conpass:`**
 </yatt:layout>
 ```
 
+引数は attribute 以外に **:yatt:** 始まりの要素としても書ける<br>
+→引数の中にタグを書いても、HTML 的に汚くならない
+
+```html
+<yatt:layout >
+  <:yatt:title>
+    <b>H</b>ello
+  </:yatt:title>
+
+  <h2>world!</h2>
+</yatt:layout>
+```
+
+<small>(common-lisp の **:keyword** 引数からの着想)</small>
+
 ---
 
-### 2. 言語仕様上の工夫
-### （設計意図、背景）
+### 2. なぜこうした？
+### 設計意図は？
+### 背景は？
+
+---
+
+<small>そもそも</small>
+
+## なぜテンプレートエンジンを自作？
+
+
 
 ---
 
