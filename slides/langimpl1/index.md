@@ -121,7 +121,7 @@ ___
 ---
 
 * 実装: Pure Perl
-* 開発: hkoba **一人**
+* 開発: hkoba **1人**<small>(実質)</small>
 * 規模: 8,700行ほど<small>(最新バージョン yatt_lite)</small>
 * 実績: hkoba のお客様が10年<small>(※)</small>ほど使用中
 <small>(※旧バージョン中心)</small>
@@ -695,6 +695,7 @@ sub node_value {
 ### Q: yatt: て書くのは冗長では？
 
 * 標準 HTML に無いものが、ひと目で分かる
+  * <small>名前空間は設定で変更可能</small>
   * チームの名前を名前空間に使う<br><small>例: **`yatt:`** の代わりに **`connpass:`**</small>
 ```html
 <connpass:event id="104863">
@@ -702,6 +703,7 @@ sub node_value {
 </connpass:event>
 ```
 * パーサーも楽になる<small>(名前空間に属さないタグは無視して良い)</small>
+* メタプログラミング<small>(yatt から yattを生成)</small>にも好都合
 
 ---
 
