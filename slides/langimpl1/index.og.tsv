@@ -1,0 +1,4 @@
+type	article
+url	https://hkoba.github.io/slides/langimpl1/
+title	こんなテンプレートエンジンは言語処理系に入りますか？ 自作テンプレートエンジン yatt の話
+image	https://hkoba.github.io/slides/langimpl1/img/langimpl1.jpg
