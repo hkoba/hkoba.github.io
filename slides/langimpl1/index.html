@@ -159,7 +159,7 @@ sub render_layout { my ($this, $CON) = splice @_, 0, 2; my $title = $_[0]; my $b
 <section data-markdown>
 <script type='text/template'>
 * 実装: Pure Perl
-* 開発: hkoba 一人
+* 開発: hkoba **一人**
 * 規模: 8,700行ほど<small>(最新バージョン yatt_lite)</small>
 * 実績: hkoba のお客様が10年<small>(※)</small>ほど使用中
 <small>(※旧バージョン中心)</small>
@@ -187,22 +187,27 @@ sub render_layout { my ($this, $CON) = splice @_, 0, 2; my $title = $_[0]; my $b
 
 ![](img/ssri_bizflow.svg)
 
-ただし、件数が多い
-</script>
-</section>
-<section data-markdown>
-<script type='text/template'>
-### 本数が多いのに、全部違う
+<small>これを舞台裏から支える
+<img style="box-shadow: none; margin: 0 5px; width: 48px; width: 48px; height: 48px" src="img/myfistrect.jpg" >
+**@hkoba** が一人だけ…
+</small>
 
-* 500本/年<small>以上</small>
-* フルカスタム<small>(基本、 **全部違う** )</small>
-  * <small>平均40ページ程</small>
-  * <small>分岐・絞り込みの条件も複雑</small>
+**ただし、件数が多い**<!-- .element: class="fragment" -->
 </script>
 </section>
 <section data-markdown>
 <script type='text/template'>
-### 期間が短い
+* **全部違う**
+  * フルカスタム
+    * <small>平均40ページ程</small>
+    * <small>分岐・絞り込みの条件も複雑</small>
+* <small>なのに</small>**件数が多い**
+  * 500本/年<small>以上</small>
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### <small>その上</small>期間が短い
 
 * 開発: 一週間
 * 運用: 一週間
@@ -274,13 +279,6 @@ sub render_layout { my ($this, $CON) = splice @_, 0, 2; my $title = $_[0]; my $b
 <section>
 <section data-markdown>
 <script type='text/template'>
-頭の良い人に合わせた言語ではなく
-
-不慣れな人でも日々の糧を得られる武器になること
-</script>
-</section>
-<section data-markdown>
-<script type='text/template'>
 #### 余談：だから、言語だけじゃ駄目
 
 <video controls>
@@ -288,6 +286,15 @@ sub render_layout { my ($this, $CON) = splice @_, 0, 2; my $title = $_[0]; my $b
 <source src="../hachiojipm72/img/tcltk_emacs.ogv" type="video/ogg">
 再生できるかな？
 </video>
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+頭の良い人に合わせた言語ではなく
+
+不慣れな人でも日々の糧を得られる武器になることを
+
+目指しました
 </script>
 </section>
 </section>
@@ -504,15 +511,49 @@ emacs の編集モードで保存時に検査<br>
 <script type='text/template'>
 ### 制御構文を<small>頑張れば</small>拡張可能
 
-<small>例: `($result, $error)` を返す entity の結果を束縛しつつ分岐するタグ</small>
+<small>例: `ifok` タグ。与えられた式の返す `($ok, $error)` を束縛しつつ分岐</small>
 
 ```html
-<yatt:ifok user="&yatt:current_user():can_reset_password(:email,:token);">
-  … &yatt:user; が束縛されている…
+<yatt:ifok user="&yatt:current_user():can_do_something();">
+  … 権限が有れば &yatt:user; が束縛され、ここが実行される…
 <:yatt:else error/>
-  … &yatt:error; が束縛されている…
+  … 無ければ &yatt:error; が束縛され、ここに来る…
 </yatt:ifok>
 ```
+
+#### <small>ここで `&yatt:current_user():can_do_something();` はユーザの権限を検査し</small>
+#### <small>`($user, $error)` を返すとする。</small>
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+`ifok` タグはこんな perl コードに変換されて欲しい
+
+
+```perl
+#line 1 "/home/hkoba/db/work/hkoba.github.io/slides/langimpl1/ex/ex6.yatt"
+package MyYATT::INST1::EntNS::ex6; ...;
+sub render_ {
+  my ($this, $CON) = splice @_, 0, 2;
+  my $body = $_[0];
+  {
+    my ($user, $error) = $this->entity_current_user()->can_do_something();
+    if (not $error) {
+      print $CON ("\n");
+      print $CON (q|  … 権限が有れば |, YATT::Lite::Util::escape($user), q| が束縛され、ここが実行される…|, "\n");
+    } else {
+      print $CON ("\n");
+      print $CON (q|  … 無ければ |, YATT::Lite::Util::escape($error), q| が束縛され 、ここに来る…|, "\n");
+    }
+  };
+  print $CON ("\n");
+}
+```
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+`ifok` の定義
 
 <small>ディレクトリの `.htyattrc.pl` 内でコード生成クラスを拡張し、構文を追加できる</small>
 
@@ -522,6 +563,13 @@ Macro ifok => sub {
   my ($cgen, $node) = @_;
   $cgen->node_sync_curline($node);
   my ($path, $body, $primary, $head, $foot) = $cgen->node_extract($node);
+
+  my ($oknode, $errnode) = map {$_->[0]} $primary, $foot;
+
+  my %spec = (ok => [$oknode, $body]
+	      , err => [$cgen->node_attlist($errnode)->[0], $errnode]);
+
+  my $fmt = q|{my ($%1$s, $%2$s) = %3$s; if (not $%2$s) %4$s else %5$s}|;
   ...
 ```
 </script>
@@ -531,13 +579,6 @@ Macro ifok => sub {
 #### <small>…頑張れば…</small>
 
 ```perl
-  my ($oknode, $errnode) = map {$_->[0]} $primary, $foot;
-
-  my %spec = (ok => [$oknode, $body]
-	      , err => [$cgen->node_attlist($errnode)->[0], $errnode]);
-
-  my $fmt = q|{my ($%1$s, $%2$s) = %3$s; if (not $%2$s) %4$s else %5$s}|;
-
   my @var_ok_ng = map {
     my ($att, $body) = @{$spec{$_}};
     $cgen->node_path($att) || $_;
@@ -575,22 +616,19 @@ Macro ifok => sub {
 </section>
 <section data-markdown>
 <script type='text/template'>
-#### 言語処理系的なものを
-### Pure Perl で高速化したいなら
+## 工夫その1
+#### 仕様の工夫で、parse と typo 検出を軽くした
 
-* 一つの正規表現で読み飛ばせる量を増やす
-* AST(CST) のメモリーを節約したいなら HASH より ARRAY を使う
-  * 可読性・保守性が落ちるので、要素アクセスには定数関数を使う
-</script>
-</section>
-<section data-markdown>
-<script type='text/template'>
-### parse と typo 検出を軽くする
-### <small>(仕様上の)</small>工夫
 
 * 指定した名前空間(デフォルトでは **`yatt:`**) の要素だけを触り、それ以外は素通し
 * 宣言( **`<!yatt:...>`**) を構文的に分けた<br>→そこだけ先に parse 出来る。
   * <small>呼ばれたファイル内の widget 群の仕様が先に分かるので、フルのトランスパイルが走る前に、呼ぶ側の typo が判定できる</small>
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+## 工夫その2
+### 一つの正規表現で読み飛ばせる量を増やした
 </script>
 </section>
 <section data-markdown>
@@ -686,6 +724,15 @@ field (インスタンス変数) 名の typo をコンパイル時に検出で�
 </section>
 <section data-markdown>
 <script type='text/template'>
+## 工夫その3
+### HASH より ARRAY を使う<small>(只の力技…)</small>
+
+* AST(CST) のメモリーを節約
+  * 可読性・保守性が落ちるので、要素アクセスには定数関数を使う
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
 ##### <small>メモリー節約とアクセス高速化のため</small>
 #### AST node を配列で表現し、
 #### アクセスは定数関数を添字に使う
@@ -712,11 +759,24 @@ sub node_value {
 * 自作テンプレートエンジン yatt をご紹介
   * 生まれた背景、仕様の由来
 * 速度を稼ぐための、実装上の工夫
+
+
+<small>PS. 言語友達とか仕事仲間、募集中です…一人は寂しい…</small><!-- .element: class="fragment" -->
 </script>
 </section>
 <section data-markdown>
 <script type='text/template'>
 ### おまけ(FAQ)
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### Q: そうまでして何故(Pure)Perl？
+
+実行環境(runtime platform) としての Perl への<br>
+長年の個人的な信頼・実績ゆえ
+
+→同じ道を無条件で他人様にオススメする訳ではない
 </script>
 </section>
 <section data-markdown>
