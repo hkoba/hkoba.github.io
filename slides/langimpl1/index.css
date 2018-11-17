@@ -7,6 +7,12 @@
 .reveal li { margin-bottom: .5ex; }
 .reveal li:last-child { margin-bottom: 0; }
 
+.reveal code {
+    background: #150707;
+    color: #9ce6aa;
+    padding: 0 .2em;
+}
+
 .reveal pre code {
     background: #0e1560;
     color: #32f33b;
@@ -37,6 +43,11 @@
     font-family: cursive;
 }
 
+/*************************************************/
+
 .reveal section.small table {
     font-size: 80%
+}
+.reveal section.small > ul {
+    font-size: 60%
 }

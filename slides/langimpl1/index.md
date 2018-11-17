@@ -21,6 +21,7 @@ ___
 ### 自己紹介: hkoba
 
 * <small>(名ばかりの)</small>フリーランス・プログラマ
+  * <small>大昔、 fj.lang.perl で tkperl や Perl/Tk の日本語化</small>
 * プログラミング言語ミーハー
 * 主な仕事言語： Perl, Tcl, Zsh, Emacs Lisp
 * <small>他、好きな言語： C++, OCaml, Lisp, Smalltalk, Prolog, FORTH…(雑食)</small>
@@ -41,14 +42,11 @@ ___
 
 ---
 
-## [yatt](https://yl-podview.herokuapp.com/mod/YATT::Lite::docs::yatt_manual)  <small>(Yet Another Template Toolkit)</small>とは
+### [yatt](https://yl-podview.herokuapp.com/mod/YATT::Lite::docs::yatt_manual)  <small>(Yet Another Template Toolkit)</small>とは
 
-* XML 風の独自構文
-<small>([LRXML](https://github.com/hkoba/yatt_lite/blob/dev/Lite/LRXML/Syntax.pod))で記述されたテンプレートを</small>
-* <small>(主にWebからのリクエストに応じて)</small>オンデマンドで、
-* ターゲット言語 (主にperl) の手続き群へ変換し実行する、
+<small>(主に web のための)テンプレートエンジン</small>
 
-**トランスパイラー** 兼、実行環境
+![web における yatt の働き](img/web_and_yatt.svg)
 
 ___
 
@@ -99,18 +97,30 @@ ___
 
 実行時の出力 (html)
 
+___
+
+
+## [yatt](https://yl-podview.herokuapp.com/mod/YATT::Lite::docs::yatt_manual)  <small>(Yet Another Template Toolkit)</small>とは
+
+* XML 風の独自構文
+<small>([LRXML](https://github.com/hkoba/yatt_lite/blob/dev/Lite/LRXML/Syntax.pod))で記述されたテンプレートを</small>
+* <small>(主にWebからのリクエストに応じて)</small>オンデマンドで、
+* ターゲット言語 (主にperl) の手続き群へ変換し実行する、
+
+**トランスパイラー** 兼、実行環境
 
 ___
 
-#### yatt のコンセプト
 
-### <small>そこそこ</small>キレイな php
+#### <small>雑に言うと</small>
 
-<small>(怒られそう)</small>
+## perl屋のための php
+
+#### <small>ぽい何か</small>
 
 ---
 
-* 実装: Pure perl
+* 実装: Pure Perl
 * 開発: hkoba 一人
 * 規模: 8,700行ほど<small>(最新バージョン yatt_lite)</small>
 * 実績: hkoba のお客様が10年<small>(※)</small>ほど使用中
@@ -128,11 +138,13 @@ ___
 
 ---
 
-### 背景：お客様([![SSRI](ssri_logo.gif)さん](https://www.ssri.com/))の事業
+### 背景：お客様(<a href="https://www.ssri.com/"><img style="box-shadow: none; margin: 0 5px;" src="ssri_logo.gif" alt=SSRI>さん</a>)の事業
 
+<!-- .slide: class="small" -->
 * 医療従事者向け、アドホック・アンケート
+  * 製薬企業からお医者さんに向けた市場調査
 
-![](img/ssri_workflow.svg)
+![](img/ssri_bizflow.svg)
 
 ただし、件数が多い
 
@@ -171,7 +183,7 @@ ___
 
 ### 隠れた動機：
 
-#### 言語好きとしての
+#### <small>自称でも</small>言語屋としての
 
 ### 魂を殺さないため
 
@@ -181,7 +193,18 @@ ___
 
 ---
 
-![](img/ssri_workflow.svg)
+#### アンケート作りは
+#### プログラミングとしては面白みが薄い
+### 飽きが来やすい
+
+---
+
+### 未経験者を雇って
+### 教育で戦力化、しかない
+
+---
+
+![アンケート作成のワークフロー](img/ssri_workflow.svg)
 
 実装とオペレーションは、 **プログラミング未経験** で採用して
 社内で教育した人たち
@@ -215,8 +238,8 @@ ___
 ### 設計目標
 
 * <small>(未経験者でも見慣れてる)</small>HTML との親和性
-* 静的な typo の検出
-* 案件ごとの特例的な拡張が行いやすいこと
+* typo 等のミスを<small>出来る限り</small>静的に検出
+* 案件ごとの特例的な拡張<small>が行いやすいこと</small>
 
 ---
 
@@ -476,8 +499,8 @@ ___
 #### 言語処理系的なものを
 ### Pure Perl で高速化したいなら
 
-* 一回の正規表現で読み飛ばせる量を増やす
-* AST のメモリーを節約したいなら HASH より ARRAY を使う
+* 一つの正規表現で読み飛ばせる量を増やす
+* AST(CST) のメモリーを節約したいなら HASH より ARRAY を使う
   * 可読性・保守性が落ちるので、要素アクセスには定数関数を使う
 
 ---
@@ -578,6 +601,7 @@ field (インスタンス変数) 名の typo をコンパイル時に検出で�
 
 ---
 
+##### <small>メモリー節約とアクセス高速化のため</small>
 #### AST node を配列で表現し、
 #### アクセスは定数関数を添字に使う
 
@@ -626,9 +650,9 @@ sub node_value {
 
 デフォルト値をいつ補うかを決めるものです。
 
-* `/` undef
-* `?` undef, ''
-* `|` undef, '', 0
+* `/` なら undef
+* `?` なら undef, ''
+* `|` なら undef, '', 0
 
 
 ---
@@ -637,5 +661,5 @@ sub node_value {
 
 
 
-twitter か discord で質問して頂ければ…
+twitter か [discord](https://discordapp.com/channels/460987763253182495/463276779264540672) で質問して頂ければ…
 
