@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="/revealjs/css/reveal.css">
+    <link rel="stylesheet" href="/revealjs/css/theme/beige.css" id="theme">
+    <link rel="stylesheet" href="/revealjs/lib/css/zenburn.css">
+    <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+    <script>
+      document.write( '<link rel="stylesheet" href="/revealjs/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    </script>
+    <!--[if lt IE 9]>
+      <script src="/revealjs/lib/js/html5shiv.js"></script>
+    <![endif]-->
+    <link rel="stylesheet" type="text/css" href="index.css">
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+<section data-markdown>
+<script type='text/template'>
+### <small>(天才以外の)</small>人に
+## エディタは
+## エラーを
+### いつ、どう伝えるべきか？
+
+
+#### 八王子pm74, 2018-11-24
+
+<img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
+**@hkoba** [hkoba.github.io](http://hkoba.github.io/)
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### 極めて個人的な、好みの話です
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+今日のサンプルコード
+
+<small>
+出典 https://www.typescriptlang.org/docs/handbook/namespaces.html
+</small>
+
+![](img/samplecode.png)
+
+<small>与えられた文字列が、アルファベットのみか否かを検査</small>
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+<!-- .slide: class="small" -->
+
+![](img/samplecode.png)
+
+* Emacs
+* ＋ flycheck
+* ＋ lsp-mode (Language Server Protocol)
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+#### <small>さて</small>
+
+### メソッド名を、typo した
+
+#### <small>とします</small>
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### flycheck + lsp のエラー通知画面
+
+![](img/flycheck-error-default.png)
+
+<small>**素人さんは、気づかないのでは？**</small><!-- .element: class="fragment" -->
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+![](img/flycheck-error-default.png)
+
+* 小さすぎる
+* 壊れている、のに書き進められる<!-- .element: class="fragment" -->
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+### 壊れたまま
+#### 書き進めても大丈夫なのは
+## 天才だけなのでは？
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+#### <small>みなさんは</small>
+
+### 素人さんが
+### 壊したコードを
+### 尻拭いで直した経験は
+### ありませんか？
+
+<small>**あれ辛くないですか？**</small><!-- .element: class="fragment" -->
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+#### 壊したら、壊した時点で
+## **エディタに**<!-- .element: class="fragment" -->
+## 止めて欲しい<!-- .element: class="fragment" -->
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+少なくとも、素人さんに渡す道具には、
+
+### 壊れた時点で、
+### それ以上壊さないよう
+### 指示を出す機能が欲しい
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+<small>具体的には</small>
+
+* エディタの保存時に
+* コードが壊れていたら
+* 最初のエラーの行へ
+* カーソルを強制で飛ばす
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+* 画面も警告色に変える
+  * 直すまで色が消えないようにする
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+#### そんな elisp を書いてました
+
+![](img/flycheck-lsp-jmp2err-on-save.png)
+
+<small>https://github.com/hkoba/emacs-on-save-jump-to-lsp-error</small>
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+* VS Code でも同じことをしたいので、設定ご存知な方、教えて頂けると嬉しいです
+
+- - - - -
+
+### おしまい
+</script>
+</section>
+
+      </div>
+    </div>
+
+    <script src="/revealjs/lib/js/head.min.js"></script>
+    <script src="/revealjs/js/reveal.js"></script>
+
+    <script>
+      Reveal.initialize({
+        width: 960,
+        height: 700,
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+        transitionSpeed: Reveal.getQueryHash().speed || 'fast', // 
+        transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/fade/none
+        // Optional libraries used to extend on reveal.js
+        dependencies: [
+          { src: '/revealjs/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: '/revealjs/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '/revealjs/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '/revealjs/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: '/revealjs/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+          { src: '/revealjs/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+        ]
+      });
+    </script>
+  </body>
+</html>
+
