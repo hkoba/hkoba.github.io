@@ -1,0 +1,5 @@
+type	article
+url	https://hkoba.github.io/slides/hachiojipm74/
+title	(天才以外の)人にエディタはエラーをいつ、どう伝えるべきか？八王子pm74
+image	https://hkoba.github.io/slides/hachiojipm74/img/when-and-how-should-editor-notify-coding-errors-to-novice-programmer.jpg
+description	コーディング上のエラーをプログラマーに伝えるタイミングは、ファイル保存時が良いのでは？などの話をします

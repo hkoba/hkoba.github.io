@@ -85,23 +85,47 @@
 
 少なくとも、素人さんに渡す道具には、
 
-### 壊れた時点で、
-### それ以上壊さないよう
-### 指示を出す機能が欲しい
+#### 壊れた時点で、<!-- .element: class="fragment" -->
+#### それ以上壊さないよう<!-- .element: class="fragment" -->
+## 今すぐ直せと<!-- .element: class="fragment" -->
+#### 指示を出す機能が欲しい<!-- .element: class="fragment" -->
+
+---
+
+#### 指示を出すとして、
+
+## いつ？<!-- .element: class="fragment" -->
+
+書いてる最中は、壊れている瞬間をゼロに出来ない<!-- .element: class="fragment" -->
+
+---
+
+#### プログラマーが
+#### エディタに<!-- .element: class="fragment" -->
+### これで正しいはず！<!-- .element: class="fragment" -->
+#### と伝える仕組みが有れば良い<!-- .element: class="fragment" -->
+
+---
+
+#### <small>それには</small>
+## ファイル保存<!-- .element: class="fragment" -->
+#### というアクションが、好適では？<!-- .element: class="fragment" -->
 
 ---
 
 <small>具体的には</small>
 
-* エディタの保存時に
-* コードが壊れていたら
-* 最初のエラーの行へ
-* カーソルを強制で飛ばす
+* エディタの保存時に<!-- .element: class="fragment" -->
+* コードが壊れていたら<!-- .element: class="fragment" -->
+* 最初のエラーの行へ<!-- .element: class="fragment" -->
+* カーソルを強制で飛ばす<!-- .element: class="fragment" -->
 
 ---
 
 * 画面も警告色に変える
-  * 直すまで色が消えないようにする
+  * 直すまで色が消えないようにする<!-- .element: class="fragment" -->
+  
+### 大昔の TurboPascal みたいな感じ？<!-- .element: class="fragment" -->
 
 ---
 
@@ -110,6 +134,12 @@
 ![](img/flycheck-lsp-jmp2err-on-save.png)
 
 <small>https://github.com/hkoba/emacs-on-save-jump-to-lsp-error</small>
+
+---
+
+マメに保存＝マメに検査
+
+## とても良い<!-- .element: class="fragment" -->
 
 ---
 
