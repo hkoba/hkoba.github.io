@@ -56,3 +56,12 @@
     color: #005aff;
     font-style: normal;
 }
+
+.reveal dd {
+    margin-bottom: .5rem;
+    font-size: 80%;
+}
+
+.xx-justify-left {
+    text-align: left;
+}
