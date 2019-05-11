@@ -51,3 +51,8 @@
 .reveal section.small > ul {
     font-size: 60%
 }
+
+.reveal em {
+    color: #005aff;
+    font-style: normal;
+}
