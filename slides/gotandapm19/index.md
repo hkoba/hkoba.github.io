@@ -17,8 +17,8 @@
 ### 自己紹介: hkoba
 
 * <small>(名ばかりの)</small>フリーランス・プログラマ
-  * <small>1995〜1998 頃に Perl/Tk の日本語化してた人</small>
-* テンプレートエンジン [YATT::Lite](https://github.com/hkoba/yatt_lite#yattlite---template-with-use-strict-) を作ってます
+* <small>テンプレートエンジン</small> [YATT::Lite](https://github.com/hkoba/yatt_lite#yattlite---template-with-use-strict-) <small>を作ってます</small>
+* <small>1995〜1998 頃に Perl/Tk の日本語化、とかも…</small>
 
 ___
 
@@ -51,9 +51,9 @@ ___
 
 ### 言語の開発支援機能とは
 
-* 定義個所へのジャンプ
+* 関数の定義個所へのジャンプ
 * 引数仕様の確認
-* 構文エラーの検査
+* 構文エラーの検出と通知
 * …
 
 ---
@@ -91,7 +91,7 @@ ___
 
 ### 今回書いた<small>(書いてる)</small> LS
 
-* 自作テンプレートエンジン [YATT::Lite](https://github.com/hkoba/yatt_lite#yattlite---template-with-use-strict-) の LS
+* <small>自作テンプレートエンジン</small> [YATT::Lite](https://github.com/hkoba/yatt_lite#yattlite---template-with-use-strict-) の LS
 
 
 [YATT::Lite::LanguageServer](https://github.com/hkoba/yatt_lite/blob/dev/Lite/LanguageServer.pm)
@@ -134,14 +134,102 @@ ___
 
 ### 3. どう開発を進めたの？
 
+* 大方針
+* 具体的な進め方
+
 ---
 
-#### 心がけたこと
+### 大方針
 
-* コンパイル時にエラーを検出可能な書き方<br>
+1. コンパイル時にtypoを検出可能な書き方<br>
 <small>(method not found を減らす)</small>
-* コマンド行から各機能を直接試せるように<br>
+2. コマンド行から各機能を直接試せるように<br>
 <small>(REPL の代わり。デバッガも呼びやすくなる)</small>
+
+
+---
+
+### 1. コンパイル時にtypoを検出可能な書き方
+
+---
+
+* LSP (JSON RPC) は沢山の型を扱う<small>(ClientCapabilities, ServerCapabilities, TextDocumentIdentifier, Range, Position, ...)</small>
+* Perl の普通の OOP では、メンバーアクセスの typo は実行時までエラーを検出できない
+  * <small>そもそも bless したら JSON 変換が手間</small>
+
+
+- - - - 
+
+→ [`fields.pm`](https://metacpan.org/pod/fields) ＋ 生HASH アクセスで<br>
+コンパイル時に typo 検出
+
+
+---
+
+### fields + 生 HASH
+
+```perl
+package Position { use fields qw/line character/ };
+...
+my Position $pos = +{};
+$pos->{line} = 3;
+$pos->{character} = 8;
+```
+
+* <small>`line`, `character` の typo はコンパイル時に静的に検出できる</small>
+* <small>エディタの保存時に lint かけて、エラー個所へジャンプさせる</small>
+
+---
+
+### fields の注意点
+
+* 冗長な書き方が必要
+```perl
+my Position $p = +{line => 3, characterrrrr => 8} # XXX typo を見つけてくれない
+```
+
+* 型の mismatch は検出してくれない
+```perl
+sub pos_of_x { ...; my Position $pos =...; return $pos }
+sub range_to_something { (my Range $range) = @_;  ... }
+range_to_something(pos_of_x()); # XXX 見つけてくれない
+```
+
+- - - -
+
+それでも、無いよりはマシ！
+
+---
+
+### 2.  コマンド行から各機能を直接試せるようにする
+
+---
+
+* `*.pm` に `#!.. perl` を入れて、実行可能に
+* `unless caller` で、サブコマンドから任意のメソッドを起動可能に
+* (CLI 起動時の) `出力は JSON で統一`
+* 引数も `{}`, `[]` を JSON として自動デコード
+
+
+---
+
+* 書いたら即 CLI から試す
+  ```perl
+  % ./LanguageServer.pm --current_workspace=$appRoot \
+  lspcall__textDocument__hover '{
+    "position":{"character":3,"line":0},
+    "textDocument":{"uri":"file:///somewhere/test.yatt"}
+  }'
+  
+  ==> [{"contents":{"kind":"markdown","value":"(widget) <yatt:layout\n  title=html\n   body=code\n   footer=code\n   head=html\n   guard=scalar\n   no_syscheck=scalar\n\n/>\n"}}]
+  ```
+  * メソッド名の typo はこの時点で分かる
+* `perl -d` を足すだけで即座にデバッガに入れる
+
+
+---
+
+### 具体的な進め方
 
 ---
 
@@ -170,7 +258,7 @@ ___
 
 ### エディタから LS を起動できる状況を作る
 
-* (今の) emacs-lsp なら少し書くだけで ok. <br>
+* <small>(今の)</small> emacs-lsp なら少し書くだけで ok. <br>
 (ex. [lsp-yatt](https://github.com/hkoba/yatt_lite/blob/dev/elisp/lsp-yatt.el))
 * VS Code の場合は最初に公式ガイドの [GET STARTED](https://code.visualstudio.com/api/get-started/your-first-extension) でツール環境を整えた後、[LS拡張ガイド](https://code.visualstudio.com/api/language-extensions/language-server-extension-guide)に進む
 
@@ -223,7 +311,7 @@ ___
 
 ---
 
-実は `interface ParameterInformation` だけは手抜きで parse 出来ないので、
+実は <small>`interface ParameterInformation`</small> だけは手抜きで parse 出来ないので、
 `grep -v` で除外^^;
 
 全体はこう＞
@@ -250,6 +338,20 @@ jq --slurp . | fx
 
 生成結果→ [YATT::Lite::LanguageServer::Protocol](https://github.com/hkoba/yatt_lite/blob/dev/Lite/LanguageServer/Protocol.pm)
 
+```perl
+use MOP4Import::Types
+...
+'ClientCapabilities' => [
+  [
+    'fields',
+    'workspace',
+    'textDocument',
+    'experimental',
+  ],
+],
+...
+```
+
 - - - - -
 
 <small>※今回のLS に使ったものしか変換していません</small>
@@ -258,10 +360,11 @@ jq --slurp . | fx
 
 ### Hover を作る
 
-* マウスカーソルの位置<small>(ex. `{line: 3, character: 8}`)</small> がエディタから与えられる
+* マウスカーソルの[位置](https://microsoft.github.io/language-server-protocol/specification#position)<small>(ex. `{line: 3, character: 8}`)</small> がエディタから与えられる
 * その場所のシンボルを割り出す
 * シンボルから、hover で出すべき開発支援情報を作って返す
 
 - - - -
 
 <small>※構文木に十分な情報が残っていない場合は、元の言語の構文木自体も改良する</small>
+
