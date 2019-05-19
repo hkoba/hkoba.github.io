@@ -155,7 +155,7 @@ ___
 
 ### 1. コンパイル時にtypoを検出可能な書き方
 
----
+___
 
 * LSP (JSON RPC) は沢山の型を扱う<small>(ClientCapabilities, ServerCapabilities, TextDocumentIdentifier, Range, Position, ...)</small>
 * Perl の普通の OOP では、メンバーアクセスの typo は実行時までエラーを検出できない
@@ -168,7 +168,7 @@ ___
 コンパイル時に typo 検出
 
 
----
+___
 
 ### fields + 生 HASH
 
@@ -183,7 +183,7 @@ $pos->{character} = 8;
 * <small>`line`, `character` の typo はコンパイル時に静的に検出できる</small>
 * <small>エディタの保存時に lint かけて、エラー個所へジャンプさせる</small>
 
----
+___
 
 ### fields の注意点
 
@@ -207,7 +207,7 @@ range_to_something(pos_of_x()); # XXX 見つけてくれない
 
 ### 2.  コマンド行から各機能を直接試せるようにする
 
----
+___
 
 * `*.pm` に `#!.. perl` を入れて、実行可能に
 * `unless caller` で、サブコマンドから任意のメソッドを起動可能に
@@ -215,7 +215,7 @@ range_to_something(pos_of_x()); # XXX 見つけてくれない
 * 引数も `{}`, `[]` を JSON として自動デコード
 
 
----
+___
 
 * 書いたら即 CLI から試す
   ```perl
@@ -277,14 +277,14 @@ range_to_something(pos_of_x()); # XXX 見つけてくれない
 * [元の仕様書](https://github.com/Microsoft/language-server-protocol/blob/gh-pages/specification.md)は markdown で、その中に typescript で宣言が書かれている
    * ↑これの json 版とか、無いのかしら？
 
----
+___
 
 * 仕様書の json 版は、見つけられず。
    * <small>絶対にどこかに有るはず、とは思いつつ…</small>
 * **不完全でも良い** から、Perl で変換してみる<br>
 [YATT::Lite::LanguageServer::SpecParser](https://github.com/hkoba/yatt_lite/blob/dev/Lite/LanguageServer/SpecParser.pm)
 
----
+___
 
 まず markdown の codeblock のうち、言語ID が typescript である個所を抜き出す
 
@@ -300,7 +300,7 @@ range_to_something(pos_of_x()); # XXX 見つけてくれない
 
 <small>(型の注釈コメントも残しておく)</small>
 
----
+___
 
 雑に（文を把握できる範囲で）トークンに分解する
 
@@ -313,7 +313,7 @@ range_to_something(pos_of_x()); # XXX 見つけてくれない
 ./SpecParser.pm cli_xargs_json --slurp --single parse_statement_list |
 ```
 
----
+___
 
 実は <small>`interface ParameterInformation`</small> だけは手抜きで parse 出来ないので、
 `grep -v` で除外^^;
@@ -337,7 +337,7 @@ jq --slurp . | fx
 
 <small>※具体的には自作のタイプビルダー [MOP4Import::Types](https://github.com/hkoba/perl-mop4import-declare/blob/master/Types.pod) 用の宣言を生成。</small>
 
----
+___
 
 
 生成結果→ [YATT::Lite::LanguageServer::Protocol](https://github.com/hkoba/yatt_lite/blob/dev/Lite/LanguageServer/Protocol.pm)

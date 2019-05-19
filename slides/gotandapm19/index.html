@@ -193,6 +193,7 @@ lwall にセーラームーンのポスターをプレゼントしたことも�
 <small>(REPL の代わり。デバッガも呼びやすくなる)</small>
 </script>
 </section>
+<section>
 <section data-markdown>
 <script type='text/template'>
 ### 1. コンパイル時にtypoを検出可能な書き方
@@ -248,6 +249,8 @@ range_to_something(pos_of_x()); # XXX 見つけてくれない
 それでも、無いよりはマシ！
 </script>
 </section>
+</section>
+<section>
 <section data-markdown>
 <script type='text/template'>
 ### 2.  コマンド行から各機能を直接試せるようにする
@@ -276,6 +279,7 @@ range_to_something(pos_of_x()); # XXX 見つけてくれない
   * メソッド名の typo はこの時点で分かる
 * `perl -d` を足すだけで即座にデバッガに入れる
 </script>
+</section>
 </section>
 <section data-markdown>
 <script type='text/template'>
@@ -314,6 +318,7 @@ range_to_something(pos_of_x()); # XXX 見つけてくれない
 * VS Code の場合は最初に公式ガイドの [GET STARTED](https://code.visualstudio.com/api/get-started/your-first-extension) でツール環境を整えた後、[LS拡張ガイド](https://code.visualstudio.com/api/language-extensions/language-server-extension-guide)に進む
 </script>
 </section>
+<section>
 <section data-markdown>
 <script type='text/template'>
 ### プロトコル仕様書を<small>(使うところだけでも)</small>機械可読可能に変換する
@@ -381,6 +386,8 @@ jq --slurp . | fx
 ```
 </script>
 </section>
+</section>
+<section>
 <section data-markdown>
 <script type='text/template'>
 次に、ここから Perl の静的検査に使える情報([fields](https://metacpan.org/pod/fields),[constant](https://metacpan.org/pod/constant))を生成
@@ -412,6 +419,7 @@ use MOP4Import::Types
 
 <small>※今回のLS に使ったものしか変換していません</small>
 </script>
+</section>
 </section>
 <section data-markdown>
 <script type='text/template'>
