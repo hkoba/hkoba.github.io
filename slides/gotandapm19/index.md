@@ -17,13 +17,14 @@
 ### 自己紹介: hkoba
 
 * <small>(名ばかりの)</small>フリーランス・プログラマ
-* <small>テンプレートエンジン</small> [YATT::Lite](https://github.com/hkoba/yatt_lite#yattlite---template-with-use-strict-) <small>を作ってます</small>
-* <small>1995〜1998 頃に Perl/Tk の日本語化、とかも…</small>
+* <small>Perl用のテンプレートエンジン</small><br>
+[YATT::Lite](https://github.com/hkoba/yatt_lite#yattlite---template-with-use-strict-) <small>を作ってます。(→[紹介スライド](../langimpl1/index.html#/))</small>
 
 ___
 
 
-<small>The Perl Conference Japan で lwall にセラムンのポスターをプレゼントしたり</small>
+<small>1998 の The Perl Conference Japan で<br>
+lwall にセーラームーンのポスターをプレゼントしたことも…</small>
 
 [![](img/ascii-perl-conference-ss.jpg)](https://ascii.jp/elem/000/000/313/313635/)
 
@@ -73,6 +74,9 @@ ___
 
 
 * 組合せに個別に対応する無駄が起きていた。
+
+- - - - -
+<small>図の出典: [VSCode - Language Server Extension Guide](https://code.visualstudio.com/api/language-extensions/language-server-extension-guide)</small>
 
 ---
 
