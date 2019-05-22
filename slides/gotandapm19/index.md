@@ -151,10 +151,10 @@ ___
 <dd class="small">カーソル下の記号の概要を表示</dd>
 <dt>[textDocument/implementation](https://microsoft.github.io/language-server-protocol/specification#textDocument_implementation)</dt>
 <dd>定義個所へのジャンプ</dd>
-<dt>[textDocument/publishDiagnostics](https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics)</dt>
-<dd>構文エラーを LS からエディタへ通知</dd>
 <dt>[textDocument/didChange](https://microsoft.github.io/language-server-protocol/specification#textDocument_didChange)</dt>
 <dd>エディタ上の更新をリアルタイムで受信</dd>
+<dt>[textDocument/publishDiagnostics](https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics)</dt>
+<dd>構文エラーを LS からエディタへ通知</dd>
 </dl>
 
 - - - - -
