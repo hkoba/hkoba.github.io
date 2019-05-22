@@ -18,7 +18,7 @@
 
 * <small>(名ばかりの)</small>フリーランス・プログラマ
 * <small>Perl用のテンプレートエンジン</small><br>
-[YATT::Lite](https://github.com/hkoba/yatt_lite#yattlite---template-with-use-strict-) <small>を作ってます。(→[紹介スライド](../langimpl1/index.html#/))</small>
+[YATT::Lite](https://github.com/hkoba/yatt_lite#yattlite---template-with-use-strict-) <small>を作ってます。(→[簡単な紹介](../langimpl1/index.html#/))</small>
 
 ___
 
@@ -45,8 +45,11 @@ lwall にセーラームーンのポスターをプレゼントしたことも�
 
 ### [Language Server (<em>LS</em>)](https://langserver.org/) とは
 
+* [Microsoftが提唱](https://microsoft.github.io/language-server-protocol/)している、
 * 言語の開発支援ツールを
-* エディタから独立して実装するための枠組み<br>（通信プロトコル: <small>[Language Server Protocol](https://microsoft.github.io/language-server-protocol/)</small>）
+* エディタから独立して実装するための枠組み
+* <p><small>そのための通信プロトコル: `LSP(Language Server Protocol)`</small></p><!-- .element: class="fragment" -->
+
 
 ---
 
@@ -131,7 +134,7 @@ ___
 
 - - - - -
 
-<small>(<em>※</em> もちろんヨチヨチ歩きですヨ！)</small>
+<small>(<em>※</em> もちろん不具合も有りますヨ！)</small>
 
 
 ---
@@ -145,15 +148,17 @@ ___
 
 ### 大方針
 
-1. コンパイル時にtypoを検出可能な書き方<br>
+1. `実行より前に` typoを検出可能な書き方<br>
 <small>(method not found を減らす)</small>
-2. コマンド行から各機能を直接試せるように<br>
+2. <small>CLIで</small>`任意のメソッドをサブコマンド`<small>として呼べるように</small><br>
 <small>(REPL の代わり。デバッガも呼びやすくなる)</small>
 
 
 ---
 
-### 1. コンパイル時にtypoを検出可能な書き方
+### 1. 
+### `実行より前に` 
+#### typoを検出可能な書き方
 
 ___
 
@@ -205,7 +210,31 @@ range_to_something(pos_of_x()); # XXX 見つけてくれない
 
 ---
 
-### 2.  コマンド行から各機能を直接試せるようにする
+## 2. <small>CLIで</small>
+### `任意のメソッドをサブコマンド`
+#### <small>として呼べるように</small>
+
+___
+
+* <small>書いたら即 CLI から試す</small>
+  ```perl
+  % ./lib/YATT/Lite/LanguageServer.pm lspcall__textDocument__hover '{
+    "position":{"line":2,"character":10},
+    "textDocument":{"uri":"file://'$PWD'/public/test.yatt"}
+  }'|jq .
+  ```
+  ```json
+  [
+    {
+      "contents": {
+        "kind": "markdown",
+        "value": "(widget) <yatt:foo\n  x=text\n   y=text\n   body=code\n\n/>\n"
+      }
+    }
+  ]
+  ```
+  * <small>メソッド名の typo はこの時点で分かる</small>
+* <small>`perl -d` を足すだけで即座にデバッガに入れる</small>
 
 ___
 
@@ -214,22 +243,9 @@ ___
 * (CLI 起動時の) `出力は JSON で統一`
 * 引数も `{}`, `[]` を JSON として自動デコード
 
+- - - - -
 
-___
-
-* 書いたら即 CLI から試す
-  ```perl
-  % ./LanguageServer.pm --current_workspace=$appRoot \
-  lspcall__textDocument__hover '{
-    "position":{"character":3,"line":0},
-    "textDocument":{"uri":"file:///somewhere/test.yatt"}
-  }'
-  
-  ==> [{"contents":{"kind":"markdown","value":"(widget) <yatt:layout\n  title=html\n   body=code\n   footer=code\n   head=html\n   guard=scalar\n   no_syscheck=scalar\n\n/>\n"}}]
-  ```
-  * メソッド名の typo はこの時点で分かる
-* `perl -d` を足すだけで即座にデバッガに入れる
-
+<small>詳しくは [MOP4Import::Base::CLI_JSON](https://github.com/hkoba/perl-mop4import-declare/blob/master/Base/CLI_JSON.pod) をご参照下さい</small>
 
 ---
 
@@ -238,13 +254,13 @@ ___
 ---
 
 
-1. 参考になる実装を探し読み解く
+1. `参考になる実装`を探し読み解く
 2. エディタから LS を起動できる状況を作り、
 [initialize](https://microsoft.github.io/language-server-protocol/specification#initialize) を受け取れるようにする
-3. プロトコル仕様書を機械可読な形に変換する
-4. Perl の型情報([fields](https://metacpan.org/pod/fields))を生成する
+3. プロトコル`仕様書を機械可読な形に`変換する
+4. Perl の `型情報(fields)を生成` する
 5. まずは [hover](https://microsoft.github.io/language-server-protocol/specification#textDocument_hover) を動くようにする。
-   * <small>そのために、言語の構文木の実装も変更する</small>
+   * <small>そのために必要なら、言語の構文木の実装も改良する</small>
 
 
 ---
@@ -269,7 +285,7 @@ ___
 
 ---
 
-### プロトコル仕様書を<small>(使うところだけでも)</small>機械可読可能に変換する
+### プロトコル仕様書を<small>(使うところだけでも)</small>機械可読に変換する
 
 * （固い仕様があるのに）通信プロトコルの Request/Response オブジェクトを手で実装するのは
 ミスの元
@@ -372,3 +388,15 @@ use MOP4Import::Types
 
 <small>※構文木に十分な情報が残っていない場合は、元の言語の構文木自体も改良する</small>
 
+
+---
+
+### まとめ
+
+* LSP の概要
+* <small>私が辿った</small>LS 開発の流れ
+
+- - - - -
+
+* 動くと楽しい LS、皆さんも作ってみませんか？<!-- .element: class="fragment" -->
+* <p><small>Perl屋さんへ:</small>`fields + 生HASH`<small>良いよ！</small></p><!-- .element: class="fragment" -->
