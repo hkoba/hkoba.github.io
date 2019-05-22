@@ -115,6 +115,31 @@ ___
 
 ---
 
+#### YATT の構文<small>をサラッと</small>
+
+![テンプレートの例](img/yatt_intro_example.png)
+
+___
+
+#### テンプレート＝部品(widget)の定義の並び
+
+![widget 定義](img/yatt_intro_def.png)
+
+___
+
+
+#### 部品は名前空間付きタグで呼び出す
+
+![widget 呼び出し](img/yatt_intro_call.png)
+
+___
+
+#### 変数(引数)の参照は Entity Reference 記法で書く
+
+![変数参照](img/yatt_intro_varref.png)
+
+---
+
 ## デモ
 
 ---
@@ -134,7 +159,7 @@ ___
 
 - - - - -
 
-<small>(<em>※</em> もちろん不具合も有りますヨ！)</small>
+<small>(<em>※</em> もちろん未実装・不具合も有りますヨ！)</small>
 
 
 ---
@@ -219,7 +244,7 @@ ___
 * <small>書いたら即 CLI から試す</small>
   ```perl
   % ./lib/YATT/Lite/LanguageServer.pm lspcall__textDocument__hover '{
-    "position":{"line":2,"character":10},
+    "position":{"line":11,"character":10},
     "textDocument":{"uri":"file://'$PWD'/public/test.yatt"}
   }'|jq .
   ```

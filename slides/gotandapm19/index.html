@@ -152,6 +152,36 @@ lwall にセーラームーンのポスターをプレゼントしたことも�
 </script>
 </section>
 </section>
+<section>
+<section data-markdown>
+<script type='text/template'>
+#### YATT の構文<small>をサラッと</small>
+
+![テンプレートの例](img/yatt_intro_example.png)
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+#### テンプレート＝部品(widget)の定義の並び
+
+![widget 定義](img/yatt_intro_def.png)
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+#### 部品は名前空間付きタグで呼び出す
+
+![widget 呼び出し](img/yatt_intro_call.png)
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+#### 変数(引数)の参照は Entity Reference 記法で書く
+
+![変数参照](img/yatt_intro_varref.png)
+</script>
+</section>
+</section>
 <section data-markdown>
 <script type='text/template'>
 ## デモ
@@ -174,7 +204,7 @@ lwall にセーラームーンのポスターをプレゼントしたことも�
 
 - - - - -
 
-<small>(<em>※</em> もちろん不具合も有りますヨ！)</small>
+<small>(<em>※</em> もちろん未実装・不具合も有りますヨ！)</small>
 </script>
 </section>
 <section data-markdown>
@@ -267,7 +297,7 @@ range_to_something(pos_of_x()); # XXX 見つけてくれない
 * <small>書いたら即 CLI から試す</small>
   ```perl
   % ./lib/YATT/Lite/LanguageServer.pm lspcall__textDocument__hover '{
-    "position":{"line":2,"character":10},
+    "position":{"line":11,"character":10},
     "textDocument":{"uri":"file://'$PWD'/public/test.yatt"}
   }'|jq .
   ```
