@@ -17,8 +17,8 @@
 ### 自己紹介: hkoba
 
 * <small>(名ばかりの)</small>フリーランス・プログラマ
-* <small>Perl用のテンプレートエンジン</small><br>
-[YATT::Lite](https://github.com/hkoba/yatt_lite#yattlite---template-with-use-strict-) <small>を作ってます。(→[簡単な紹介](../langimpl1/index.html#/))</small>
+* <p><small>**`"use strict"` なテンプレートエンジン**</small><br>
+[YATT::Lite](https://github.com/hkoba/yatt_lite#yattlite---template-with-use-strict-) <small>作ってます(→[簡単な紹介](../langimpl1/index.html#/))</small></p><!-- .element: class="fragment" -->
 
 ___
 
@@ -413,6 +413,10 @@ use MOP4Import::Types
 
 <small>※構文木に十分な情報が残っていない場合は、元の言語の構文木自体も改良する</small>
 
+___
+
+
+カーソル位置から構文木上の<a href="https://en.wikipedia.org/wiki/Zipper_(data_structure)">Zipper</a> を返すメソッドを実装するのが良さそう
 
 ---
 
