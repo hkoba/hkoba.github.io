@@ -11,6 +11,7 @@ siteName=$siteDir:t
 
 thisLoc=${PWD##$siteDir}
 url=https://$siteName$thisLoc/
+eventName=$thisLoc:t
 
 function tsv {
     print -- ${(j/\t/)argv}
@@ -31,7 +32,7 @@ function read_title {
     tsv type article
     tsv url $url
     tsv title "$(read_title index.md)"
-    tsv image $url
-    tsv description ''
+    tsv image ${url}img/$eventName.jpg
+    tsv description "$(read_title index.md)"
 } | tee index.og.tsv
 

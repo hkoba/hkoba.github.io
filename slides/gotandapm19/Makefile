@@ -1,5 +1,5 @@
 GENERATOR := ../../scripts/gen-revealjs.pl
-OG_GEN := ./../scripts/OpenGraphMeta.pm og_tsv_to_meta
+OG_GEN := ../../scripts/OpenGraphMeta.pm og_tsv_to_meta
 
 HTMLS := $(patsubst %.md,%.html,$(wildcard *.md))
 OG_META := $(patsubst %.og.tsv,%.meta,$(wildcard index.og.tsv))
