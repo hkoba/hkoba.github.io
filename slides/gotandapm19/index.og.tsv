@@ -2,4 +2,4 @@ type	article
 url	https://hkoba.github.io/slides/gotandapm19/
 title	Perl で Language Server を書いてる話
 image	https://hkoba.github.io/slides/gotandapm19/img/gotandapm19.jpg
-description	Perl で Language Server を書いてる話
+description	Language Server (LS) の簡単な紹介と、私がPerlで書いている Language Server の短いデモ、その開発をどう進めたかについての発表です。

@@ -1,4 +1,4 @@
-<meta property="og:description" content="Perl で Language Server を書いてる話">
+<meta property="og:description" content="Language Server (LS) の簡単な紹介と、私がPerlで書いている Language Server の短いデモ、その開発をどう進めたかについての発表です。">
 <meta property="og:image" content="https://hkoba.github.io/slides/gotandapm19/img/gotandapm19.jpg">
 <meta property="og:title" content="Perl で Language Server を書いてる話">
 <meta property="og:type" content="article">
