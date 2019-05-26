@@ -1,0 +1,5 @@
+type	article
+url	https://hkoba.github.io/slides/kichijojipm9/
+title	俺々 Exporter を楽に `モジュラーに` 定義したい時どうしますん？
+image	https://hkoba.github.io/slides/kichijojipm9/img/kichijojipm9.jpg
+description	Perl はモジュールの import を独自定義することで様々な便利なコンパイル時機能を持った Exporter を作ること出来ます。しかし、一般的な import の定義の仕方では、そうした機能を複数組合せた Exporter を定義することは困難です。この発表ではこの問題の解決策として、import の中に実装を書かず、予め定義したプロトコル（インターフェース）に従うようにコンパイル時機能を定義することで、組合せ可能な Exporter を構築する手法を提案します。

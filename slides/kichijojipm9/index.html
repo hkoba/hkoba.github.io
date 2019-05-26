@@ -2,6 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+<meta property="og:description" content="Perl はモジュールの import を独自定義することで様々な便利なコンパイル時機能を持った Exporter を作ること出来ます。しかし、一般的な import の定義の仕方では、そうした機能を複数組合せた Exporter を定義することは困難です。この発表ではこの問題の解決策として、import の中に実装を書かず、予め定義したプロトコル（インターフェース）に従うようにコンパイル時機能を定義することで、組合せ可能な Exporter を構築する手法を提案します。">
+<meta property="og:image" content="https://hkoba.github.io/slides/kichijojipm9/img/kichijojipm9.jpg">
+<meta property="og:title" content="俺々 Exporter を楽に `モジュラーに` 定義したい時どうしますん？">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hkoba.github.io/slides/kichijojipm9/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:creator" content="@hkoba">
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -562,6 +569,17 @@ print foo(), $bar, @baz, "\n";  # => FOOBARBAZ
 * exporter 便利だよね〜
 * 既存の exporter はニコイチ出来なくて不便！
 * import と実処理を分ければモジュラーに出来るからオススメ
+</script>
+</section>
+<section data-markdown>
+<script type='text/template'>
+<meta property="og:description" content="Perl はモジュールの import を独自定義することで様々な便利なコンパイル時機能を持った Exporter を作ること出来ます。しかし、一般的な import の定義の仕方では、そうした機能を複数組合せた Exporter を定義することは困難です。この発表ではこの問題の解決策として、import の中に実装を書かず、予め定義したプロトコル（インターフェース）に従うようにコンパイル時機能を定義することで、組合せ可能な Exporter を構築する手法を提案します。">
+<meta property="og:image" content="https://hkoba.github.io/slides/kichijojipm9/img/kichijojipm9.jpg">
+<meta property="og:title" content="俺々 Exporter を楽に `モジュラーに` 定義したい時どうしますん？">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hkoba.github.io/slides/kichijojipm9/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:creator" content="@hkoba">
 </script>
 </section>
 
