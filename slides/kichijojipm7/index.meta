@@ -1,0 +1,7 @@
+<meta property="og:description" content="Perl の `use strict` によるコンパイル時 typo 検査の可能性を更に広げるための、 %FIELDS の活用法についてお話します。合成可能な import を定義するための MOP4Import の仕組みについても触れます。">
+<meta property="og:image" content="https://hkoba.github.io/slides/kichijojipm7/img/kichijojipm7.jpg">
+<meta property="og:title" content="Perl の `use strict` をもっと活かすための`%FIELDS`, `perl -wc`, `import` の使い方">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hkoba.github.io/slides/kichijojipm7/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:creator" content="@hkoba">
