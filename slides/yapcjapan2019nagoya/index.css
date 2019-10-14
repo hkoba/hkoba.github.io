@@ -1,0 +1,56 @@
+.reveal h2, .reveal h3, .reveal h4, .reveal h5 {text-transform: none;}
+.reveal a {color: #BB1515;}
+.reveal a:hover {color: #0a8624;}
+.reveal section img {border-width: 0px;}
+.reveal small { vertical-align: middle; }
+
+.reveal li { margin-bottom: .5ex; }
+.reveal li:last-child { margin-bottom: 0; }
+
+.reveal code {
+    background: #150707;
+    color: #9ce6aa;
+    padding: 0 .2em;
+}
+
+.reveal pre code {
+    background: #0e1560;
+    color: #32f33b;
+    padding: 1em;
+    border-radius: .3ex;
+    text-transform: none;
+}
+.reveal h2 code { font-size: 60%; }
+
+.reveal li > ul {
+    margin-top: .8ex; margin-bottom: .8ex;
+}
+
+.reveal section > ul, .reveal section > ol {
+    padding: .3em .5em .3em 1.5em;
+}
+
+.reveal li pre {
+    margin-left: -10px;
+    width: 102%;
+}
+
+.reveal b.kari {
+    background-color: #ccc;
+}
+
+.reveal li.cursive {
+    font-family: cursive;
+}
+
+/*************************************************/
+
+.reveal section.small table {
+    font-size: 80%
+}
+.reveal section.small > ul, .reveal section.small > ol {
+    font-size: 80%
+}
+.reveal section.tiny > ul, .reveal section.tiny > ol {
+    font-size: 60%
+}

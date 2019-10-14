@@ -1,0 +1,383 @@
+### Rust に入門したくて！
+### libperl を bindgen して
+### Perl の ASTを舐め始めた話
+
+<img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
+**@hkoba**  
+[hkoba.github.io/](http://hkoba.github.io/)  
+[`yapcjapan2019nagoya`](http://hkoba.github.io/slides/yapcjapan2019nagoya/)
+
+___
+
+<!-- .slide: class="tiny" -->
+
+### 誰に何を話すか
+
+- Rust に入門する話が一番広そう(背中を押してほしい人？)
+  - 前提の再確認(置かれた立場、悩みを言語化して共有)
+  - なぜ Rust ? (理由を言語化して欲しい)
+  - どう Rust を導入する？(業務へ導入する戦略も、言語化して欲しい)
+- Perl の内部に詳しい人と、それ以外と、両方を喜ばせたい
+
+---
+
+<!-- .slide: class="small" -->
+
+### 自己紹介
+
+* 大昔 Perl/Tk の日本語化 <small>(1995〜96)</small>
+* <small>(流行らなかった)</small>MMO ゲームのサーバー側開発 C++ <small>(1997〜2000)</small>
+* 組み込み Linux <small>知人と起業</small><small>(2000〜2002)</small>
+* 今は<small>(名ばかりの)</small>フリーランスな Perl屋
+
+---
+
+### 今日の内容
+
+1. 動機<small>（なんで Rust で libperl？）</small>
+2. どんな学習プロセスを<small>辿ったか</small>
+  - 使えるか？確認<small>(技術検証)</small>
+  - bindgen してみた
+
+---
+
+## 1. 動機
+
+---
+
+### おっさんプログラマーの悩み
+
+#### 心血注いで築き上げたライブラリ資産が
+#### `言語ごと流行から外れて`
+#### 負債呼ばわりされる現実
+
+### グギギ
+
+
+---
+
+<!-- .slide: class="small" -->
+
+#### 流行りの言語のメリットは、分かる
+#### 型に守られたパターンマッチとか、欲しい
+
+<small>ex. [MinCaml の inline.ml (抜粋)](http://esumii.github.io/min-caml/min-caml.html#inline_g)</small>
+
+![](img/mincaml-inline-g.png)
+
+___
+
+<small>
+この `IfEq(x, y, e1, e2)` は `if x = y then e1 else e2`
+</small>
+
+http://esumii.github.io/min-caml/tutorial-mincaml-9.htm
+
+
+---
+
+### けど既存の資産の総書き直しは…
+#### 難しい…
+
+* 体力・時間
+* 顧客にとっての価値は？？
+
+---
+
+#### … Perl は内部に AST を持ってますね …
+
+[![](img/perldoc-perlinterp-optrees.png)](https://perldoc.perl.org/5.30.0/perlinterp.html#OP-TREES)
+
+
+---
+
+
+## この Perl の AST を
+#### 流行りの言語から
+### 舐められないか？
+
+---
+
+#### そういえば Rust がそろそろ落ち着いたぽい？
+
+[日本語で、本が出るくらいに](https://gihyo.jp/book/2019/978-4-297-10559-4)
+
+![](http://image.gihyo.co.jp/assets/images/cover/2019/9784297105594.jpg)
+
+---
+
+いっちょ触ってみますか！
+
+---
+
+#### ところで
+## なぜ Rust？
+
+* 言語A の GC + 別の言語B のGC  
+→ 深い注意が必要
+* Rust は GC を持たない<small>（代わりに寿命を静的に型検査）</small>  
+→ GC を持つ他の言語処理系と組合せやすそう
+
+---
+
+### 2. どんな学習プロセスを<small>辿ったか</small>
+
+---
+
+<!-- .slide: class="small" -->
+
+### まず技術検証
+
+1. チュートリアルには手を付ける<small>（最低限の知識を得る）</small>
+2. 最も簡単そうな<small>（でも実現すると個人的にアガる）</small>目標を定める
+3. コード書く  
+→ 動かない<small>(コンパイル通らない, SEGVする)</small>  
+→ 本に戻って知識を補う/StackOverflow検索  
+→ ∞
+
+
+---
+
+<!-- .slide: class="small" -->
+
+### 具体的には
+
+1. チュートリアル：[The book](https://doc.rust-lang.org/book/title-page.html) <small>([日本語訳](https://doc.rust-jp.rs/book/second-edition/))</small>
+  1. `Getting Started` <small>/ `事始め`</small>
+  2. `Programming a Guessing Game` <small>/ `数当てゲームをプログラムする`</small>
+2. 目標は `perl_parse()` 
+3. 実践Rust入門の `12章. FFI` を読みながら、perl_parse() を呼ぶコードを書いてみる
+  - 理解に必要な語/概念が出てくる章を芋づる式に読む
+
+---
+
+### [perl_parse()](https://perldoc.perl.org/5.30.0/perlapi.html#perl_parse) とは
+
+コンパイルだけを済ませる Perl の API
+
+```C
+int	perl_parse(PerlInterpreter *my_perl,
+                  XSINIT_t xsinit, int argc,
+                  char **argv, char **env)
+```
+
+使い方<small>[perlinterp.pod](https://metacpan.org/pod/distribution/perl/pod/perlinterp.pod#ELEMENTS-OF-THE-INTERPRETER) や [perlembed.pod](https://metacpan.org/pod/distribution/perl/pod/perlembed.pod#Adding-a-Perl-interpreter-to-your-C-program)参照</small>
+
+```C
+PerlInterpreter *my_perl = perl_alloc();
+
+perl_construct(my_perl);
+
+if (!perl_parse(my_perl, xs_init, argc, argv, (char **)NULL))
+
+    perl_run(my_perl);
+```
+
+___
+
+`-c` オプション付きで perl を呼び出すと、perl_parse までで
+ストップしてくれる
+
+```sh
+perl -ce 'print "FOO\n";
+if ;
+print "BAR";
+'
+syntax error at -e line 2, near "if ;"
+-e had compilation errors.
+```
+
+
+---
+
+### 同じことを Rust でしたい
+
+```C
+PerlInterpreter *my_perl = perl_alloc();
+
+perl_construct(my_perl);
+
+if (!perl_parse(my_perl, xs_init, argc, argv, (char **)NULL))
+
+    perl_run(my_perl);
+```
+
+`PerlInterpreter` をどうするか…
+
+最短手は？
+
+
+---
+
+### 「実践Rust入門」に書いてありました
+
+`12-2-7` Opaque と空の列挙型
+
+Opaque == 不透明, 中が見えない
+
+ポインタの先のことは、Rust 側では関知しない、というアプローチ
+
+---
+
+`PerlInterpreter` と `XSINIT_t` は、これで行ける
+
+```rust
+enum PerlInterpreter {}
+enum XsinitT {}
+```
+
+それへのポインタ
+
+```rust
+let my_perl: *mut PerlInterpreter = ...;
+```
+
+<small>(rust のコンパイラが名前の付け方に警告を出すので、この時はそれに従った)</small>
+
+
+
+---
+
+### 他の型
+
+Cの文字、int、void
+
+```rust
+use std::os::raw::{c_char, c_int, c_void};
+```
+
+文字列へのポインタのポインタ<small>(C の `char** argv`)</small>
+
+```
+let my_argv: *const *const c_char = ...;
+```
+
+---
+
+### 宣言は書けた？
+
+```rust
+extern "C" {
+    fn perl_parse(
+        my_perl: *mut PerlInterpreter,
+        xsinit: *const XsinitT,
+        argc: c_int,
+        argv: *const *const c_char,
+        env: *const *const c_char,
+    ) -> c_int;
+}
+```
+
+---
+
+<!-- .slide: class="small" -->
+
+### `char **argv` をどう作る？
+
+```rust
+use std::ffi::CString; // Rust で割り付けて C に貸す文字列
+
+let s = CString::new("foo").unwrap();
+
+let p = unsafe {s.as_ptr()};
+```
+
+* lifetime を理解せずに CString を使って SEGV、悩む
+
+---
+
+* [StackOverflow の記事](https://stackoverflow.com/questions/34379641/how-do-i-convert-rust-args-into-the-argc-and-argv-c-equivalents)で解決
+
+![](img/so-rust-args-cstring.png)
+
+
+---
+
+### 動いた！
+
+![](img/handmade-ffi-worked.png)
+
+<small>ちゃんと `perl -wc` と同じ働きをしてる！</small>
+
+---
+
+## 喜びの雄叫び！
+
+[![](img/gist-rust-libperl.png)](https://twitter.com/hkoba/status/1159056109216288771)
+
+---
+
+## 次は bindgen の検証
+
+---
+
+### bindgen とは
+
+C のヘッダを渡すと Rust のヘッダを吐いてくれる！
+
+```sh
+$ bindgen input.h -o bindings.rs
+```
+
+<small>
+https://rust-lang.github.io/rust-bindgen/command-line-usage.html
+</small>
+
+---
+
+→とりあえず呼んでみて、使用に耐えるか調べる
+
+---
+
+`wrapper.h` を書く。<small>↓(libperl だとこれだけ)</small>
+
+```C
+#include <EXTERN.h>               /* from the Perl distribution     */
+#include <perl.h>                 /* from the Perl distribution     */
+```
+
+bindgen を試しに呼んで、出た Rust コードを読む
+
+```sh
+% ccopts=($(
+   perl -MExtUtils::Embed -e ccopts |
+   perl -nle 'print for grep /^-[DI]/, split'
+  )
+
+% bindgen wrapper.h -- $ccopts | less
+```
+
+→行けそう
+
+---
+
+#### ビルド→エラー出る
+
+![](img/bindgen-plain-error.png)
+
+けど、redefined はおかしい
+
+---
+
+#### ためしにエラーになるコードを手で削ってみる
+
+→ビルド通るじゃん？
+
+---
+
+#### ちょっと Perl::new() とか parse() とか書いてみる
+
+→動いた！
+
+---
+
+https://twitter.com/hkoba/status/1173468427706490880
+
+---
+
+* libperl
+  - Perl の Configure で `-Duseshrplib` 
+  - [Building a shared Perl library](https://metacpan.org/pod/distribution/perl/INSTALL#Building-a-shared-Perl-library)
+
+* `-Dusethreads`
+
