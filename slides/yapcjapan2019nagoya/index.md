@@ -194,12 +194,9 @@ syntax error at -e line 2, near "if ;"
 
 ```C
 PerlInterpreter *my_perl = perl_alloc();
-
 perl_construct(my_perl);
 
-if (!perl_parse(my_perl, xs_init, argc, argv, (char **)NULL))
-
-    perl_run(my_perl);
+rc = perl_parse(my_perl, xs_init, argc, argv, (char **)NULL));
 ```
 
 `PerlInterpreter` をどうするか…
@@ -234,9 +231,23 @@ let my_perl: *mut PerlInterpreter = ...;
 
 <small>(rust のコンパイラが名前の付け方に警告を出すので、この時はそれに従った)</small>
 
-
-
 ---
+
+### 宣言は書けた？
+
+```rust
+extern "C" {
+    fn perl_parse(
+        my_perl: *mut PerlInterpreter,
+        xsinit: *const XsinitT,
+        argc: c_int,
+        argv: *const *const c_char,
+        env: *const *const c_char,
+    ) -> c_int;
+}
+```
+
+___
 
 ### 他の型
 
@@ -254,22 +265,6 @@ let my_argv: *const *const c_char = ...;
 
 ---
 
-### 宣言は書けた？
-
-```rust
-extern "C" {
-    fn perl_parse(
-        my_perl: *mut PerlInterpreter,
-        xsinit: *const XsinitT,
-        argc: c_int,
-        argv: *const *const c_char,
-        env: *const *const c_char,
-    ) -> c_int;
-}
-```
-
----
-
 <!-- .slide: class="small" -->
 
 ### `char **argv` をどう作る？
@@ -282,7 +277,8 @@ let s = CString::new("foo").unwrap();
 let p = unsafe {s.as_ptr()};
 ```
 
-* lifetime を理解せずに CString を使って SEGV、悩む
+* lifetime を理解せずに CString を使って SEGV
+* gdb で見て、理由は分かったけど、Rust 的に正しい書き方が分からない
 
 ---
 
@@ -290,6 +286,34 @@ let p = unsafe {s.as_ptr()};
 
 ![](img/so-rust-args-cstring.png)
 
+
+---
+
+```rust
+fn main() {
+    let args = std::env::args().map(|arg| CString::new(arg).unwrap() )
+      .collect::<Vec<CString>>();
+    let c_args = args.iter().map(|arg| arg.as_ptr())
+      .collect::<Vec<*const c_char>>();
+
+    let my_perl = unsafe {perl_alloc()};
+    unsafe {perl_construct(my_perl)};
+
+    let _rc = unsafe {
+        perl_parse(
+            my_perl,
+            ptr::null(),
+            c_args.len() as c_int,
+            c_args.as_ptr(),
+            ptr::null()
+        );
+    };
+    
+    unsafe {perl_destruct(my_perl)};
+}
+```
+
+`unsafe` の嵐！
 
 ---
 
@@ -307,7 +331,13 @@ let p = unsafe {s.as_ptr()};
 
 ---
 
+<!-- .slide: class="tiny" -->
+
 ## 次は bindgen の検証
+
+* AST を舐めるには Perl の内部構造にも Rust の型定義を与える必要が有る
+* 手書きだと実用上は厳しいので…
+
 
 ---
 
@@ -361,17 +391,108 @@ bindgen を試しに呼んで、出た Rust コードを読む
 
 #### ためしにエラーになるコードを手で削ってみる
 
-→ビルド通るじゃん？
+→ビルド通るじゃん？動くじゃん？  
+→ `::new()` とか `.parse()` とか書き始めてみる
 
 ---
 
-#### ちょっと Perl::new() とか parse() とか書いてみる
+### 折角だから OP TREE を舐めてみるぜ！
 
-→動いた！
+```rust
+fn main() {
+    let mut perl = c_perl::PerlWrap::new();
+
+    let _rc = perl.parse(std::env::args());
+    
+    let mut op: *const c_perl::op = unsafe {(*perl.my_perl).Imain_start};
+
+    while !op.is_null() {
+        let ty = unsafe {(*op).op_type()};
+        print!("op={:#?} {}\n",
+               op, 
+               unsafe {
+                   CStr::from_ptr(c_perl::PL_op_name[ty as usize])
+               }
+               .to_str().unwrap()
+        );
+        op = unsafe {(*op).op_next as *const c_perl::op};
+    }
+}
+
+```
+
+`unsafe` の嵐！
 
 ---
 
-https://twitter.com/hkoba/status/1173468427706490880
+[![](img/perl-optree.png)](https://twitter.com/hkoba/status/1173468427706490880)
+
+---
+
+### この楽しさを誰かと共有したい…
+
+→コード公開しよう
+
+---
+
+<!-- .slide: class="small" -->
+
+### でも名前はどうする？
+
+* [perl](https://crates.io/crates/perl) は既にある
+  - ただし用途は違う
+    - 向こうは Perl → Rust
+    - こちらは Rust → Perl
+
+---
+
+### 呟いてみた
+
+![](img/naming-sys-crate.png)
+
+---
+
+#### RTしてもらえて、レスをもらえた！
+
+![](img/naming-response.png)
+
+---
+
+<!-- .slide: class="tiny" -->
+
+#### [`sys-` クレート](https://kornel.ski/rust-sys-crate)という
+#### 命名慣習がある、と
+
+https://kornel.ski/rust-sys-crate
+
+> **\*-sys** is **a naming convention** for crates that help Rust programs use C ("system") libraries, e.g. libz-sys, kernel32-sys, lcms2-sys. The task of the sys crates is **expose a minimal low-level C interface** to Rust (FFI) and to tell Cargo how to link with the library. Adding higher-level, more Rust-friendly interfaces for the libraries is left to "wrapper" crates built as a layer on top of the sys crates (e.g. a "rusty-image-app" may depend on high-level "png-rs", which depends on low-level "libpng-sys", which depends on "libz-sys").
+
+---
+
+* `libperl-sys` 生の Perl API そのもの
+* `libperl-rs` それを Wrap したもの
+
+としてみました。
+
+---
+
+## 残る問題：移植性
+
+---
+
+* マルチスレッド対応の有無で `struct PerlInterpreter` の中身が別物に
+
+```rust
+// Imain_start が有るのは threaded 版の libperl のみ
+unsafe {(*perl.my_perl).Imain_start};
+```
+
+* C では Cプリプロセッサマクロで差異を吸収する仕組み  
+← bindgen ではカバーできない
+
+---
+
+
 
 ---
 
