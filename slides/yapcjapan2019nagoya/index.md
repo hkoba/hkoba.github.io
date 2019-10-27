@@ -450,7 +450,7 @@ fn main() {
 
 <!-- .slide: class="tiny" -->
 
-## 次は bindgen の検証
+## <small>次は</small> bindgen <small>の検証</small>
 
 * AST を舐めるには Perl の内部構造にも Rust の型定義を与える必要が有る
 * 手書きだと実用上は厳しいので…
@@ -642,13 +642,6 @@ https://kornel.ski/rust-sys-crate
 
 ---
 
-### Perl の API は
-#### Cプリプロセッサマクロに大きく依存
-
-↑ bindgen ではカバーされない
-
----
-
 <!-- .slide: class="small" -->
 
 ### Perlは内部構造も多様
@@ -659,6 +652,17 @@ https://kornel.ski/rust-sys-crate
     unsafe {(*perl.my_perl).Imain_start};
     ```
 * Perl バージョンごとの、内部構造の変化も
+
+---
+
+### Perl の API は
+#### Cプリプロセッサマクロに大きく依存
+
+```text
+#define PadnameTYPE(pn)		(pn)->xpadn_type_u.xpadn_typestash
+```
+
+↑ bindgen ではカバーされない
 
 ### → これをどう吸収するか<!-- .element: class="fragment" -->
 
@@ -693,3 +697,20 @@ fn get_main_root(_perl: &Perl) -> *const op {
     unsafe {libperl_sys::PL_main_root}
 }
 ```
+
+* 今の所、手書き…
+
+---
+
+# 3. まとめ
+
+---
+
+## 3. まとめ
+
+* FFI からの Rust 入門、<small>人によっては</small>有りかも…
+  * 特に、よく知ったライブラリなら
+  * bindgen、 <small>完璧ではないけど</small>期待できそう
+  * gdb サポートが<small>完璧ではないけど</small>十分使える
+* [実践Rust入門](https://gihyo.jp/book/2019/978-4-297-10559-4)、良い本ですね
+* Rust 楽しい、皆さんも是非
