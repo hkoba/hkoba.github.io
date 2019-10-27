@@ -17,48 +17,68 @@ ___
   - 前提の再確認(置かれた立場、悩みを言語化して共有)
   - なぜ Rust ? (理由を言語化して欲しい)
   - どう Rust を導入する？(業務へ導入する戦略も、言語化して欲しい)
-- Perl の内部に詳しい人と、それ以外と、両方を喜ばせたい
+- Perl の内部に詳しい人を喜ばせつつ、そうでなくても置いていかれない。
+
+---
+
+## 今日、伝えたいこと
+
+* <small>内部まで良く知った</small>ライブラリ<small>(C言語ベース)</small>が有る人<small>なら</small>
+* <small>いきなり</small>FFI 書いて Rust 入門、<small>も有りかも</small>？
 
 ---
 
 <!-- .slide: class="small" -->
 
-### 自己紹介
+### 自己紹介: hkoba
 
-* 大昔 Perl/Tk の日本語化 <small>(1995〜96)</small>
-* <small>(流行らなかった)</small>MMO ゲームのサーバー側開発 C++ <small>(1997〜2000)</small>
-* 組み込み Linux <small>知人と起業</small><small>(2000〜2002)</small>
-* 今は<small>(名ばかりの)</small>フリーランスな Perl屋
+<img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
+
+
+
+* 大昔、Perl/Tk の日本語化 <small>(1995〜96)</small>
+* <small>(流行らなかった)</small> MMO ゲームのサーバー側開発 C++ <small>(1997〜2000)</small>
+* 今は <small>(名ばかりの)</small> フリーランスな Perl屋
+  - <p><small>**`"use strict"` なテンプレートエンジン**
+  [YATT::Lite](https://github.com/hkoba/yatt_lite#yattlite---template-with-use-strict-) 作ってます(→[簡単な紹介](../langimpl1/index.html#/))</small></p>
 
 ---
 
 ### 今日の内容
 
-1. 動機<small>（なんで Rust で libperl？）</small>
-2. どんな学習プロセスを<small>辿ったか</small>
-  - 使えるか？確認<small>(技術検証)</small>
-  - bindgen してみた
+1. 動機<small>（悩みは何？なんで libperl？なんで Rust ？）</small>
+2. Rust への入門、体験記
+  - <small>本当に使えるの？(技術検証)</small>
+  - <small>bindgen してみた</small>
+3. まとめ
+
+---
+
+# 1. 動機
 
 ---
 
 ## 1. 動機
 
+- おっさんPerlプログラマーの悩み
+- <small>個人的に、Perlで</small>限界を感じている点
+- Rust を組み合わせると…？
+
 ---
 
 ### おっさんプログラマーの悩み
 
-#### 心血注いで築き上げたライブラリ資産が
+#### 心血注いで築き上げたライブラリ,経験etc資産が
 #### `言語ごと流行から外れて`
 #### 負債呼ばわりされる現実
 
 ### グギギ
 
-
 ---
 
 <!-- .slide: class="small" -->
 
-#### 流行りの言語のメリットは、分かる
+#### 近代的な/流行りの言語のメリットは、分かる
 #### 型に守られたパターンマッチとか、欲しい
 
 <small>ex. [MinCaml の inline.ml (抜粋)](http://esumii.github.io/min-caml/min-caml.html#inline_g)</small>
@@ -84,6 +104,45 @@ http://esumii.github.io/min-caml/tutorial-mincaml-9.htm
 
 ---
 
+### <small>個人的に、Perlで</small>限界を感じている点
+
+### →静的なエラー検査が不十分<!-- .element: class="fragment" -->
+
+---
+
+### 注: Perlにも静的な型検査は有る
+
+Since [perl5.005](https://metacpan.org/pod/distribution/perl/pod/perl5005delta.pod#fields)<small>(1998-07-22)</small>
+
+```perl
+package Position { use fields qw/line character/ };
+
+my Position $pos = +{};
+$pos->{characterrrr} = 8; # ←これは静的にエラーになる
+```
+
+※ `use strict` 前提
+
+---
+
+### …けど弱い…
+
+```perl
+# XXX: typo を見つけてくれない
+my Position $p = +{line => 3, characterrrrr => 8};
+
+# XXX: 引数/戻り値の型の mismatch は検出してくれない
+# XXX Range が欲しい所に Position を渡してもエラーにならない
+range_to_something(pos_of_foo($foo));
+
+sub pos_of_foo { ...; my Position $pos =...; return $pos }
+sub range_to_something { (my Range $range) = @_;  ... }
+```
+
+#### ↑これを検出できれば、もう少し戦えるのだけど…
+
+---
+
 #### … Perl は内部に AST を持ってますね …
 
 [![](img/perldoc-perlinterp-optrees.png)](https://perldoc.perl.org/5.30.0/perlinterp.html#OP-TREES)
@@ -91,36 +150,57 @@ http://esumii.github.io/min-caml/tutorial-mincaml-9.htm
 
 ---
 
+#### 変数の型を取り出す内部APIも存在
 
-## この Perl の AST を
-#### 流行りの言語から
-### 舐められないか？
+[perldoc perlintern](https://perldoc.perl.org/5.30.0/perlintern.html#PadnameTYPE)
+
+
+```C
+	HV *	PadnameTYPE(PADNAME pn)
+```
+
+
+#### 内部APIを <small>(perl の `B::` モジュールか, C言語レベルで)</small>叩く事は可能
+
+### ↑ ただ、それを書く時の<!-- .element: class="fragment" -->
+### perl や C の型検査が弱いままでは…<!-- .element: class="fragment" -->
+
+
 
 ---
 
-#### そういえば Rust がそろそろ落ち着いたぽい？
 
-[日本語で、本が出るくらいに](https://gihyo.jp/book/2019/978-4-297-10559-4)
-
-![](http://image.gihyo.co.jp/assets/images/cover/2019/9784297105594.jpg)
-
----
-
-いっちょ触ってみますか！
+#### けど
+## 近代的な言語で
+#### Perl の AST を読める
+### なら話が変わる
 
 ---
 
-#### ところで
+#### では
 ## なぜ Rust？
 
-* 言語A の GC + 別の言語B のGC  
+* 処理系A の GC `+` 別の処理系B のGC  
 → 深い注意が必要
-* Rust は GC を持たない<small>（代わりに寿命を静的に型検査）</small>  
-→ GC を持つ他の言語処理系と組合せやすそう
+* Rust は GC を押し付けない<small>（代わりに寿命を静的に型検査）</small>  
+→ GC を持つ他の処理系とも、組合せやすそう
 
 ---
 
-### 2. どんな学習プロセスを<small>辿ったか</small>
+#### …Rust の変化も、そろそろ落ち着いたぽい？
+
+[日本語で、本が出るくらいに…](https://gihyo.jp/book/2019/978-4-297-10559-4)
+
+[![](http://image.gihyo.co.jp/assets/images/cover/2019/9784297105594.jpg)](https://gihyo.jp/book/2019/978-4-297-10559-4)
+
+---
+
+### いっちょ触ってみますか！
+
+---
+
+# 2. Rust への入門
+# 体験記
 
 ---
 
@@ -128,11 +208,11 @@ http://esumii.github.io/min-caml/tutorial-mincaml-9.htm
 
 ### まず技術検証
 
-1. チュートリアルには手を付ける<small>（最低限の知識を得る）</small>
-2. 最も簡単そうな<small>（でも実現すると個人的にアガる）</small>目標を定める
+1. **チュートリアル** には手を付ける<small>（最低限の知識を得る）</small>
+2. 最も簡単そうな<small>（でも実現すると **個人的にアガる** ）</small>**目標** を定める
 3. コード書く  
 → 動かない<small>(コンパイル通らない, SEGVする)</small>  
-→ 本に戻って知識を補う/StackOverflow検索  
+→ エラーメッセージで検索/本に戻って知識を補う  
 → ∞
 
 
@@ -146,14 +226,14 @@ http://esumii.github.io/min-caml/tutorial-mincaml-9.htm
   1. `Getting Started` <small>/ `事始め`</small>
   2. `Programming a Guessing Game` <small>/ `数当てゲームをプログラムする`</small>
 2. 目標は `perl_parse()` 
-3. 実践Rust入門の `12章. FFI` を読みながら、perl_parse() を呼ぶコードを書いてみる
+3. [実践Rust入門](https://gihyo.jp/book/2019/978-4-297-10559-4)の `12章. FFI` を読みながら、perl_parse() を呼ぶコードを書いてみる
   - 理解に必要な語/概念が出てくる章を芋づる式に読む
 
 ---
 
 ### [perl_parse()](https://perldoc.perl.org/5.30.0/perlapi.html#perl_parse) とは
 
-コンパイルだけを済ませる Perl の API
+スクリプトのコンパイルだけを済ませるAPI
 
 ```C
 int	perl_parse(PerlInterpreter *my_perl,
@@ -168,32 +248,33 @@ PerlInterpreter *my_perl = perl_alloc();
 
 perl_construct(my_perl);
 
-if (!perl_parse(my_perl, xs_init, argc, argv, (char **)NULL))
+rc = perl_parse(my_perl, xs_init, argc, argv, (char **)NULL);
 
-    perl_run(my_perl);
+/* その後, perl_run(my_perl); */
 ```
 
-___
+---
 
-`-c` オプション付きで perl を呼び出すと、perl_parse までで
-ストップしてくれる
+`perl -c`  == `perl_parse()`
 
 ```sh
-perl -ce 'print "FOO\n";
+% perl -ce 'print "FOO\n";
 if ;
 print "BAR";
 '
 syntax error at -e line 2, near "if ;"
 -e had compilation errors.
+%
 ```
 
 
 ---
 
-### 同じことを Rust でしたい
+### ↓これを Rust でしたい
 
 ```C
 PerlInterpreter *my_perl = perl_alloc();
+
 perl_construct(my_perl);
 
 rc = perl_parse(my_perl, xs_init, argc, argv, (char **)NULL));
@@ -206,13 +287,11 @@ rc = perl_parse(my_perl, xs_init, argc, argv, (char **)NULL));
 
 ---
 
-### 「実践Rust入門」に書いてありました
+### 「[実践Rust入門](https://gihyo.jp/book/2019/978-4-297-10559-4)」に<small>書いてありました</small>
 
-`12-2-7` Opaque と空の列挙型
-
-Opaque == 不透明, 中が見えない
-
-ポインタの先のことは、Rust 側では関知しない、というアプローチ
+* `12-2-7` Opaque と空の列挙型
+  - Opaque == 不透明, 中が見えない
+  - ポインタの先のことは、Rust 側では関知しない、というアプローチ
 
 ---
 
@@ -277,17 +356,55 @@ let s = CString::new("foo").unwrap();
 let p = unsafe {s.as_ptr()};
 ```
 
-* lifetime を理解せずに CString を使って SEGV
-* gdb で見て、理由は分かったけど、Rust 的に正しい書き方が分からない
+↓こうしてみた。
+
+```rust
+fn cstr(s: &str) -> *const c_schar {
+    CString::new(s).unwrap().as_ptr()
+}
+
+let args = vec![cstr("-e0"), ptr::null()];
+```
 
 ---
 
-* [StackOverflow の記事](https://stackoverflow.com/questions/34379641/how-do-i-convert-rust-args-into-the-argc-and-argv-c-equivalents)で解決
+
+## SEGV!
+
+![](img/first-segv.png)
+
+---
+
+### ダメ元で gdb
+
+![](img/gdb-bt1.png)
+
+### …あれ、読めそう…
+
+---
+
+![](img/gdb-print-up-up-print.png)
+
+C 側も Rust 側も普通に print 出来る…
+
+### 普通に開発出来そう…<!-- .element: class="fragment" -->
+
+---
+
+* gdb で見て、理解
+* lifetime を理解せずに CString を使って  
+  SEGV したりゴミを渡したりが原因だった
+
+---
+
+* 最後は[StackOverflow の記事](https://stackoverflow.com/questions/34379641/how-do-i-convert-rust-args-into-the-argc-and-argv-c-equivalents)で解決
 
 ![](img/so-rust-args-cstring.png)
 
 
 ---
+
+大体、こんなコードに
 
 ```rust
 fn main() {
@@ -321,7 +438,7 @@ fn main() {
 
 ![](img/handmade-ffi-worked.png)
 
-<small>ちゃんと `perl -wc` と同じ働きをしてる！</small>
+<small>ちゃんと `perl -c` と同じ働きをしてる！</small>
 
 ---
 
@@ -343,10 +460,20 @@ fn main() {
 
 ### bindgen とは
 
-C のヘッダを渡すと Rust のヘッダを吐いてくれる！
+C のヘッダから Rust のコードを生成するライブラリ
+
+```rust
+bindgen::Builder::default()
+           .header("wrapper.h")
+           .generate()
+           .expect("Unable to generate")
+           .write_to_file(out_path.join("bindings.rs"))
+```
+
+コマンド行でも試せる
 
 ```sh
-$ bindgen input.h -o bindings.rs
+% bindgen input.h -o bindings.rs
 ```
 
 <small>
@@ -366,7 +493,7 @@ https://rust-lang.github.io/rust-bindgen/command-line-usage.html
 #include <perl.h>                 /* from the Perl distribution     */
 ```
 
-bindgen を試しに呼んで、出た Rust コードを読む
+bindgen を試しに呼んで、出た Rust コードを眺める
 
 ```sh
 % ccopts=($(
@@ -377,7 +504,38 @@ bindgen を試しに呼んで、出た Rust コードを読む
 % bindgen wrapper.h -- $ccopts | less
 ```
 
-→行けそう
+<small>ちなみに 1.5MB</small>
+
+---
+
+例えば `struct sv` <small>(perl 内部のスカラー値)</small>
+
+```rust
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct sv {
+    pub sv_any: *mut ::std::os::raw::c_void,
+    pub sv_refcnt: U32,
+    pub sv_flags: U32,
+    pub sv_u: sv__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union sv__bindgen_ty_1 {
+    pub svu_pv: *mut ::std::os::raw::c_char,
+    pub svu_iv: IV,
+    pub svu_uv: UV,
+    pub svu_nv: NV,
+    pub svu_rv: *mut SV,
+    pub svu_array: *mut *mut SV,
+    pub svu_hash: *mut *mut HE,
+    pub svu_gp: *mut GP,
+    pub svu_fp: *mut PerlIO,
+    _bindgen_union_align: u64,
+}
+```
+
+bindgenしゅごい…これを使えると楽…
 
 ---
 
@@ -389,14 +547,13 @@ bindgen を試しに呼んで、出た Rust コードを読む
 
 ---
 
-#### ためしにエラーになるコードを手で削ってみる
-
-→ビルド通るじゃん？動くじゃん？  
-→ `::new()` とか `.parse()` とか書き始めてみる
+* 一部の定数の定義が、本当に二回出ていた。
+* → 一方を手で削ってみる
+* → ビルド通るじゃん？
 
 ---
 
-### 折角だから OP TREE を舐めてみるぜ！
+#### → `::new()` とか `.parse()` とか書き始めてみる
 
 ```rust
 fn main() {
@@ -404,6 +561,13 @@ fn main() {
 
     let _rc = perl.parse(std::env::args());
     
+```
+
+---
+
+### 折角だから OP TREE を舐めてみるぜ！
+
+```rust
     let mut op: *const c_perl::op = unsafe {(*perl.my_perl).Imain_start};
 
     while !op.is_null() {
@@ -417,8 +581,6 @@ fn main() {
         );
         op = unsafe {(*op).op_next as *const c_perl::op};
     }
-}
-
 ```
 
 `unsafe` の嵐！
@@ -433,24 +595,24 @@ fn main() {
 
 →コード公開しよう
 
----
+___
 
 <!-- .slide: class="small" -->
 
 ### でも名前はどうする？
 
-* [perl](https://crates.io/crates/perl) は既にある
+* [perl](https://crates.io/crates/perl) という名前の crate は既にある
   - ただし用途は違う
     - 向こうは Perl → Rust
     - こちらは Rust → Perl
 
----
+___
 
 ### 呟いてみた
 
 ![](img/naming-sys-crate.png)
 
----
+___
 
 #### RTしてもらえて、レスをもらえた！
 
