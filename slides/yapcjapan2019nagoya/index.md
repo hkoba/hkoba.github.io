@@ -642,25 +642,54 @@ https://kornel.ski/rust-sys-crate
 
 ---
 
-* マルチスレッド対応の有無で `struct PerlInterpreter` の中身が別物に
+### Perl の API は
+#### Cプリプロセッサマクロに大きく依存
 
-```rust
-// Imain_start が有るのは threaded 版の libperl のみ
-unsafe {(*perl.my_perl).Imain_start};
+↑ bindgen ではカバーされない
+
+---
+
+<!-- .slide: class="small" -->
+
+### Perlは内部構造も多様
+
+* マルチスレッド対応の有無で `struct PerlInterpreter` の中身が別物に
+    ```rust
+    // Imain_start が有るのは threaded 版の libperl のみ
+    unsafe {(*perl.my_perl).Imain_start};
+    ```
+* Perl バージョンごとの、内部構造の変化も
+
+### → これをどう吸収するか<!-- .element: class="fragment" -->
+
+---
+
+<!-- .slide: class="small" -->
+
+* Perl の `Config.pm` から libperl のビルドオプションを取得
+* Rust の build オプションを生成
+
+```
+  cargo:rustc-cfg=perl_useithreads
+    :
+  cargo:rustc-cfg=perlapi_ver24
+  cargo:rustc-cfg=perlapi_ver26
+  cargo:rustc-cfg=perlapi_ver28
+    :
 ```
 
-* C では Cプリプロセッサマクロで差異を吸収する仕組み  
-← bindgen ではカバーできない
-
 ---
 
+* Rust で条件コンパイル
 
+```rust
+#[cfg(perl_useithreads)]
+fn get_main_root(perl: &Perl) -> *const op {
+    unsafe {*perl.my_perl}.Imain_root
+}
 
----
-
-* libperl
-  - Perl の Configure で `-Duseshrplib` 
-  - [Building a shared Perl library](https://metacpan.org/pod/distribution/perl/INSTALL#Building-a-shared-Perl-library)
-
-* `-Dusethreads`
-
+#[cfg(not(perl_useithreads))]
+fn get_main_root(_perl: &Perl) -> *const op {
+    unsafe {libperl_sys::PL_main_root}
+}
+```
