@@ -1,0 +1,5 @@
+type	article
+url	https://hkoba.github.io/slides/yapcjapan2019nagoya/
+title	Rust に入門したくて！libperl を bindgen してPerl の ASTを舐め始めた話
+image	https://hkoba.github.io/slides/yapcjapan2019nagoya/img/front.jpg
+description	おっさんPerlプログラマーが（Perl を素材にして）Rust へ入門してみた体験をお話します

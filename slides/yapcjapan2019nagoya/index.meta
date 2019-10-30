@@ -1,0 +1,7 @@
+<meta property="og:description" content="おっさんPerlプログラマーが（Perl を素材にして）Rust へ入門してみた体験をお話します">
+<meta property="og:image" content="https://hkoba.github.io/slides/yapcjapan2019nagoya/img/front.jpg">
+<meta property="og:title" content="Rust に入門したくて！libperl を bindgen してPerl の ASTを舐め始めた話">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hkoba.github.io/slides/yapcjapan2019nagoya/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:creator" content="@hkoba">
