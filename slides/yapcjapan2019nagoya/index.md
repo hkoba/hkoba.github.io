@@ -11,13 +11,12 @@ ___
 
 <!-- .slide: class="tiny" -->
 
-### 誰に何を話すか
+### `libperl` って何？
 
-- Rust に入門する話が一番広そう(背中を押してほしい人？)
-  - 前提の再確認(置かれた立場、悩みを言語化して共有)
-  - なぜ Rust ? (理由を言語化して欲しい)
-  - どう Rust を導入する？(業務へ導入する戦略も、言語化して欲しい)
-- Perl の内部に詳しい人を喜ばせつつ、そうでなくても置いていかれない。
+![](img/libperl.png)
+
+* Perl の言語エンジンとしての API を収めた共有ライブラリ
+* Unix 版の Perl は標準ではこれをリンクするようビルドされる
 
 ---
 
@@ -25,6 +24,15 @@ ___
 
 * <small>内部まで良く知った</small>ライブラリ<small>(C言語ベース)</small>が有る人<small>なら</small>
 * <small>いきなり</small>FFI 書いて Rust 入門、<small>も有りかも</small>？
+
+---
+
+### 話さ `ない` こと
+
+* Rust 自体の説明
+  - 開発環境の整え方
+  - 構文
+  - 型、所有権
 
 ---
 
@@ -110,7 +118,7 @@ http://esumii.github.io/min-caml/tutorial-mincaml-9.htm
 
 ---
 
-### 注: Perlにも静的な型検査は有る
+### `注` : Perlにも静的な型検査は有る
 
 Since [perl5.005](https://metacpan.org/pod/distribution/perl/pod/perl5005delta.pod#fields)<small>(1998-07-22)</small>
 
@@ -131,8 +139,8 @@ $pos->{characterrrr} = 8; # ←これは静的にエラーになる
 # XXX: typo を見つけてくれない
 my Position $p = +{line => 3, characterrrrr => 8};
 
-# XXX: 引数/戻り値の型の mismatch は検出してくれない
 # XXX Range が欲しい所に Position を渡してもエラーにならない
+# つまり、引数/戻り値の型の mismatch は検出してくれない
 range_to_something(pos_of_foo($foo));
 
 sub pos_of_foo { ...; my Position $pos =...; return $pos }
@@ -143,14 +151,14 @@ sub range_to_something { (my Range $range) = @_;  ... }
 
 ---
 
-#### … Perl は内部に AST を持ってますね …
+#### … Perl は内部に AST <small>(Abstract Syntax Tree)</small>を持ってますね …
 
 [![](img/perldoc-perlinterp-optrees.png)](https://perldoc.perl.org/5.30.0/perlinterp.html#OP-TREES)
 
 
 ---
 
-#### 変数の型を取り出す内部APIも存在
+#### 変数の型を取り出す内部APIも存在…
 
 [perldoc perlintern](https://perldoc.perl.org/5.30.0/perlintern.html#PadnameTYPE)
 
@@ -162,9 +170,9 @@ sub range_to_something { (my Range $range) = @_;  ... }
 
 #### 内部APIを <small>(perl の `B::` モジュールか, C言語レベルで)</small>叩く事は可能
 
-### ↑ ただ、それを書く時の<!-- .element: class="fragment" -->
-### perl や C の型検査が弱いままでは…<!-- .element: class="fragment" -->
-
+#### ↑ ただ、それを書く時の<!-- .element: class="fragment" -->
+### perl や C の型検査が弱いままでは<!-- .element: class="fragment" -->
+#### トータルで辛さは減らない<!-- .element: class="fragment" -->
 
 
 ---
@@ -182,7 +190,7 @@ sub range_to_something { (my Range $range) = @_;  ... }
 
 * 処理系A の GC `+` 別の処理系B のGC  
 → 深い注意が必要
-* Rust は GC を押し付けない<small>（代わりに寿命を静的に型検査）</small>  
+* Rust は GC を押し付けない<small>（代わりに、値の寿命を静的に型検査）</small>  
 → GC を持つ他の処理系とも、組合せやすそう
 
 ---
@@ -655,11 +663,18 @@ https://kornel.ski/rust-sys-crate
 
 ---
 
+<!-- .slide: class="small" -->
+
 ### Perl の API は
 #### Cプリプロセッサマクロに大きく依存
 
-```text
-#define PadnameTYPE(pn)		(pn)->xpadn_type_u.xpadn_typestash
+* perl5.22 以後
+   ```text
+   #define PadnameTYPE(pn)		(pn)->xpadn_type_u.xpadn_typestash
+   ```
+* perl5.20 以前
+   ```text
+   #define PadnameTYPE(pn)		(SvPAD_TYPED(pn) ? SvSTASH(pn) : NULL)
 ```
 
 ↑ bindgen ではカバーされない
