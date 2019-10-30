@@ -603,15 +603,15 @@ fn main() {
 
 →コード公開しよう
 
-___
+---
 
 <!-- .slide: class="small" -->
 
 ### でも名前はどうする？
 
-* [perl](https://crates.io/crates/perl) という名前の crate は既にある
+* [perl](https://crates.io/crates/perl) という名前の crate が既に [crates.io](https://crates.io) に存在
   - ただし用途は違う
-    - 向こうは Perl → Rust
+    - 向こうは Perl → Rust<small>(Rust で Perl の拡張(XS) を書くためのもの)</small>
     - こちらは Rust → Perl
 
 ___
