@@ -58,3 +58,12 @@
 {
     font-size: 60%
 }
+
+.inline-block {
+    display: inline-block;
+}
+
+.reveal section small.tiny {
+    font-size: 30%;
+}
+
