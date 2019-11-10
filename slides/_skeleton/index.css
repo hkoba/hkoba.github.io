@@ -45,9 +45,25 @@
 
 /*************************************************/
 
-.reveal section.small table {
+.reveal section.small table
+, .reveal section.small > ul
+, .reveal section.small > ol
+, .reveal section.small > blockquote
+{
     font-size: 80%
 }
-.reveal section.small > ul {
+.reveal section.tiny > ul
+, .reveal section.tiny > ol
+, .reveal section.tiny > blockquote
+{
     font-size: 60%
 }
+
+.inline-block {
+    display: inline-block;
+}
+
+.reveal section small.tiny {
+    font-size: 30%;
+}
+
