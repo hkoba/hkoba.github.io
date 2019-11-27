@@ -507,7 +507,7 @@ bindgen を試しに呼んで、出た Rust コードを眺める
 % ccopts=($(
    perl -MExtUtils::Embed -e ccopts |
    perl -nle 'print for grep /^-[DI]/, split'
-  )
+  ))
 
 % bindgen wrapper.h -- $ccopts | less
 ```
