@@ -23,6 +23,8 @@ Hello world
 
 勿論モジュールとして使える
 
+詳しくは [blog 読んで〜](https://hkoba.hatenablog.com/entry/2020/04/23/082319)
+
 ---
 
 ```perl
