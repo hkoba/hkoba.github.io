@@ -1,9 +1,67 @@
-# Tclの引数置換
+# word内の置換
 
-Tcl インタープリターは入力されたプログラムに対して [word 分割](./tcl_wordbreaking.md)を行ないます。その後、各々の word に対して置換と呼ばれる以下の処理を施します。
+Tcl インタープリターは [word 分割](./tcl_wordbreaking.md) が済んだ後の
+それぞれの word に対して、置換と呼ばれる以下の処理を施します。
+（ただし波括弧 `{..}` で quote されている word には置換は適用されません）
 
-* [コマンド置換](./command_substitution.md)
+## コマンド置換
 
-* [変数置換](./variable_substitution.md)
+word の中の四角括弧(square bracket) `[ .. ]` で表された部分は、更に別のコマンドとして実行され、
+その結果が元々 `[ .. ]` のあった個所に差し込まれます。
 
-* [バックスラッシュ置換](./backslash_substitution.md)
+```tcl
+puts "length of foo is [string length foo]"
+# => length of foo is 3
+```
+
+## 変数置換
+
+word の中に `$` で始まる英数字の並びが有れば、それは変数置換の対象となります。
+（未知の変数を参照した時は例外が発生し、コマンドの実行はそこで終了します）
+
+変数を作るための最も基本的なコマンドは `set` コマンドです。
+
+```tcl
+set var 5
+
+puts "var is $var"
+# => var is 5
+```
+
+
+## バックスラッシュ置換
+
+バックスラッシュはコマンド置換の `[` や変数置換の `$` などの
+文字をそのまま文字列に書きたい時に使います。
+また、C 言語に準じた改行文字 `\n` やタブ文字 `\t` などの記法も
+サポートしています。
+
+```tcl
+puts "Dollar sign is \$. Open square bracket is \[."
+# => Dollar sign is $. Open square bracket is [.
+
+puts Open\ curly\ brace\ is\ \{.
+# => Open curly brace is {.
+```
+
+### バックスラッシュを用いた行の継続
+
+なお、バックスラッシュは改行をコマンドの終わりとしないためにも使えます。
+一つのコマンドの行が長くなりすぎた時に行末を `\` で終わらせると、
+そのコマンドの引数の続きを次の行に書くことが出来ます。
+
+```tcl
+puts [string repeat foo \
+  3
+]
+# => foofoofoo
+```
+
+(注！ tclreadline のバージョンによっては↓以下の例がエラーになりますが、
+Tcl のプログラムとしては間違いではありません)
+
+```tcl
+string repeat foo \
+  3
+# => foofoofoo
+```

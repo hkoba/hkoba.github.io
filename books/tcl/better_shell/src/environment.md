@@ -4,10 +4,13 @@
 
 * OS は Fedora Linux を用います(現時点では Fedora32)
    * `dnf install tcl tcl-doc tcl-html tcllib`
+
 * Tcl の外側の、POSIXレベルの細かい移植性のための考察は省きます。お好きな人がどうぞ。
+
 * tclreadline が導入されて、 `~/.tclshrc` に設定されていることを前提としますが、
 無くても多くの例題は実行可能でしょう。
-* Windows の方が読む場合は ActiveTcl の wish を使って下さい。
+
+* Windows や Mac の方は ActiveTcl の wish を使って下さい。
 
 
 ## Tcl の起動
@@ -23,4 +26,11 @@
 (これは zsh の標準プロンプトです)
 
 ## コード例と出力の表記方法
+
+本書ではコードの例とその実行結果のペアをコードブロックで以下のように記載します。
+
+```tcl
+コードの例
+# => 実行結果
+```
 

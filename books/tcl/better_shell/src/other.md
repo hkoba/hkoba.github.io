@@ -411,5 +411,13 @@ namespace eval ::foo::bar {
 }
 ```
 
+
+
 # snit
+
+https://hkoba.hatenablog.com/entry/2017/12/10/140823
+
+https://core.tcl-lang.org/tcllib/doc/trunk/embedded/md/tcllib/files/modules/snit/snit.md
+
+https://wiki.tcl-lang.org/page/Snit%27s+Not+Incr+Tcl
 
