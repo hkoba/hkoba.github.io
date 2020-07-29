@@ -11,13 +11,8 @@ puts {The length of $s is [string length $s].}
 # => The length of $s is [string length $s].
 ```
 
-```tcl
-puts [format "Item: %s\t%5.3f" foo 3.8]
-# => Item: foo	3.800
-```
 
-
-### コマンド置換 `[..]` は word の要素となる
+### コマンド置換 `[..]` は word の要素
 
 
 ```tcl

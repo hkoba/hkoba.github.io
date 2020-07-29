@@ -1,4 +1,4 @@
-# インタープリタの役割、全部入り
+# インタープリタの役割（まとめ）
 
 以上の [word分割](./word_breaking_and_quoting.md)、[置換](./substitution.md)、[展開](./arg_expansion.md)を一つにまとめるとこの図のようになります。
 

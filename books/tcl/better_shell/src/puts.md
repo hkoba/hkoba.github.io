@@ -1,6 +1,6 @@
 # puts stdout 文字列
 
-先程も使ったように、Tcl で標準出力に文字列を出力するコマンドは `puts` コマンドです。
+先程も使ったように、Tcl で標準出力に文字列を出力するコマンドは [`puts`](https://www.tcl.tk/man/tcl8.5/TclCmd/puts.htm) コマンドです。
 
 ```tcl
 puts Hello
@@ -21,7 +21,7 @@ puts stdout Hello
  stdout は単なる文字列で、
 それ自体に特別な機能はありません。
 puts が第一引数を出力先チャネルの名前として扱うに過ぎません。
-同じ文字列 stdout を別のコマンド `string length` （文字列の長さを測る）や `string range` （文字列の指定範囲を取り出す）に渡してみましょう。
+同じ文字列 stdout を別のコマンド [`string length`](https://www.tcl.tk/man/tcl8.5/TclCmd/string.htm#M37) （文字列の長さを測る）や [`string range`](https://www.tcl.tk/man/tcl8.5/TclCmd/string.htm#M44) （文字列の指定範囲を取り出す）に渡してみましょう。
 
 ```tcl
 string length stdout

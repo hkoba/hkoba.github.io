@@ -14,12 +14,21 @@ puts "length of foo is [string length foo]"
 # => length of foo is 3
 ```
 
+コマンド置換の中も一つのコマンドなので、当然それを入れ子にすることも可能です。
+
+```tcl
+string repeat [string repeat f 3] 2
+# => ffffff
+string length [string repeat [string repeat f 3] 2]
+# => 6
+```
+
 ## 変数置換
 
 word の中に `$` で始まる英数字の並びが有れば、それは変数置換の対象となります。
 （未知の変数を参照した時は例外が発生し、コマンドの実行はそこで終了します）
 
-変数を作るための最も基本的なコマンドは `set` コマンドです。
+変数を作るための最も基本的なコマンドは [`set`](https://www.tcl.tk/man/tcl8.5/TclCmd/set.htm) コマンドです。
 
 ```tcl
 set var 5
@@ -42,6 +51,30 @@ puts "Dollar sign is \$. Open square bracket is \[."
 
 puts Open\ curly\ brace\ is\ \{.
 # => Open curly brace is {.
+```
+
+### 波括弧 quote `{}` の中では置換は起きない。バックスラッシュは word分割のみに作用
+
+波括弧quote `{}` の中では置換が起きません。これはバックスラッシュについても当てはまります。ただしそれ以前の word 分割で、バックスラッシュは `{...}` の中の
+ `{`, `}` を括弧として数えないためにも使われます。
+その場合、バックスラッシュは文字としてそのまま残ります。
+
+```tcl
+puts {Backslash is kept like \{ and \}.}
+# => Backslash is kept like \{ and \}.
+puts {Balanced quote is ok like { and }.}
+# => Balanced quote is ok like { and }.
+```
+
+これはつまり、波括弧 `{...}` の中にはバランスした（＝開き括弧と閉じ括弧が正しく対応した）形でしか `{`, `}` 文字を書くことが出来ないことを意味します。
+
+括弧の対応を無視して `{`, `}` 文字を書きたい時は、ダブルクォート `".."` を使います。
+
+```tcl
+puts "open curly brace {"
+# => open curly brace {
+puts "close curly brace }"
+# => close curly brace }
 ```
 
 ### バックスラッシュを用いた行の継続
