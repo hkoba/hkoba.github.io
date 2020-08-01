@@ -5,16 +5,18 @@ Tcl ではコマンドという語が指すものが文脈によって変化し�
 例えば以下のような Tcl プログラムが有ったとします。
 
 ```tcl
-string repeat foo 3
+puts foo
 string repeat bar 2
 ```
 
-- コマンド名（この場合は `string` 、又は `string repeat`）
+この時、コマンドという語が指すものは、以下の可能性が挙げられます。
 
-- その実体、呼ばれて実行されるもの。<small>（ C で実装された `StringReptCmd`）</small>
+- コマンド名（この場合は `puts` 、`string` あるいは `string repeat`）
 
-- 引数列も含めた一回の実行コマンド。<small>（`string repeat foo 3` 、 `string repeat bar 2` それぞれ）</small>
+- その実体、呼ばれて実行されるもの。<small>（ C で実装された `Tcl_PutsObjCmd`, `StringReptCmd`）</small>
 
-- 複数のコマンドの並びをグループにまとめた全体。
+- 引数列も含めた一回の実行コマンド。<small>（`puts foo` 、 `string repeat bar 2` それぞれ）</small>
+
+- 複数のコマンドの並び <small>（全体）</small>
 
 状況に応じて、意味を判断しながら読んで下さい。

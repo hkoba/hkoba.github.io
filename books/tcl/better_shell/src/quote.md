@@ -79,3 +79,12 @@ puts foo"bar"
 
 puts foo"bar}
 ```
+
+```tcl
+set foo --rsync-path="sudo rsync"
+```
+
+```
+wrong # args: should be "set varName ?newValue?"
+while evaluating {set foo --rsync-path="sudo rsync"}
+```
