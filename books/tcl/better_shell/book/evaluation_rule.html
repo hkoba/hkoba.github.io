@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>計算式 - Tcl As A Better Shell</title>
+        <title>Tcl インタープリターと評価のルール - Tcl As A Better Shell</title>
         
         
 
@@ -89,7 +89,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> はじめに</a></li><li class="chapter-item expanded "><a href="why_tcl_now.html"><strong aria-hidden="true">2.</strong> なぜ今さらTcl?</a></li><li class="chapter-item expanded "><a href="environment.html"><strong aria-hidden="true">3.</strong> 本書の環境</a></li><li class="chapter-item expanded "><a href="syntax.html"><strong aria-hidden="true">4.</strong> Tclの構文と評価ルール</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tcl_command.html"><strong aria-hidden="true">4.1.</strong> コマンド</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="command_command_command.html"><strong aria-hidden="true">4.1.1.</strong> コマンドという語の多義性</a></li><li class="chapter-item expanded "><a href="tcl_list.html"><strong aria-hidden="true">4.1.2.</strong> word列と Tcl リスト</a></li></ol></li><li class="chapter-item expanded "><a href="comment.html"><strong aria-hidden="true">4.2.</strong> コメント</a></li><li class="chapter-item expanded "><a href="tcl_wordbreaking.html"><strong aria-hidden="true">4.3.</strong> インタープリタとコマンドのword分割</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="puts.html"><strong aria-hidden="true">4.3.1.</strong> puts stdout</a></li><li class="chapter-item expanded "><a href="word_breaking_and_quoting.html"><strong aria-hidden="true">4.3.2.</strong> word分割とquote</a></li></ol></li><li class="chapter-item expanded "><a href="substitution.html"><strong aria-hidden="true">4.4.</strong> word内の置換</a></li><li class="chapter-item expanded "><a href="arg_expansion.html"><strong aria-hidden="true">4.5.</strong> wordの展開</a></li><li class="chapter-item expanded "><a href="tcl_interp_overall.html"><strong aria-hidden="true">4.6.</strong> インタープリタの役割（まとめ）</a></li><li class="chapter-item expanded "><a href="quote.html"><strong aria-hidden="true">4.7.</strong> quoteと置換の細かい話</a></li></ol></li><li class="chapter-item expanded "><a href="proc_expr_control.html"><strong aria-hidden="true">5.</strong> 手続き、計算式、制御構文</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="expr.html" class="active"><strong aria-hidden="true">5.1.</strong> 計算式</a></li><li class="chapter-item expanded "><a href="proc.html"><strong aria-hidden="true">5.2.</strong> 手続き</a></li></ol></li><li class="chapter-item expanded "><a href="tclobj.html"><strong aria-hidden="true">6.</strong> TclObjと内部表現</a></li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">7.</strong> 付録</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="comparison_with_bash.html"><strong aria-hidden="true">7.1.</strong> bashとの比較</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> はじめに</a></li><li class="chapter-item expanded "><a href="why_tcl_now.html"><strong aria-hidden="true">2.</strong> なぜ今さらTcl?</a></li><li class="chapter-item expanded "><a href="environment.html"><strong aria-hidden="true">3.</strong> 本書の環境</a></li><li class="chapter-item expanded "><a href="evaluation_rule.html" class="active"><strong aria-hidden="true">4.</strong> Tcl インタープリターと評価のルール</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tcl_command.html"><strong aria-hidden="true">4.1.</strong> コマンド</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="command_command_command.html"><strong aria-hidden="true">4.1.1.</strong> コマンドという語の多義性</a></li><li class="chapter-item expanded "><a href="tcl_list.html"><strong aria-hidden="true">4.1.2.</strong> word列と Tcl リスト</a></li></ol></li><li class="chapter-item expanded "><a href="comment.html"><strong aria-hidden="true">4.2.</strong> コメント</a></li><li class="chapter-item expanded "><a href="tcl_wordbreaking.html"><strong aria-hidden="true">4.3.</strong> インタープリタとコマンドのword分割</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="puts.html"><strong aria-hidden="true">4.3.1.</strong> puts stdout</a></li><li class="chapter-item expanded "><a href="word_breaking_and_quoting.html"><strong aria-hidden="true">4.3.2.</strong> word分割とquote</a></li></ol></li><li class="chapter-item expanded "><a href="substitution.html"><strong aria-hidden="true">4.4.</strong> word内の置換</a></li><li class="chapter-item expanded "><a href="arg_expansion.html"><strong aria-hidden="true">4.5.</strong> wordの展開</a></li><li class="chapter-item expanded "><a href="tcl_interp_overall.html"><strong aria-hidden="true">4.6.</strong> インタープリタの役割（まとめ）</a></li><li class="chapter-item expanded "><a href="quote.html"><strong aria-hidden="true">4.7.</strong> quoteと置換の細かい話</a></li></ol></li><li class="chapter-item expanded "><a href="proc_expr_control.html"><strong aria-hidden="true">5.</strong> 変数、手続き、計算式、制御構文</a></li><li class="chapter-item expanded "><strong aria-hidden="true">6.</strong> XXX: 名前空間</li><li class="chapter-item expanded "><strong aria-hidden="true">7.</strong> XXX: データ型とコマンド</li><li><ol class="section"><li class="chapter-item expanded "><strong aria-hidden="true">7.1.</strong> XXX: TclObjと内部表現</li><li class="chapter-item expanded "><strong aria-hidden="true">7.2.</strong> XXX: リスト</li><li class="chapter-item expanded "><strong aria-hidden="true">7.3.</strong> XXX: 文字列</li><li class="chapter-item expanded "><strong aria-hidden="true">7.4.</strong> XXX: 数値</li><li class="chapter-item expanded "><strong aria-hidden="true">7.5.</strong> XXX: ファイルとプロセス</li></ol></li><li class="chapter-item expanded "><strong aria-hidden="true">8.</strong> XXX: サブ・インタープリター</li><li class="chapter-item expanded "><strong aria-hidden="true">9.</strong> XXX: snit</li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">10.</strong> 付録</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="comparison_with_bash.html"><strong aria-hidden="true">10.1.</strong> bashとの比較</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -155,28 +155,66 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#数式-expr-コマンド" id="数式-expr-コマンド">数式. expr コマンド</a></h1>
-<pre><code class="language-tcl">expr 7.2 / 4
-
-expr {7.2 / 4}
-</code></pre>
-<pre><code class="language-tcl">set len [expr {[string length foobar] + 7}]
-</code></pre>
-<pre><code class="language-tcl">expr 2*asin(1.0)
-</code></pre>
+                        <h1><a class="header" href="#tcl-インタープリターと評価のルール" id="tcl-インタープリターと評価のルール">Tcl インタープリターと評価のルール</a></h1>
+<p>この章では Tcl インタープリター（Tcl interpreter）の働きについて学びます。
+公式マニュアルの <a href="https://www.tcl.tk/man/tcl8.5/TclCmd/Tcl.htm">Tcl の章</a>
+に相当する内容です。</p>
+<p>Tcl インタープリターとは Tcl プログラムの構造の解釈と実行を司るプログラムで、
+その実体は C言語で書かれたライブラリー <a href="https://www.tcl-lang.org/man/tcl8.5/TclLib/Eval.htm">libtcl</a> です。
+Tcl の言語エンジンと呼んでも良いでしょう。<code>tclsh</code> や <code>wish</code> も
+Tcl インタープリターをライブラリーとして組み込んだシェルです。</p>
+<p>Tcl インタープリターは、与えられたプログラムの構造を
+Tcl プログラムの書き方のルール（構文論：syntax）に従って読み解き、
+それを Tcl プログラムの実行の仕方に関するルール（意味論：semantics）に基づいて実行します。
+Tcl では、この２つの過程を合わせて <strong>評価</strong> （evaluation）と呼びます。</p>
+<p>Tcl は見かけ上、他のシェルやプログラミング言語に似せた書き方をする所もありますが、
+その正確な意味を理解しないままでプログラムを書くと、勘違いによるバグを引き起こすこともあります。
+ですので、Tcl インタープリターの挙動を正しく理解することは非常に重要です。</p>
+<h2><a class="header" href="#構文を要約するとtcl-のプログラムは" id="構文を要約するとtcl-のプログラムは">構文を要約すると、Tcl のプログラムは：</a></h2>
+<ul>
+<li>
+<p><a href="comment.html"><code>#</code> コメント</a>か、</p>
+</li>
+<li>
+<p><a href="tcl_command.html">コマンド</a>の集まりです。<br />
+→ それぞれのコマンドは：</p>
+<ul>
+<li>
+<p>（適切に quote された）<a href="word_breaking_and_quoting.html">word の集まりへと分割</a>されます。<br />
+→ それぞれのword の中は：</p>
+<ul>
+<li>
+<p>以下のいずれかの<a href="substitution">置換</a>か、</p>
+<ul>
+<li>コマンド <code>[]</code> 置換</li>
+<li>変数 <code>$</code> 置換</li>
+<li>バックスラッシュ <code>\</code> 置換</li>
+</ul>
+</li>
+<li>
+<p><small>（word 分割と置換に関わる文字を含まない）</small>只の文字列です。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>word の先頭が <code>{*}</code> 始まっている場合は、<a href="arg_expansion.html">引数展開</a>が適用されます。</p>
+</li>
+</ul>
+</li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="proc_expr_control.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="environment.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
                         
-                            <a rel="next" href="proc.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="tcl_command.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -188,13 +226,13 @@ expr {7.2 / 4}
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="proc_expr_control.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="environment.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="proc.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="tcl_command.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
