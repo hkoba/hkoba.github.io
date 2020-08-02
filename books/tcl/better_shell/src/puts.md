@@ -18,8 +18,17 @@ puts stdout Hello
 
 ここで重要なのは、 `stdout` という文字列は、
 他の言語で言うような予約語ではないことです。 **Tcl に予約語はありません**。
- stdout は単なる文字列で、
-それ自体に特別な機能はありません。
+
+Tcl インタープリターがコマンドを起動した後、そのコマンドが引数として渡された
+各 word をどう扱うかは、それぞれのコマンドに完全に委ねられています。例えば：
+
+* `string repeat foo 3` で言えば、
+`string` コマンドは第一引数 `repeat` をサブコマンドの名前として扱います。
+* `puts stdout {Hello world}` で言えば、
+`puts` コマンドは第一引数 `stdout` を出力先チャネル名として扱います。
+
+
+stdout は単なる文字列で、それ自体に特別な機能はありません。
 puts が第一引数を出力先チャネルの名前として扱うに過ぎません。
 同じ文字列 stdout を別のコマンド [`string length`](https://www.tcl.tk/man/tcl8.5/TclCmd/string.htm#M37) （文字列の長さを測る）や [`string range`](https://www.tcl.tk/man/tcl8.5/TclCmd/string.htm#M44) （文字列の指定範囲を取り出す）に渡してみましょう。
 

@@ -7,7 +7,7 @@ Tcl には Tcl リスト（以後、リストと呼びます）と呼ばれる�
 word1 word2 word3...
 ```
 
-* 各 word は、後に説明する [word分割](./word_breaking_and_quoting.md)、[置換](./substitution.md)、[展開](./arg_expansion.md)に関わる文字でない限り、そのまま書くことが出来ます。
+* Tcl リストの各 word は、後に説明する [word分割](./word_breaking_and_quoting.md)、[置換](./substitution.md)、[展開](./arg_expansion.md)に関わる文字でない限り、そのまま書くことが出来ます。
 * そうでない文字を含む word は、[quote](./word_breaking_and_quoting.md) される必要があります。
 * 空文字列もリストです。quote 記法で  `""`  `{}` と書きます。
 
@@ -28,8 +28,8 @@ lappend x baz
 # => foo bar baz
 ```
 
-Tcl のリストは YAML や JSON、S式などのような、シリアライズフォーマットです。
-リストを効率的に格納・操作するための内部データ構造とコマンドが揃っています。
+Tcl のリストは YAML や JSON、S式などのような、シリアライズフォーマットの一種です。<small>（ただし、普通のシリアライズフォーマットと違って、入れ子が正規化される、という性質があります）</small>
+Tcl には Tcl リストを効率的に格納・操作するための内部データ構造とコマンドが揃っています。
 
 これはコマンドを組み立てるコマンドを書くためにリスト操作のコマンド群を活用できることを意味しています。
 

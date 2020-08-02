@@ -19,6 +19,17 @@ string repeat foo 3
 # => foofoofoo
 ```
 
+* tclreadline が有効なら、 `str` まで入力した所で `<TAB>` キーを打てば、 `string` まで入力を補う補完機能が働きます。
+
+  * 更に `string ` の後で `<TAB>` を二回打てば、以下のようにサブコマンドの候補一覧が表示されます。 `rep` まで打って `<TAB>` を打てば `string repeat` の完成です。
+
+     ```
+      bytelength  index       map         replace     trim        wordstart
+      compare     is          match       tolower     trimleft    
+      equal       last        range       totitle     trimright   
+      first       length      repeat      toupper     wordend     
+     ```
+
 **word の間の空白文字を省略することは出来ません。**
 例えば `string repeat foo 1` の foo と 1 の間の空白文字を省略したつもりで、
 こう書いたとします＞

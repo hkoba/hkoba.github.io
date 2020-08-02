@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>変数、手続き、計算式、制御構文 - Tcl As A Better Shell</title>
+        <title>変数のスコープ - Tcl As A Better Shell</title>
         
         
 
@@ -89,7 +89,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> はじめに</a></li><li class="chapter-item expanded "><a href="why_tcl_now.html"><strong aria-hidden="true">2.</strong> なぜ今さらTcl?</a></li><li class="chapter-item expanded "><a href="environment.html"><strong aria-hidden="true">3.</strong> 本書の環境</a></li><li class="chapter-item expanded "><a href="evaluation_rule.html"><strong aria-hidden="true">4.</strong> Tcl インタープリターと評価のルール</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tcl_command.html"><strong aria-hidden="true">4.1.</strong> コマンド</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="command_command_command.html"><strong aria-hidden="true">4.1.1.</strong> コマンドという語の多義性</a></li><li class="chapter-item expanded "><a href="tcl_list.html"><strong aria-hidden="true">4.1.2.</strong> word列と Tcl リスト</a></li></ol></li><li class="chapter-item expanded "><a href="comment.html"><strong aria-hidden="true">4.2.</strong> コメント</a></li><li class="chapter-item expanded "><a href="tcl_wordbreaking.html"><strong aria-hidden="true">4.3.</strong> インタープリタとコマンドのword分割</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="puts.html"><strong aria-hidden="true">4.3.1.</strong> puts stdout</a></li><li class="chapter-item expanded "><a href="word_breaking_and_quoting.html"><strong aria-hidden="true">4.3.2.</strong> word分割とquote</a></li></ol></li><li class="chapter-item expanded "><a href="substitution.html"><strong aria-hidden="true">4.4.</strong> word内の置換</a></li><li class="chapter-item expanded "><a href="arg_expansion.html"><strong aria-hidden="true">4.5.</strong> wordの展開</a></li><li class="chapter-item expanded "><a href="tcl_interp_overall.html"><strong aria-hidden="true">4.6.</strong> インタープリタの役割（まとめ）</a></li><li class="chapter-item expanded "><a href="quote.html"><strong aria-hidden="true">4.7.</strong> quoteと置換の細かい話</a></li></ol></li><li class="chapter-item expanded "><a href="proc_expr_control.html" class="active"><strong aria-hidden="true">5.</strong> 変数、手続き、計算式、制御構文</a></li><li class="chapter-item expanded "><strong aria-hidden="true">6.</strong> XXX: 名前空間</li><li class="chapter-item expanded "><strong aria-hidden="true">7.</strong> XXX: データ型とコマンド</li><li><ol class="section"><li class="chapter-item expanded "><strong aria-hidden="true">7.1.</strong> XXX: TclObjと内部表現</li><li class="chapter-item expanded "><strong aria-hidden="true">7.2.</strong> XXX: リスト</li><li class="chapter-item expanded "><strong aria-hidden="true">7.3.</strong> XXX: 文字列</li><li class="chapter-item expanded "><strong aria-hidden="true">7.4.</strong> XXX: 数値</li><li class="chapter-item expanded "><strong aria-hidden="true">7.5.</strong> XXX: ファイルとプロセス</li></ol></li><li class="chapter-item expanded "><strong aria-hidden="true">8.</strong> XXX: サブ・インタープリター</li><li class="chapter-item expanded "><strong aria-hidden="true">9.</strong> XXX: snit</li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">10.</strong> 付録</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="comparison_with_bash.html"><strong aria-hidden="true">10.1.</strong> bashとの比較</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> はじめに</a></li><li class="chapter-item expanded "><a href="why_tcl_now.html"><strong aria-hidden="true">2.</strong> なぜ今さらTcl?</a></li><li class="chapter-item expanded "><a href="environment.html"><strong aria-hidden="true">3.</strong> 本書のサンプルの動作環境</a></li><li class="chapter-item expanded "><a href="evaluation_rule.html"><strong aria-hidden="true">4.</strong> Tcl インタープリターと評価のルール</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tcl_command.html"><strong aria-hidden="true">4.1.</strong> コマンド</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="command_command_command.html"><strong aria-hidden="true">4.1.1.</strong> コマンドという語の多義性</a></li><li class="chapter-item expanded "><a href="tcl_list.html"><strong aria-hidden="true">4.1.2.</strong> word列と Tcl リスト</a></li></ol></li><li class="chapter-item expanded "><a href="comment.html"><strong aria-hidden="true">4.2.</strong> コメント</a></li><li class="chapter-item expanded "><a href="tcl_wordbreaking.html"><strong aria-hidden="true">4.3.</strong> インタープリタとコマンドのword分割</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="puts.html"><strong aria-hidden="true">4.3.1.</strong> puts stdout</a></li><li class="chapter-item expanded "><a href="word_breaking_and_quoting.html"><strong aria-hidden="true">4.3.2.</strong> word分割とquote</a></li></ol></li><li class="chapter-item expanded "><a href="substitution.html"><strong aria-hidden="true">4.4.</strong> word内の置換</a></li><li class="chapter-item expanded "><a href="arg_expansion.html"><strong aria-hidden="true">4.5.</strong> wordの引数展開</a></li><li class="chapter-item expanded "><a href="tcl_interp_overall.html"><strong aria-hidden="true">4.6.</strong> インタープリタの役割（まとめ）</a></li><li class="chapter-item expanded "><a href="quote.html"><strong aria-hidden="true">4.7.</strong> quoteと置換の細かい話</a></li></ol></li><li class="chapter-item expanded "><a href="expr.html"><strong aria-hidden="true">5.</strong> サブ言語 Tcl 式（expr コマンド）</a></li><li class="chapter-item expanded "><a href="procedure.html"><strong aria-hidden="true">6.</strong> 手続き</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="proc_var_scope.html" class="active"><strong aria-hidden="true">6.1.</strong> 変数のスコープ</a></li><li class="chapter-item expanded "><strong aria-hidden="true">6.2.</strong> デフォルト引数、可変長引数</li><li class="chapter-item expanded "><strong aria-hidden="true">6.3.</strong> 無名手続き apply</li></ol></li><li class="chapter-item expanded "><a href="scriptfile.html"><strong aria-hidden="true">7.</strong> Tcl スクリプトのファイル化</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="executable_scriptfile.html"><strong aria-hidden="true">7.1.</strong> 実行可能なスクリプトファイル</a></li></ol></li><li class="chapter-item expanded "><strong aria-hidden="true">8.</strong> TclObjと内部表現</li><li class="chapter-item expanded "><strong aria-hidden="true">9.</strong> 名前空間</li><li class="chapter-item expanded "><strong aria-hidden="true">10.</strong> データ型とコマンド</li><li><ol class="section"><li class="chapter-item expanded "><strong aria-hidden="true">10.1.</strong> TclObjと内部表現</li><li class="chapter-item expanded "><strong aria-hidden="true">10.2.</strong> リスト</li><li class="chapter-item expanded "><strong aria-hidden="true">10.3.</strong> 文字列</li><li class="chapter-item expanded "><strong aria-hidden="true">10.4.</strong> 数値</li><li class="chapter-item expanded "><strong aria-hidden="true">10.5.</strong> ファイルとプロセス</li></ol></li><li class="chapter-item expanded "><strong aria-hidden="true">11.</strong> サブ・インタープリター</li><li class="chapter-item expanded "><strong aria-hidden="true">12.</strong> snit</li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">13.</strong> 付録</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="comparison_with_bash.html"><strong aria-hidden="true">13.1.</strong> bashとの比較</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -155,45 +155,48 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#変数手続き計算式制御構文" id="変数手続き計算式制御構文">変数、手続き、計算式、制御構文</a></h1>
-<pre><code class="language-tcl">set x 3
-# =&gt; 3
-set y 8
-# =&gt; 8
-expr {$x + $y}
-# =&gt; 11
-puts &quot;$x + $y = [expr {$x + $y}]&quot;
-# =&gt; 3 + 8 = 11
-</code></pre>
-<pre><code class="language-tcl">proc x+y {x y} {
-  puts &quot;$x + $y = [expr {$x + $y}]&quot;
+                        <h1><a class="header" href="#変数のスコープ" id="変数のスコープ">変数のスコープ</a></h1>
+<p>Tcl の変数は、手続きに閉じたスコープを持ちます。
+つまり、手続きの中で <code>set</code> コマンドを使って作られた変数は
+（特別なことをしない限り）その変数の中でのみ有効です。</p>
+<pre><code class="language-tcl">proc foo {} {
+  set x foo
+  bar
+  puts &quot;In foo, x is $x&quot;
+}
+proc bar {} {
+  set x bar
+  baz
+  puts &quot;In bar, x is $x&quot;
+}
+proc baz {} {
+  set x baz
+  puts &quot;In baz, x is $x&quot;
 }
 </code></pre>
-<pre><code class="language-tcl">x+y 3 8
-# =&gt; 3 + 8 = 11
-x+y 5 10
-# =&gt; 5 + 10 = 15
+<pre><code class="language-tcl">foo
+# =&gt; In baz, x is baz
+# =&gt; In bar, x is bar
+# =&gt; In foo, x is foo
 </code></pre>
-<pre><code class="language-tcl">set x 3
-# =&gt; 3
-set y 8
-# =&gt; 8
-expr {$x &lt; $y}
-# =&gt; 1
-expr {$x &gt;= $y}
-# =&gt; 0
-proc &lt; {x y} {
-  if {$x &lt; $y} {
-    puts &quot;$x is less than $y&quot;
+<h2><a class="header" href="#tcl-の変数はブロックスコープではありません" id="tcl-の変数はブロックスコープではありません">Tcl の変数はブロックスコープではありません</a></h2>
+<p>Tcl の構文は <code>proc</code>, <code>if</code>, <code>foreach</code> ... などでスクリプトの固まりを <code>{..}</code>
+で表現しますが、 C 言語などと違って、変数のスコープはその <code>{..}</code> ではなく、
+手続き全体になります。</p>
+<pre><code class="language-tcl">proc foobar yn {
+  if {$yn} {
+    set x FOOO!
   } else {
-    puts &quot;$x is greater than or equal to $y&quot;
+    set y BARR!
   }
+  # info vars は現在のスコープで見える変数名をパターンで検索し返すコマンド
+  info vars *
 }
-
-&lt; 3 8
-# =&gt; 3 is less than 8
-&lt; 8 3
-# =&gt; 8 is greater than or equal to 3
+</code></pre>
+<pre><code class="language-tcl">foobar 1
+# =&gt; yn x
+foobar 0
+# =&gt; yn y
 </code></pre>
 
                     </main>
@@ -201,13 +204,13 @@ proc &lt; {x y} {
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="quote.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="procedure.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
                         
-                            <a rel="next" href="appendix.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="scriptfile.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -219,13 +222,13 @@ proc &lt; {x y} {
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="quote.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="procedure.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="appendix.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="scriptfile.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
