@@ -1,0 +1,6 @@
+[book]
+authors = ["Kobayasi, Hiroaki"]
+language = "en"
+multilingual = false
+src = "src"
+title = "モジュール兼コマンド（Modulino - モジュリーノ）再考"
