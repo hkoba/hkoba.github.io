@@ -8,5 +8,7 @@
   - [UnitTest の実行](./modulino_for_tests.md)
   - [主要な機能の実行](./modulino_for_main_function.md)
   - [任意の関数のDispatch](./modulino_with_dispatcher.md)
+  - [ObjectのnewとメソッドのDispatch](./modulino_with_method_dispatcher.md)
+- [まとめ](./summary.md)
 - [付録]()
-  - [例：Hello world](./eg-hello.md)
+  - [言語別 Modulino の実現方法](./eg-hello.md)

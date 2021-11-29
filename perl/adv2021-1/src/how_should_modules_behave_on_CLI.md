@@ -10,6 +10,6 @@
 
 3. 任意の関数への Dispatcher
 
-4. オブジェクトの任意のメソッドの Dispatcher
+4. Object の new と任意のメソッドの Dispatcher
 
 - - - -
