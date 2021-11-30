@@ -37,11 +37,21 @@ unless (caller) {
 この方法のメリットは
 
 - （`$self` とそこから初期化される変数に限れば）オブジェクトを扱える
+
 - 前節同様、メソッドの引数に HASH/ARRAY を渡したい場合は JSON を使う方法が使える
+
   - parse_options でも JSON の decode を行えば、HASH/ARRAY を new に渡せる
+
 - 出力も JSON に揃えると、組み合わせやすさが更に向上する
+
 - Modulino 化のためのモジュールを作っておくことも可能。
 CLI から Object の API へのマッピングが統一できるので、使えば使うほど馴染む。
+私の [MOP4Import::Base::CLI_JSON](https://metacpan.org/pod/MOP4Import::Base::CLI_JSON) も参考にどうぞ
+
+- サブコマンドと new のオプションを補完できると、更に使用感が改善する
+     <iframe id="ytplayer" type="text/html" width="640" height="360"
+       src="https://www.youtube.com/embed/1UlTmIHMVfA?autoplay=0&origin=https://hkoba.github.io"
+       frameborder="0"></iframe>
 
 
 ### この方法の短所
