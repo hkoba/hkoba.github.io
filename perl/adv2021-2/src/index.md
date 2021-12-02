@@ -9,7 +9,7 @@
 メリットと、そのためのコードの書き方について解説しました。
 
 この記事では Perl で Modulino を開発の中心に据えた時に遠からず直面する、
-ライブラリ・ロードパスの設定の問題と、その解決策として hkoba 作
+ライブラリ・ロードパスの設定の問題と、その解決策としての hkoba 作
 [File::AddInc](https://metacpan.org/dist/File-AddInc/view/lib/File/AddInc.pod) について解説します。
 
 - - - -
