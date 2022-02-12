@@ -13,9 +13,7 @@ marp: true
 
 ---
 
-<!-- .slide: class="small" -->
-
-### 私の Issue Tracker 遍歴
+## 私の Issue Tracker 遍歴
 
 - [CVSTrac](http://www.cvstrac.org/home/doc/trunk/www/index.html)<small>（[SQLite](https://www.sqlite.org/index.html) の [drh](https://en.wikipedia.org/wiki/D._Richard_Hipp) が自分のために作った）</small>
 - [Redmine](https://redmine.jp/)
@@ -28,9 +26,7 @@ marp: true
 
 ---
 
-<!-- .slide: class="small" -->
-
-### なぜ GitLab に?
+## なぜ GitLab を選んだ?
 
 - グループ機能
   - ex. `チーム/プロジェクト/リポジトリ`
@@ -42,44 +38,44 @@ marp: true
   - 無課金スタート→実績積み
 
 ---
-
-## import どうだった？
+# Gitea からの import、どうだった？
 
 ---
 
-<!-- .slide: class="tiny" -->
+## 最初は[公式機能](https://docs.gitlab.com/ee/user/project/import/gitea.html#import-your-project-from-gitea-to-gitlab)を試した
 
-### Gitea からの import
-
-[公式機能あり](https://docs.gitlab.com/ee/user/project/import/gitea.html#import-your-project-from-gitea-to-gitlab)
-
-- プロジェクト数が多いとWeb 画面の操作が大変
-
-- 正常
-  - リポジトリ
-- 問題あり
-  - issue が増えると取りこぼす<small>（gitea の API を叩くクライアントのページャのバグ）</small>
-- 未対応
+- Web 画面から gitea の API token を入れるだけで動く、お手軽
+  - プロジェクト数が多いとWeb 画面の操作が大変
+- リポジトリ → OK
+- issue → 多いと取りこぼす<small>（gitea の API を叩くクライアントのページャのバグ）</small>
+- 未対応？
   - PR 上のコメント
-  - Commit メッセージと issue のリンク
-  - プロジェクト Wiki
+  - Commit からの issue 参照が、issue 側に反映されない
 
 ---
 
-### どう解決したか
+## どう解決したか(1/4)
 
-- GitLab のソースを読み解き切り貼り  
-  gitlab-rails runner で動く gitea importer を書く
-- それを呼び出す ruby スクリプトを Gitea 側の DB データから生成
-- gitlab-rails runner に食わせる
+→公式の Importer を継承してページャを差し替え、バグを修正
 
+```ruby
+module GiteaImport
+  class Client < Gitlab::LegacyGithubImport::Client
+    def request(method, *args, &block)
+    def each_response_page(method, args, last_response)
+
+  class ProjectImporter
+    def execute
+```
 
 <small>余談：出来た gitea importer を公開する時のライセンスはどうすれば？  
 （アドバイス求む）</small>
 
-___
+---
 
-### 生成されたコードの例
+## どう解決したか(2/4)
+
+→足りない機能は ActiveRecord を直接叩く
 
 ```ruby
 puts "Importing repo devteam/NRA2/yllib1"
@@ -91,11 +87,7 @@ imp = GiteaImport::ProjectImporter.new(clnt, root, {
 imp.execute
 
 proj15 = imp.project
-```
 
-___
-
-```ruby
 review5 = Review.create!(
   author: (User.find_by_email 'rkodama@ssri.com'), 
   project: proj15, 
@@ -103,56 +95,31 @@ review5 = Review.create!(
   created_at: '2021-05-28T03:54:40Z')
 mr5 = MergeRequest.find_by(project: proj15, iid: 2)
 ```
+---
+## どう解決したか(3/4)
 
-___
+→ それを呼び出す ruby スクリプトを Gitea 側の DB データから生成
 
+```sh
+./GiteaQuery.pm generate_repo_importer \
+  $mygroup > importer.rb
 
-```ruby
-origPos5 = Gitlab::Diff::Position.new(
-  new_path: 'lib/Survey2.pm', 
-  head_sha: '012286ff7ccbac5a01ae47c89ce282d80e225252', 
-  start_sha: '7b7601ae0d141ccfd347b5f8755bc1f2f7e7c09c', 
-  new_line: 503, 
-  base_sha: '7b7601ae0d141ccfd347b5f8755bc1f2f7e7c09c', 
-  position_type: 'text', old_path: 'lib/Survey2.pm')
-print "diff_file => "; puts origPos5.diff_file(mr5)
-
-origPos5.define_singleton_method(:find_diff_file_from) do |noteable| origPos5.diff_file(noteable) end
-
-print "find_diff_file_from => "; puts origPos5.find_diff_file_from(mr5)
+# 中身は perl のコードなので自粛
 ```
-
-___
-
-<!-- .slide: class="tiny" -->
-
-```ruby
-reviewComment5 = Note.create!(
-  importing: true,
-  noteable_type: "Commit",
-  author: (User.find_by_email 'rkodama@ssri.com'),
-  project: (Project.find_by_full_path 'devteam/NRA2/yllib1'),
-  position: Gitlab::Diff::Position.new(..),
-  type: 'DiffNote',
-  note: 'このコードは…',
-  review: review5,
-  noteable: mr5,
-  original_position: origPos5)
-```
-
-___
-
-
-```ruby
-unless origPos5.diff_file(mr5).line_for_position(origPos5)
-  puts "  line_for_position is empty, monkey patching Note.create_diff_file..."
-  reviewComment5.define_singleton_method(:create_diff_file) do end
-end
-reviewComment5.save
-```
-
 
 ---
 
-### Redmine からの import
+## どう解決したか(4/4)
+
+gitlab-rails runner に食わせる
+
+```sh
+sudo gitlab-rails runner $PWD/impoter.rb
+```
+
+<small>もちろん、最初は gitlab-rails console から `load` で少しずつ結果を確認しながら合わせ込み</small>
+
+---
+
+# Redmine からの import、どうだった？
 
