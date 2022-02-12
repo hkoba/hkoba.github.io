@@ -1,13 +1,12 @@
-### Gitea, Redmine, CVSTrac から GitLab への
-### import で得た知見を駆け足で
-
-<img src="img/myfistrect.jpg" style="width: 64px; height: 64px">
-**@hkoba** [hkoba.github.io](https://hkoba.github.io/)
-→ [`GitLab Meetup JP` `#2`](https://hkoba.github.io/slides/gitlab-meetup-jp2/)
-
+---
+marp: true
 ---
 
-### 自己紹介
+## Gitea, Redmine, CVSTrac から GitLab への
+## import で得た知見を駆け足で
+
+![w:64px h:64px](img/myfistrect.jpg) **@hkoba** [hkoba.github.io](https://hkoba.github.io/)
+→ [`GitLab Meetup JP` `#2`](https://hkoba.github.io/slides/gitlab-meetup-jp2/)
 
 * <small>(名ばかりの)</small>フリーランス・プログラマ
   * 普段は Perl, TclTk, Zsh, Emacs Lisp
