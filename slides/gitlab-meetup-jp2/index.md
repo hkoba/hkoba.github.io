@@ -3,7 +3,7 @@ marp: true
 ---
 
 ## Gitea, Redmine, CVSTrac から GitLab への
-## import で得た知見を駆け足で
+## import で得た **個人的な** 知見を駆け足で
 
 ![w:64px h:64px](img/myfistrect.jpg) **@hkoba** [hkoba.github.io](https://hkoba.github.io/)
 → [`GitLab Meetup JP` `#2`](https://hkoba.github.io/slides/gitlab-meetup-jp2/)
@@ -32,7 +32,7 @@ marp: true
   - ex. `チーム/プロジェクト/リポジトリ`
     - git submodule の相対URIで重要
     - issue 参照も ex. `X/Y/Z#番号`
-  - 可視性・グループ参加可否の制御<small>（の階層化）</small>
+  - 可視性・グループ参加可否の制御<small>（の階層化・権限委譲）</small>
 - Self host で始められる
   - [IAP](https://cloud.google.com/iap) で守ってゼロトラスト化<small>(public でも安全 →全社 DX向き)</small>
   - 無課金スタート→実績積み
@@ -47,7 +47,7 @@ marp: true
 - Web 画面から gitea の API token を入れるだけで動く、お手軽
   - プロジェクト数が多いとWeb 画面の操作が大変
 - リポジトリ → OK
-- issue → 多いと取りこぼす<small>（gitea の API を叩くクライアントのページャのバグ）</small>
+- issue → 多いと取りこぼす<small>（gitea の API を叩くクライアントのページャの問題）</small>
 - 未対応？
   - PR 上のコメント
   - Commit からの issue 参照が、issue 側に反映されない
@@ -56,7 +56,7 @@ marp: true
 
 ## どう解決したか(1/4)
 
-→公式の Importer を継承してページャを差し替え、バグを修正
+→公式の Importer を継承してページャを差し替え、問題を修正
 
 ```ruby
 module GiteaImport
@@ -68,14 +68,13 @@ module GiteaImport
     def execute
 ```
 
-<small>余談：出来た gitea importer を公開する時のライセンスはどうすれば？  
-（アドバイス求む）</small>
+<small>余談：gitlab公式から切り貼りして出来たコード、仮に公開するなら適切な場は？
+ライセンスはどうすれば？  
+（アドバイス求む）（なお業務で初ruby）</small>
 
 ---
 
 ## どう解決したか(2/4)
-
-→足りない機能は ActiveRecord を直接叩く
 
 ```ruby
 puts "Importing repo devteam/NRA2/yllib1"
@@ -85,15 +84,18 @@ imp = GiteaImport::ProjectImporter.new(clnt, root, {
     new_name: 'yllib1',
 })
 imp.execute
+```
 
+→足りない機能は ActiveRecord を直接叩く
+
+```ruby
 proj15 = imp.project
 
 review5 = Review.create!(
-  author: (User.find_by_email 'rkodama@ssri.com'), 
+  author: (User.find_by_email 'foobar@example.com'), 
   project: proj15, 
   merge_request: MergeRequest.find_by(project: proj15, iid: 2), 
   created_at: '2021-05-28T03:54:40Z')
-mr5 = MergeRequest.find_by(project: proj15, iid: 2)
 ```
 ---
 ## どう解決したか(3/4)
@@ -104,7 +106,7 @@ mr5 = MergeRequest.find_by(project: proj15, iid: 2)
 ./GiteaQuery.pm generate_repo_importer \
   $mygroup > importer.rb
 
-# 中身は perl のコードなので自粛
+# 生成ツールの中身は perl なので自粛
 ```
 
 ---
@@ -123,3 +125,24 @@ sudo gitlab-rails runner $PWD/impoter.rb
 
 # Redmine からの import、どうだった？
 
+---
+
+## 普通なら既存のツールを使うほうが良さそう
+
+[![h:30%](img/redmine-to-gitlab-migrator-top2.png)](https://github.com/redmine-gitlab-migrator/redmine-gitlab-migrator)
+
+---
+
+## 今回は、ネットワーク的に使いづらい事情があった
+
+- redmine は社内ネットワーク
+  - パンデミック下で出社したくない
+- gitlab は GCP 上の IAP 保護下
+## → ならば
+
+- redmine の SQLite の db だけ持ち帰り
+- gitea の時と同じように、import用 ruby スクリプトを生成
+
+---
+
+## どう解決したか
