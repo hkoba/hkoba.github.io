@@ -3,7 +3,7 @@ marp: true
 ---
 
 ## Gitea, Redmine, CVSTrac から GitLab への
-## import で得た **個人的な** 知見を駆け足で
+## import で得た**個人的**知見を駆け足で
 
 ![w:64px h:64px](img/myfistrect.jpg) **@hkoba** [hkoba.github.io](https://hkoba.github.io/)
 → [`GitLab Meetup JP` `#2`](https://hkoba.github.io/slides/gitlab-meetup-jp2/)
@@ -13,16 +13,10 @@ marp: true
 
 ---
 
-## 私の Issue Tracker 遍歴
+# お断り
 
-- [CVSTrac](http://www.cvstrac.org/home/doc/trunk/www/index.html)<small>（[SQLite](https://www.sqlite.org/index.html) の [drh](https://en.wikipedia.org/wiki/D._Richard_Hipp) が自分のために作った）</small>
-- [Redmine](https://redmine.jp/)
-- GitHub <small>(これのみ SaaS)</small>
-- [Phabricator](https://www.phacility.com/phabricator/)
-- [Gitea](https://gitea.io/en-us/)
-
-
-…そして GitLab へ
+- あくまで個人的な成功事例（YMMV）
+- 正しいやり方かは不明（やる場合は自己責任で）
 
 ---
 
@@ -34,7 +28,7 @@ marp: true
     - issue 参照も ex. `X/Y/Z#番号`
   - 可視性・グループ参加可否の制御<small>（の階層化・権限委譲）</small>
 - Self host で始められる
-  - [IAP](https://cloud.google.com/iap) で守ってゼロトラスト化<small>(public でも安全 →全社 DX向き)</small>
+  - [Identity-Aware Proxy](https://cloud.google.com/iap) の背後に設置<small>（public でも安全→全社DX基盤化）</small>
   - 無課金スタート→実績積み
 
 ---
@@ -138,11 +132,90 @@ sudo gitlab-rails runner $PWD/impoter.rb
 - redmine は社内ネットワーク
   - パンデミック下で出社したくない
 - gitlab は GCP 上の IAP 保護下
-## → ならば
 
-- redmine の SQLite の db だけ持ち帰り
-- gitea の時と同じように、import用 ruby スクリプトを生成
+---
+## どう解決したか
+
+redmine の SQLite の db だけ持ち帰り、gitea の時と同じように、import用 ruby スクリプトを生成
+
+### issue とコメント
+```ruby
+issue10 = Issue.create!(author: User.find_by_email('foobar@example.com') || User.find(1),
+ project: Project.find_by_full_path('foobar/issues'),
+ closed_at: '2019-11-08T08:49:04Z',
+ iid: 10,
+ state: :closed,
+ created_at: '2019-05-17T06:08:51Z',
+ title: 'アンケート本体の全体タスク',
+ description: '',
+ updated_at: '2019-11-08T08:49:04Z')
+
+Note.create!(project: (Project.find_by_full_path 'foobar/issues'),
+ noteable: issue10,
+ author: User.find_by_email('foobar@example.com') || User.find(1),
+ created_at: '2019-11-08T08:49:04Z',
+ note: '分類を変えたので、閉じます。')
+```
+---
+
+### issue 同士の親子関係
+```ruby
+prj = Project.find_by_full_path 'foobar/issues'
+
+IssueLink.create!(source: prj.issues.find_by_iid(1),
+ target: prj.issues.find_by_iid(3),
+ created_at: '2019-05-17T06:08:50Z')
+IssueLink.create!(source: prj.issues.find_by_iid(2),
+ target: prj.issues.find_by_iid(3),
+ created_at: '2019-05-17T06:08:50Z')
+```
+
+### グループ全体の issue 数が狂うのでキャッシュを再計算
+```ruby
+prj = Project.find_by_full_path 'foobar/issues'
+o = Projects::OpenIssuesCountService.new(prj)
+o.count
+o.refresh_cache
+o.count
+```
 
 ---
 
-## どう解決したか
+### git repository を push
+
+### issue → commit のリンクの復元
+
+
+
+
+---
+
+## まとめ
+
+- データはプログラムよりも重く尊い
+  - 汚い手段でも、移行を実現できれば勝ち、価値がある
+
+- OSS は import ターゲット向き
+  - REPL （rails console）上で実験・検証しながら進められる
+- プログラムとして export し、実行で import
+  - ActiveRecord を叩くだけで、大体なんとかなる
+    - ただし再試行時には gitlab各所のキャッシュを把握しクリアする必要
+
+
+---
+
+# おまけ
+
+---
+
+## 私の Issue Tracker 遍歴
+
+<small>（※Github 以外は self host）</small>
+ 
+- [CVSTrac](http://www.cvstrac.org/home/doc/trunk/www/index.html)<small>（[SQLite](https://www.sqlite.org/index.html) の [drh](https://en.wikipedia.org/wiki/D._Richard_Hipp) が自分のために作った）</small>
+- GitHub
+- [Phabricator](https://www.phacility.com/phabricator/)
+- [Gitea](https://gitea.io/en-us/)
+
+
+…そして GitLab へ
