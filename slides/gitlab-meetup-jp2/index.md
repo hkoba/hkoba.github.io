@@ -8,14 +8,26 @@ marp: true
 
 ![w:64px h:64px](img/myfistrect.jpg) **@hkoba**
 
-- <small>(名ばかりの)</small>フリーランス・プログラマ
-  * 普段は Perl, TclTk, Zsh, Emacs Lisp
+* <small>(名ばかりの)</small>フリーランス・プログラマ
+  - 普段は Perl, TclTk, Zsh, Emacs Lisp
 
 ---
 
 # お断り
 
 * あくまで個人的な成功事例（YMMV）
+
+---
+
+## 私の Issue Tracker 運用歴(self host)
+
+|システム|利用開始|状況|
+|-|-|-|
+|[CVSTrac](http://www.cvstrac.org/home/doc/trunk/www/index.html)|2005〜|今はIssue管理とWikiのみ、ただし最重要コードベース<br>移行手順の構築途上|
+|[Redmine](https://redmine.org/)|2012〜|一部残存|
+|[Phabricator](https://www.phacility.com/phabricator/)|2019〜|廃止|
+|[Gitea](https://gitea.io/en-us/)|2020〜|廃止|
+|…そして GitLab|2021〜||
 
 
 ---
@@ -52,16 +64,25 @@ marp: true
 
 * けど結局は Rails アプリ
 * gitlab-rails console で対話的に実験できる
-  - ActiveRecord
+  - ActiveRecord ベースのモデル群
   - API Client
 * <small>※起動に40秒ほど必要</small>
 ---
 
-## メインの仕事の合間に
+## メインの仕事の合間に rails console
 
-## rails console からチマチマ実験
+## gitlab から切り出したコード断片をチマチマ投入実験
 
 ## 〜16週間
+
+---
+
+## 余談
+
+gitlab公式から切り貼りして出来たコード、仮に公開するなら適切な場は？
+ライセンスはどうすれば？  
+（アドバイス求む）（なお当方、業務で初ruby）
+
 ---
 
 ## どう解決したか(1/4)
@@ -78,9 +99,6 @@ module GiteaImport
     def execute
 ```
 
-<small>余談：gitlab公式から切り貼りして出来たコード、仮に公開するなら適切な場は？
-ライセンスはどうすれば？  
-（アドバイス求む）（なお業務で初ruby）</small>
 
 ---
 
@@ -133,7 +151,7 @@ sudo gitlab-rails runner $PWD/impoter.rb
 
 ---
 
-# Redmine からの import、どうだった？
+# 次：Redmine からの import、どうだった？
 
 ---
 
@@ -147,8 +165,8 @@ sudo gitlab-rails runner $PWD/impoter.rb
 
 - redmine は社内ネットワーク
   - パンデミック下で出社したくない
-- gitlab は GCP 上の IAP 保護下
-
+- うちの GitLab は GCP 上の Identity-Aware Proxy の背後
+* 後の CVSTrac 移行のためにも、自力で直接モデルを叩く方法を実験したかった
 ---
 ## どう解決したか
 
@@ -197,21 +215,19 @@ o.count
 
 ---
 
-### git repository を push
+# 最後：CVSTrac からの import
 
-### issue → commit のリンクの復元
-
-
-
-
+- Issue, Note, IssueLink ... を作る
+- 時系列の通りに create する必要があるぽい
+* （以下略
 ---
 
 ## まとめ
 
 - データはプログラムよりも重く尊い
-  - 汚い手段でも、移行を実現できれば勝ち、価値がある
+  - 泥臭い手段でも、移行を実現できれば勝ち、価値がある
 
-- OSS は import ターゲット向き
+- LL で記述された CMS は import ターゲット向き
   - REPL （rails console）上で実験・検証しながら進められる
 - プログラムとして export し、実行で import
   - ActiveRecord を叩くだけで、大体なんとかなる
@@ -221,20 +237,6 @@ o.count
 ---
 
 # おまけ
-
----
-
-## 私の Issue Tracker 遍歴
-
-<small>（※Github 以外は self host）</small>
- 
-- [CVSTrac](http://www.cvstrac.org/home/doc/trunk/www/index.html)<small>（[SQLite](https://www.sqlite.org/index.html) の [drh](https://en.wikipedia.org/wiki/D._Richard_Hipp) が自分のために作った）</small>
-- GitHub
-- [Phabricator](https://www.phacility.com/phabricator/)
-- [Gitea](https://gitea.io/en-us/)
-
-
-…そして GitLab へ
 
 ---
 
