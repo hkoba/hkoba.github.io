@@ -15,7 +15,7 @@ marp: true
 
 # お断り
 
-* あくまで個人的な成功事例（YMMV）
+- あくまで個人的な成功事例（YMMV）
 
 ---
 
@@ -165,7 +165,10 @@ sudo gitlab-rails runner $PWD/impoter.rb
 
 - redmine は社内ネットワーク
   - パンデミック下で出社したくない
-- うちの GitLab は GCP 上の Identity-Aware Proxy の背後
+- うちの GitLab はゼロトラスト化のため GCP 上の Identity-Aware Proxy 保護下
+
+## 加えて
+
 * 後の CVSTrac 移行のためにも、自力で直接モデルを叩く方法を実験したかった
 ---
 ## どう解決したか
