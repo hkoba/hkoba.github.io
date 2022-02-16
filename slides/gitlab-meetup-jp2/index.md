@@ -2,34 +2,21 @@
 marp: true
 ---
 
-## Gitea, Redmine, CVSTrac から GitLab への
-## import で得た**個人的**知見を駆け足で
+## Gitea, Redmine, CVSTrac から
 
-![w:64px h:64px](img/myfistrect.jpg) **@hkoba** [hkoba.github.io](https://hkoba.github.io/)
-→ [`GitLab Meetup JP` `#2`](https://hkoba.github.io/slides/gitlab-meetup-jp2/)
+## GitLab への import で得た**個人的**知見を駆け足で
 
-* <small>(名ばかりの)</small>フリーランス・プログラマ
+![w:64px h:64px](img/myfistrect.jpg) **@hkoba**
+
+- <small>(名ばかりの)</small>フリーランス・プログラマ
   * 普段は Perl, TclTk, Zsh, Emacs Lisp
 
 ---
 
 # お断り
 
-- あくまで個人的な成功事例（YMMV）
-- 正しいやり方かは不明（やる場合は自己責任で）
+* あくまで個人的な成功事例（YMMV）
 
----
-
-## なぜ GitLab を選んだ?
-
-- グループ機能
-  - ex. `チーム/プロジェクト/リポジトリ`
-    - git submodule の相対URIで重要
-    - issue 参照も ex. `X/Y/Z#番号`
-  - 可視性・グループ参加可否の制御<small>（の階層化・権限委譲）</small>
-- Self host で始められる
-  - [Identity-Aware Proxy](https://cloud.google.com/iap) の背後に設置<small>（public でも安全→全社DX基盤化）</small>
-  - 無課金スタート→実績積み
 
 ---
 # Gitea からの import、どうだった？
@@ -38,14 +25,36 @@ marp: true
 
 ## 最初は[公式機能](https://docs.gitlab.com/ee/user/project/import/gitea.html#import-your-project-from-gitea-to-gitlab)を試した
 
-- Web 画面から gitea の API token を入れるだけで動く、お手軽
+* Web 画面から gitea の API token を入れるだけで動く
   - プロジェクト数が多いとWeb 画面の操作が大変
-- リポジトリ → OK
-- issue → 多いと取りこぼす<small>（gitea の API を叩くクライアントのページャの問題）</small>
-- 未対応？
+
+* リポジトリ → OK
+* issue → 多いと取りこぼす  
+ <small>（github API 用のコードを gitea にも転用しているため、ページャの仕様違いで問題発生）</small>
+* 未対応？
   - PR 上のコメント
   - Commit からの issue 参照が、issue 側に反映されない
 
+---
+
+# 取りこぼしは諦める？ …は嫌！
+
+* データは、システムよりも大事！
+
+
+  * 新人教育のコードレビューのやり取りが失われるとか、全力で回避したい
+
+---
+
+# どうする？
+
+* GitLab のコードベースは巨大
+
+* けど結局は Rails アプリ
+* gitlab-rails console で対話的に実験できる
+  - ActiveRecord
+  - API Client
+* <small>※起動に40秒ほど必要</small>
 ---
 
 ## どう解決したか(1/4)
@@ -219,3 +228,16 @@ o.count
 
 
 …そして GitLab へ
+
+---
+
+## なぜ GitLab を選んだ?
+
+- グループ機能
+  - ex. `チーム/プロジェクト/リポジトリ`
+    - git submodule の相対URIで重要
+    - issue 参照も ex. `X/Y/Z#番号`
+  - 可視性・グループ参加可否の制御<small>（の階層化・権限委譲）</small>
+- Self host で始められる
+  - [Identity-Aware Proxy](https://cloud.google.com/iap) の背後に設置<small>（public でも安全→全社DX基盤化）</small>
+  - 無課金スタート→実績積み
