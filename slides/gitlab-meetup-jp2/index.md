@@ -1,5 +1,7 @@
 ---
 marp: true
+title: Gitea, Redmine, CVSTrac から GitLab へのデータ移行で得た個人的知見を駆け足で
+image: https://hkoba.github.io/slides/gitlab-meetup-jp2/index.png
 ---
 
 ## Gitea, Redmine, CVSTrac から
@@ -8,13 +10,10 @@ marp: true
 
 ![w:64px h:64px](img/myfistrect.jpg) **@hkoba**
 
-* <small>(名ばかりの)</small>フリーランス・プログラマ
-  - <small>普段の業務は Perl, TclTk, Zsh, Emacs Lisp</small>
-
 <!-- 
 hkoba と申します。名ばかりのフリーランスプログラマです。
 今日は
-〜発表させて頂きます。
+〜お話しさせて頂きます。
 -->
 ---
 
@@ -152,7 +151,8 @@ gitlab公式から切り貼りして出来たコード、仮に公開するな�
 
 ## どう解決したか(1/4)
 
-→公式の API Client を継承してページャを差し替え版を作る
+- ページャの問題を修正した API Client を定義
+- importer の定義も切り貼り 
 
 ```ruby
 module GiteaImport
@@ -179,7 +179,7 @@ imp = GiteaImport::ProjectImporter.new(clnt, root, {
 imp.execute
 ```
 
-→足りない機能は ActiveRecord を直接叩く
+- 足りない機能は ActiveRecord を直接叩く…
 
 ```ruby
 proj15 = imp.project
@@ -193,7 +193,7 @@ review5 = Review.create!(
 ---
 ## どう解決したか(3/4)
 
-→ そんな ruby スクリプトを Gitea 側の DB データから生成
+…そんなスクリプトをプログラムで生成し…
 
 ```sh
 ./GiteaQuery.pm generate_repo_importer \
@@ -206,7 +206,7 @@ review5 = Review.create!(
 
 ## どう解決したか(4/4)
 
-gitlab-rails runner に食わせる
+… gitlab-rails runner に食わせる
 
 ```sh
 sudo gitlab-rails runner $PWD/impoter.rb

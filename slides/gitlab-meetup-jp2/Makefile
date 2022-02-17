@@ -16,3 +16,6 @@ loop:
 	$(OG_GEN) $^ > $@
 
 index.html: $(OG_META)
+
+%.png: %.md
+	$(GENERATOR) --image=png --allow-local-files -o $@ $^
