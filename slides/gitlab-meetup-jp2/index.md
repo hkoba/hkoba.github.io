@@ -12,7 +12,7 @@ marp: true
   - <small>普段の業務は Perl, TclTk, Zsh, Emacs Lisp</small>
 
 <!-- 
-hkoba と申します。名ばかりのフリーランスプログラマしてます。
+hkoba と申します。名ばかりのフリーランスプログラマです。
 今日は
 〜発表させて頂きます。
 -->
@@ -132,6 +132,7 @@ rails console で対話的に実験できるので、
 
 ## 〜16週間
 
+* （rubyは業務で初）
 
 <!--
 というわけで、〜〜
@@ -140,11 +141,12 @@ rails console で対話的に実験できるので、
 -->
 ---
 
-## 余談
+## 余談：アドバイス求む
 
-gitlab公式から切り貼りして出来たコード、仮に公開するなら適切な場は？
-ライセンスはどうすれば？  
-（アドバイス求む）（なお当方、業務で初ruby）
+gitlab公式から切り貼りして出来たコード、仮に公開するなら
+
+- 適切な場は？
+- ライセンスはどうすれば？  
 
 ---
 
@@ -168,11 +170,11 @@ module GiteaImport
 ## どう解決したか(2/4)
 
 ```ruby
-puts "Importing repo devteam/NRA2/yllib1"
+puts "Importing repo ourteam/FOO/bar"
 imp = GiteaImport::ProjectImporter.new(clnt, root, {
-    import_source: 'devteam/yllib1', 
-    target_namespace: 'devteam/NRA2', 
-    new_name: 'yllib1',
+    import_source: 'ourteam/bar', 
+    target_namespace: 'ourteam/FOO', 
+    new_name: 'bar',
 })
 imp.execute
 ```
@@ -291,13 +293,11 @@ o.count
 ## まとめ
 
 - データはプログラムよりも重く尊い
-  - 泥臭い手段でも、移行を実現できれば勝ち、価値がある
+  - ならば手段は泥臭くても良い
 
 - LL で記述された CMS は import ターゲット向き
-  - REPL （rails console）上で実験・検証しながら進められる
+  - REPL （rails console）上で実験
 - プログラムとして export し、実行で import
-  - ActiveRecord を叩くだけで、大体なんとかなる
-    - ただし再試行時には gitlab各所のキャッシュを把握しクリアする必要
 
 
 ---
