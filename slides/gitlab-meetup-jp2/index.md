@@ -4,19 +4,33 @@ marp: true
 
 ## Gitea, Redmine, CVSTrac から
 
-## GitLab への import で得た**個人的**知見を駆け足で
+## GitLab へのデータ移行で得た**個人的**知見を駆け足で
 
 ![w:64px h:64px](img/myfistrect.jpg) **@hkoba**
 
 * <small>(名ばかりの)</small>フリーランス・プログラマ
-  - 普段は Perl, TclTk, Zsh, Emacs Lisp
+  - <small>普段の業務は Perl, TclTk, Zsh, Emacs Lisp</small>
 
+<!-- 
+hkoba と申します。名ばかりのフリーランスプログラマしてます。
+今日は
+〜発表させて頂きます。
+-->
 ---
 
 # お断り
 
-- あくまで個人的な成功事例（YMMV）
+- あくまで個人的な成功事例
 
+
+  - 今後もうまく行くか→不明
+  - YMMV
+
+
+<!--
+はじめにお断りです。この話はあくまで個人的な成功事例です。
+今後もうまく行くとは保証できません。ご了承下さい。
+-->
 ---
 
 ## 私の Issue Tracker 運用歴(self host)
@@ -27,12 +41,16 @@ marp: true
 |[Redmine](https://redmine.org/)|2012〜|一部残存|
 |[Phabricator](https://www.phacility.com/phabricator/)|2019〜|廃止|
 |[Gitea](https://gitea.io/en-us/)|2020〜|廃止|
-|…そして GitLab|2021〜||
+|…そして **GitLab** |2021〜||
 
-
+<!-- 
+さて、私が初めて運用した Issue Tracker は CVSTrac でした。本当は早く廃止したいのですが、今も最重要なコードの Issue 管理を担っています。
+脱出先の候補として、様々な Issue Tracker をサイドプロジェクト用に試しました。その末に、たどり着いたのが GitLab というわけです。
+-->
 ---
-# Gitea からの import、どうだった？
+# Gitea からのデータ移行、どうだった？
 
+<!--で実際、〜 -->
 ---
 
 ## 最初は[公式機能](https://docs.gitlab.com/ee/user/project/import/gitea.html#import-your-project-from-gitea-to-gitlab)を試した
@@ -47,6 +65,20 @@ marp: true
   - PR 上のコードレビューのコメント
   - Commit からの issue 参照が、issue 側に反映されない
 
+<!--
+最初は公式機能を試しました。
+
+Web画面に gitea の url と API token を入力すれば、gitea 上のリポジトリが表示されて、それを選んで移行ボタンを押すだけです。簡単に使えます。
+
+で、リポジトリの移行は大丈夫だったのですが、
+
+issue は、数が多いと取りこぼす
+
+Pull Request 上のコードレビューコメントが捨てられる
+Commit メッセージで issue 参照を書いても、issue 側からは commit が見えない
+
+など、不満がありました。
+-->
 ---
 
 # 取りこぼしデータは諦める？ …は嫌！
@@ -151,7 +183,7 @@ sudo gitlab-rails runner $PWD/impoter.rb
 
 ---
 
-# 次：Redmine からの import、どうだった？
+# 次：Redmine からのデータ移行、どうだった？
 
 ---
 
@@ -218,7 +250,7 @@ o.count
 
 ---
 
-# 最後：CVSTrac からの import
+# 最後：CVSTrac からのデータ移行
 
 - Issue, Note, IssueLink ... を作る
 - 時系列の通りに create する必要があるぽい
