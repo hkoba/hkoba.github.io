@@ -104,7 +104,7 @@ Commit メッセージで issue 参照を書いても、issue 側からは commi
 
 # →ならば、自力救済だ
 
-* GitLab も結局は Rails アプリ
+* <small>（巨大であっても）</small> GitLab は結局 Rails アプリ
 
 * gitlab-rails console で対話的に実験できる
   - ActiveRecord ベースのモデル群
@@ -114,9 +114,13 @@ Commit メッセージで issue 参照を書いても、issue 側からは commi
 <!--
 よろしい、ならば自力救済だ！
 
-幸いソースはあるし、何より動いているシステムに rails console でアクセスできる。
+（どれだけ巨大であっても）GitLab は結局 Rails アプリには違いない
 
-そこでモデルやサービスを叩いて、正しい叩き方を学んでいけばいい。
+rails console で対話的に実験できるので、
+
+中のモデル群、サービスクラス、APIクライアントを叩いて、
+
+正しい使い方を学ぶことが出来る
 
 それは今後の運用にも役立つ知識になるだろう
 -->
