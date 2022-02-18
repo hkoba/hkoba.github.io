@@ -316,3 +316,19 @@ o.count
 - Self host で始められる
   - [Identity-Aware Proxy](https://cloud.google.com/iap) の背後に設置<small>（public でも安全→全社DX基盤化）</small>
   - 無課金スタート→実績積み
+
+---
+
+## rails console で実験、の例
+
+```
+irb(main):001:0> n = Note.find(12575)
+=> #<Note id: 12575, note: [FILTERED], noteable_type: "Issue", author_id: 5, created_at: "2022-02-18 14:01:22.494215000 +0900",...
+irb(main):002:0> n.note
+=> "コメントですよあああ"
+irb(main):003:0> n.note + 'foobar'
+=> "コメントですよあああfoobar"
+irb(main):004:0> n.update!(note: n.note + ' いいいい')
+=> true
+irb(main):005:0> 
+```
