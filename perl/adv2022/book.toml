@@ -1,0 +1,9 @@
+[book]
+authors = ["Kobayasi, Hiroaki"]
+language = "ja"
+multilingual = false
+src = "src"
+title = "OS 添付の Perl で CPAN モジュールを楽に管理するには？"
+
+[output.html]
+additional-css = ["custom.css"]
