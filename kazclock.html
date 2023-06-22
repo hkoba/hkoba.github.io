@@ -41,8 +41,8 @@
   }
   function ampm_and_hm(now) {
     var hours = now.getHours()
-    var isPM = hours <= 12
-    var ampm = ['AM', 'PM'][isPM ? 0 : 1]
+    var isPM = hours >= 12
+    var ampm = ['AM', 'PM'][isPM ? 1 : 0]
     var hm = (isPM ? hours - 12 : hours) + ':' + pad(now.getMinutes(), 2)
     return [ampm, hm]
   }
