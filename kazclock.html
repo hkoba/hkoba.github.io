@@ -15,6 +15,21 @@
   #ampm {
       font-size: 2em;
   }
+  #ampm.AM .text:before {
+      background-image: url(morning.png);
+      content: '';
+      display: inline-block;
+      background-size: contain;
+      width: 50px; height: 50px;
+  }
+  #ampm.PM .text:before {
+      background-image: url(afternoon.png);
+      content: '';
+      display: inline-block;
+      background-size: contain;
+      width: 50px; height: 50px;
+      vertical-align: middle;
+  }
   #hm {
       font-size: 4em;
   }
@@ -27,7 +42,9 @@
 / <span id="date" style="">20</span>
 <span id="wday">火</span>
 <br>
-<span id="ampm">PM</span>
+<span id="ampm">
+  <span class="text">PM</span>
+</span>
 <span id="hm">6:25</span>
 </div>
 <hr>
@@ -35,6 +52,8 @@
 <label><input type="radio" name="ampm_lang" value="ja" checked>午前/午後</label>
 <label><input type="radio" name="ampm_lang" value="en">AM/PM</label>
 </div>
+<a href="https://www.flaticon.com/free-icons/afternoon" title="afternoon icons">Afternoon icons created by Freepik - Flaticon</a>
+
 </form>
 
 <script>
@@ -49,9 +68,10 @@
     wdayItem.innerText = ['日','月','火','水','木','金','土'][now.getDay()]
 
     var ampm_hm = ampm_and_hm(now)
-    var ampmItem = document.getElementById('ampm')
-    ampmItem.innerText = ampm_label(ampm_hm.ampm)
-    ampmItem.setAttribute('class', ampm_hm.ampm)
+    var ampmBox = document.getElementById('ampm')
+    var ampmText = ampmBox.querySelector('.text')
+    ampmText.innerText = ampm_label(ampm_hm.ampm)
+    ampmBox.setAttribute('class', ampm_hm.ampm)
     var hmItem = document.getElementById('hm')
     hmItem.innerText = ampm_hm.hm
   }
