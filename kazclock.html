@@ -1,6 +1,13 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, user-scalable=yes">
 <style>
   #clock {
-      font-size: 4em;
+      font-size: 3em;
+  }
+  #month, #date {
+      font-size: 2em;
   }
   #wday {
       font-size: 8em;
@@ -9,16 +16,17 @@
       font-size: 2em;
   }
   #hm {
-      font-size: 4em; margin-left: 1em;
+      font-size: 4em;
   }
 </style>
-
+</head>
+<body>
 <div id="clock">
 <span id="month">6</span>
 / <span id="date" style="">20</span>
 <span id="wday">火</span>
-<span id="ampm">PM</span>
 <br>
+<span id="ampm">PM</span>
 <span id="hm">6:25</span>
 </div>
 
@@ -35,16 +43,17 @@
 
     var ampm_hm = ampm_and_hm(now)
     var ampmItem = document.getElementById('ampm')
-    ampmItem.innerText = ampm_hm[0]
+    ampmItem.innerText = ampm_hm.ampm
+    ampmItem.setAttribute('class', ampm_hm.ampm)
     var hmItem = document.getElementById('hm')
-    hmItem.innerText = ampm_hm[1]
+    hmItem.innerText = ampm_hm.hm
   }
   function ampm_and_hm(now) {
     var hours = now.getHours()
     var isPM = hours >= 12
     var ampm = ['AM', 'PM'][isPM ? 1 : 0]
     var hm = (isPM ? hours - 12 : hours) + ':' + pad(now.getMinutes(), 2)
-    return [ampm, hm]
+    return {ampm: ampm, hm: hm}
   }
   // https://stackoverflow.com/questions/2998784/how-to-output-numbers-with-leading-zeros-in-javascript
   function pad(num, size) {
@@ -56,3 +65,5 @@
   updateCalendar()
   window.setInterval(updateCalendar, 1000)
 </script>
+</body>
+</html>
