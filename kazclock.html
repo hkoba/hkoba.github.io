@@ -21,6 +21,7 @@
 </style>
 </head>
 <body>
+<form>
 <div id="clock">
 <span id="month">6</span>
 / <span id="date" style="">20</span>
@@ -29,6 +30,12 @@
 <span id="ampm">PM</span>
 <span id="hm">6:25</span>
 </div>
+<hr>
+<div id="control">
+<label><input type="radio" name="ampm_lang" value="ja" checked>午前/午後</label>
+<label><input type="radio" name="ampm_lang" value="en">AM/PM</label>
+</div>
+</form>
 
 <script>
   'use strict';
@@ -43,7 +50,7 @@
 
     var ampm_hm = ampm_and_hm(now)
     var ampmItem = document.getElementById('ampm')
-    ampmItem.innerText = ampm_hm.ampm
+    ampmItem.innerText = ampm_label(ampm_hm.ampm)
     ampmItem.setAttribute('class', ampm_hm.ampm)
     var hmItem = document.getElementById('hm')
     hmItem.innerText = ampm_hm.hm
@@ -61,9 +68,27 @@
     while (num.length < size) num = "0" + num;
     return num;
   }
-
+  function ampm_label(ampm) {
+    var ampm_lang = document.forms[0].elements.ampm_lang
+    switch (ampm_lang.value) {
+    case "ja":
+      {
+        return {AM: "午前", PM: "午後"}[ampm]
+      }
+    default: case "en":
+      {
+        return ampm
+      }
+    }
+  }
   updateCalendar()
   window.setInterval(updateCalendar, 1000)
+  document.querySelectorAll('#control input').forEach(function (input) {
+    input.addEventListener('change', function (e) {
+      // console.log('changed')
+      updateCalendar()
+    })
+  })
 </script>
 </body>
 </html>
