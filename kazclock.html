@@ -15,20 +15,15 @@
   #ampm {
       font-size: 2em;
   }
-  #ampm.AM .text:before {
-      background-image: url(morning.png);
-      content: '';
-      display: inline-block;
+  #ampm .img {
+      display: inline-block; width: 50px; height: 50px;
       background-size: contain;
-      width: 50px; height: 50px;
   }
-  #ampm.PM .text:before {
+  #ampm.AM .img {
+      background-image: url(morning.png);
+  }
+  #ampm.PM .img {
       background-image: url(afternoon.png);
-      content: '';
-      display: inline-block;
-      background-size: contain;
-      width: 50px; height: 50px;
-      vertical-align: middle;
   }
   #hm {
       font-size: 4em;
@@ -43,6 +38,7 @@
 <span id="wday">火</span>
 <br>
 <span id="ampm">
+  <span class="img"></span>
   <span class="text">PM</span>
 </span>
 <span id="hm">6:25</span>
