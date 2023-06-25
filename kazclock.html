@@ -25,6 +25,9 @@
   #control label {
       margin: 0 .5em;
   }
+  #next_bath, #next_dialysis {
+      font-size: 6vw;
+  }
 </style>
 </head>
 <body>
@@ -48,7 +51,9 @@
 <label><input type="radio" name="ampm_lang" value="ja" checked>午前/午後</label>
 <label><input type="radio" name="ampm_lang" value="en">AM/PM</label>
 </div>
-
+<hr>
+<div id="next_bath">次のお風呂: <span class="text"></span></div>
+<div id="next_dialysis">次の透析: <span class="text"></span></div>
 </form>
 
 <script>
@@ -74,6 +79,10 @@
 
     var hmItem = document.getElementById('hm')
     hmItem.innerText = ampm_hm.hm
+
+    var nxBathItem = document.querySelector('#next_bath .text')
+    nxBathItem.innerText = next_bath(now)
+
   }
   function ampm_and_hm(now) {
     var hours = now.getHours()
@@ -100,6 +109,34 @@
         return ampm
       }
     }
+  }
+  function next_bath(now) {
+    var schedule = [false,false,true,false,true,false,false]
+    var daysLeft = wrapped_find(schedule, now.getDay())
+    if (daysLeft > 0) {
+      return daysLeft + "日後"
+    } else if (now.getHours() <= 18) {
+      return "今日"
+    } else {
+      return wrapped_find(schedule, now.getDay()+1)+1 + "日後"
+    }
+  }
+  function wrapped_find(list, start) {
+    if (start >= list.length) {
+      throw new Error("Too large index")
+    }
+    var cur = start
+    var count = 0
+    while (!list[cur]) {
+      ++count;
+      if (++cur >= list.length) {
+        cur = 0
+      }
+      if (count >= list.length) {
+        throw new Error("count exceeded list length!")
+      }
+    }
+    return count;
   }
   updateCalendar()
   window.setInterval(updateCalendar, 1000)
