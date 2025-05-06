@@ -1,21 +1,16 @@
 <!DOCTYPE HTML>
-<html lang="en" class="sidebar-visible no-js light">
+<html lang="en" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
         <title>word内の置換 - Tcl As A Better Shell</title>
-        
-        
 
 
         <!-- Custom HTML head -->
-        
 
-
-        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#ffffff">
 
         <link rel="icon" href="favicon.svg">
         <link rel="shortcut icon" href="favicon.png">
@@ -26,9 +21,7 @@
 
         <!-- Fonts -->
         <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
-        
         <link rel="stylesheet" href="fonts/fonts.css">
-        
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" href="highlight.css">
@@ -36,19 +29,20 @@
         <link rel="stylesheet" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
-        
 
-        
-    </head>
-    <body>
+
         <!-- Provide site root to javascript -->
-        <script type="text/javascript">
+        <script>
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
-
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
-        <script type="text/javascript">
+        <script>
             try {
                 var theme = localStorage.getItem('mdbook-theme');
                 var sidebar = localStorage.getItem('mdbook-sidebar');
@@ -64,61 +58,66 @@
         </script>
 
         <!-- Set the theme before any content is loaded, prevents flash -->
-        <script type="text/javascript">
+        <script>
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
-            var html = document.querySelector('html');
-            html.classList.remove('no-js')
+            const html = document.documentElement;
             html.classList.remove('light')
             html.classList.add(theme);
-            html.classList.add('js');
+            html.classList.add("js");
         </script>
 
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
         <!-- Hide / unhide sidebar before it is displayed -->
-        <script type="text/javascript">
-            var html = document.querySelector('html');
-            var sidebar = 'hidden';
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
             }
+            sidebar_toggle.checked = sidebar === 'visible';
             html.classList.remove('sidebar-visible');
             html.classList.add("sidebar-" + sidebar);
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
-            <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> はじめに</a></li><li class="chapter-item expanded "><a href="why_tcl_now.html"><strong aria-hidden="true">2.</strong> なぜ今さらTcl?</a></li><li class="chapter-item expanded "><a href="environment.html"><strong aria-hidden="true">3.</strong> 本書のサンプルの動作環境</a></li><li class="chapter-item expanded "><a href="evaluation_rule.html"><strong aria-hidden="true">4.</strong> Tcl インタープリターと評価のルール</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tcl_command.html"><strong aria-hidden="true">4.1.</strong> コマンド</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="command_command_command.html"><strong aria-hidden="true">4.1.1.</strong> コマンドという語の多義性</a></li><li class="chapter-item expanded "><a href="tcl_list.html"><strong aria-hidden="true">4.1.2.</strong> word列と Tcl リスト</a></li></ol></li><li class="chapter-item expanded "><a href="comment.html"><strong aria-hidden="true">4.2.</strong> コメント</a></li><li class="chapter-item expanded "><a href="tcl_wordbreaking.html"><strong aria-hidden="true">4.3.</strong> インタープリタとコマンドのword分割</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="puts.html"><strong aria-hidden="true">4.3.1.</strong> puts stdout</a></li><li class="chapter-item expanded "><a href="word_breaking_and_quoting.html"><strong aria-hidden="true">4.3.2.</strong> word分割とquote</a></li></ol></li><li class="chapter-item expanded "><a href="substitution.html" class="active"><strong aria-hidden="true">4.4.</strong> word内の置換</a></li><li class="chapter-item expanded "><a href="arg_expansion.html"><strong aria-hidden="true">4.5.</strong> wordの引数展開</a></li><li class="chapter-item expanded "><a href="tcl_interp_overall.html"><strong aria-hidden="true">4.6.</strong> インタープリタの役割（まとめ）</a></li><li class="chapter-item expanded "><a href="quote.html"><strong aria-hidden="true">4.7.</strong> quoteと置換の細かい話</a></li></ol></li><li class="chapter-item expanded "><a href="expr.html"><strong aria-hidden="true">5.</strong> サブ言語 Tcl 式（expr コマンド）</a></li><li class="chapter-item expanded "><a href="procedure.html"><strong aria-hidden="true">6.</strong> 手続き</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="proc_var_scope.html"><strong aria-hidden="true">6.1.</strong> 変数のスコープ</a></li><li class="chapter-item expanded "><strong aria-hidden="true">6.2.</strong> デフォルト引数、可変長引数</li><li class="chapter-item expanded "><strong aria-hidden="true">6.3.</strong> 無名手続き apply</li></ol></li><li class="chapter-item expanded "><a href="scriptfile.html"><strong aria-hidden="true">7.</strong> Tcl スクリプトのファイル化</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="executable_scriptfile.html"><strong aria-hidden="true">7.1.</strong> 実行可能なスクリプトファイル</a></li></ol></li><li class="chapter-item expanded "><strong aria-hidden="true">8.</strong> TclObjと内部表現</li><li class="chapter-item expanded "><strong aria-hidden="true">9.</strong> 名前空間</li><li class="chapter-item expanded "><strong aria-hidden="true">10.</strong> データ型とコマンド</li><li><ol class="section"><li class="chapter-item expanded "><strong aria-hidden="true">10.1.</strong> TclObjと内部表現</li><li class="chapter-item expanded "><strong aria-hidden="true">10.2.</strong> リスト</li><li class="chapter-item expanded "><strong aria-hidden="true">10.3.</strong> 文字列</li><li class="chapter-item expanded "><strong aria-hidden="true">10.4.</strong> 数値</li><li class="chapter-item expanded "><strong aria-hidden="true">10.5.</strong> ファイルとプロセス</li></ol></li><li class="chapter-item expanded "><strong aria-hidden="true">11.</strong> サブ・インタープリター</li><li class="chapter-item expanded "><strong aria-hidden="true">12.</strong> snit</li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">13.</strong> 付録</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="comparison_with_bash.html"><strong aria-hidden="true">13.1.</strong> bashとの比較</a></li></ol></li></ol>
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
             </div>
-            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
         <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
-                
                 <div id="menu-bar-hover-placeholder"></div>
-                <div id="menu-bar" class="menu-bar sticky bordered">
+                <div id="menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
-                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
                             <i class="fa fa-bars"></i>
-                        </button>
+                        </label>
                         <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
                         </ul>
-                        
                         <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
                             <i class="fa fa-search"></i>
                         </button>
-                        
                     </div>
 
                     <h1 class="menu-title">Tcl As A Better Shell</h1>
@@ -127,14 +126,13 @@
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
-                        
+
                     </div>
                 </div>
 
-                
                 <div id="search-wrapper" class="hidden">
                     <form id="searchbar-outer" class="searchbar-outer">
-                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
                     </form>
                     <div id="searchresults-outer" class="searchresults-outer hidden">
                         <div id="searchresults-header" class="searchresults-header"></div>
@@ -142,10 +140,9 @@
                         </ul>
                     </div>
                 </div>
-                
 
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
-                <script type="text/javascript">
+                <script>
                     document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
                     document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
                     Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
@@ -155,14 +152,14 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#word内の置換" id="word内の置換">word内の置換</a></h1>
+                        <h1 id="word内の置換"><a class="header" href="#word内の置換">word内の置換</a></h1>
 <p>Tcl インタープリターは <a href="./tcl_wordbreaking.html">word 分割</a> が済んだ後の
 それぞれの word に対して、置換と呼ばれる以下の処理を施します。
 （ただし波括弧 <code>{..}</code> で quote されている word には置換は適用されません）</p>
-<h2><a class="header" href="#コマンド置換" id="コマンド置換">コマンド置換</a></h2>
+<h2 id="コマンド置換"><a class="header" href="#コマンド置換">コマンド置換</a></h2>
 <p>word の中の四角括弧(square bracket) <code>[ .. ]</code> で表された部分は、更に別のコマンドとして実行され、
 その結果が元々 <code>[ .. ]</code> のあった個所に差し込まれます。</p>
-<pre><code class="language-tcl">puts &quot;length of foo is [string length foo]&quot;
+<pre><code class="language-tcl">puts "length of foo is [string length foo]"
 # =&gt; length of foo is 3
 </code></pre>
 <p>コマンド置換の中も一つのコマンドなので、当然それを入れ子にすることも可能です。</p>
@@ -171,27 +168,27 @@
 string length [string repeat [string repeat f 3] 2]
 # =&gt; 6
 </code></pre>
-<h2><a class="header" href="#変数置換" id="変数置換">変数置換</a></h2>
+<h2 id="変数置換"><a class="header" href="#変数置換">変数置換</a></h2>
 <p>word の中に <code>$</code> で始まる英数字の並びが有れば、それは変数置換の対象となります。
 （未知の変数を参照した時は例外が発生し、コマンドの実行はそこで終了します）</p>
 <p>変数を作るための最も基本的なコマンドは <a href="https://www.tcl.tk/man/tcl8.5/TclCmd/set.htm"><code>set</code></a> コマンドです。</p>
 <pre><code class="language-tcl">set var 5
 
-puts &quot;var is $var&quot;
+puts "var is $var"
 # =&gt; var is 5
 </code></pre>
-<h2><a class="header" href="#バックスラッシュ置換" id="バックスラッシュ置換">バックスラッシュ置換</a></h2>
+<h2 id="バックスラッシュ置換"><a class="header" href="#バックスラッシュ置換">バックスラッシュ置換</a></h2>
 <p>バックスラッシュはコマンド置換の <code>[</code> や変数置換の <code>$</code> などの
 文字をそのまま文字列に書きたい時に使います。
 また、C 言語に準じた改行文字 <code>\n</code> やタブ文字 <code>\t</code> などの記法も
 サポートしています。</p>
-<pre><code class="language-tcl">puts &quot;Dollar sign is \$. Open square bracket is \[.&quot;
+<pre><code class="language-tcl">puts "Dollar sign is \$. Open square bracket is \[."
 # =&gt; Dollar sign is $. Open square bracket is [.
 
 puts Open\ curly\ brace\ is\ \{.
 # =&gt; Open curly brace is {.
 </code></pre>
-<h3><a class="header" href="#波括弧-quote--の中では置換は起きないバックスラッシュは-word分割のみに作用" id="波括弧-quote--の中では置換は起きないバックスラッシュは-word分割のみに作用">波括弧 quote <code>{}</code> の中では置換は起きない。バックスラッシュは word分割のみに作用</a></h3>
+<h3 id="波括弧-quote--の中では置換は起きないバックスラッシュは-word分割のみに作用"><a class="header" href="#波括弧-quote--の中では置換は起きないバックスラッシュは-word分割のみに作用">波括弧 quote <code>{}</code> の中では置換は起きない。バックスラッシュは word分割のみに作用</a></h3>
 <p>波括弧quote <code>{}</code> の中では置換が起きません。これはバックスラッシュについても当てはまります。ただしそれ以前の word 分割で、バックスラッシュは <code>{...}</code> の中の
 <code>{</code>, <code>}</code> を括弧として数えないためにも使われます。
 その場合、バックスラッシュは文字としてそのまま残ります。</p>
@@ -201,13 +198,13 @@ puts {Balanced quote is ok like { and }.}
 # =&gt; Balanced quote is ok like { and }.
 </code></pre>
 <p>これはつまり、波括弧 <code>{...}</code> の中にはバランスした（＝開き括弧と閉じ括弧が正しく対応した）形でしか <code>{</code>, <code>}</code> 文字を書くことが出来ないことを意味します。</p>
-<p>括弧の対応を無視して <code>{</code>, <code>}</code> 文字を書きたい時は、ダブルクォート <code>&quot;..&quot;</code> を使います。</p>
-<pre><code class="language-tcl">puts &quot;open curly brace {&quot;
+<p>括弧の対応を無視して <code>{</code>, <code>}</code> 文字を書きたい時は、ダブルクォート <code>".."</code> を使います。</p>
+<pre><code class="language-tcl">puts "open curly brace {"
 # =&gt; open curly brace {
-puts &quot;close curly brace }&quot;
+puts "close curly brace }"
 # =&gt; close curly brace }
 </code></pre>
-<h3><a class="header" href="#バックスラッシュを用いた行の継続" id="バックスラッシュを用いた行の継続">バックスラッシュを用いた行の継続</a></h3>
+<h3 id="バックスラッシュを用いた行の継続"><a class="header" href="#バックスラッシュを用いた行の継続">バックスラッシュを用いた行の継続</a></h3>
 <p>なお、バックスラッシュは改行をコマンドの終わりとしないためにも使えます。
 一つのコマンドの行が長くなりすぎた時に行末を <code>\</code> で終わらせると、
 そのコマンドの引数の続きを次の行に書くことが出来ます。</p>
@@ -227,17 +224,13 @@ Tcl のプログラムとしては間違いではありません)</p>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                        
                             <a rel="prev" href="word_breaking_and_quoting.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
-                        
 
-                        
-                            <a rel="next" href="arg_expansion.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="arg_expansion.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
-                        
 
                         <div style="clear: both"></div>
                     </nav>
@@ -245,64 +238,36 @@ Tcl のプログラムとしては間違いではありません)</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                
                     <a rel="prev" href="word_breaking_and_quoting.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
-                
 
-                
-                    <a rel="next" href="arg_expansion.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="arg_expansion.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
-                
             </nav>
 
         </div>
 
-        
-        <!-- Livereload script (if served using the cli tool) -->
-        <script type="text/javascript">
-            var socket = new WebSocket("ws://localhost:3000/__livereload");
-            socket.onmessage = function (event) {
-                if (event.data === "reload") {
-                    socket.close();
-                    location.reload();
-                }
-            };
 
-            window.onbeforeunload = function() {
-                socket.close();
-            }
-        </script>
-        
 
-        
 
-        
-
-        
-        <script type="text/javascript">
+        <script>
             window.playground_copyable = true;
         </script>
-        
 
-        
 
-        
-        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
-        
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
 
-        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
-        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
-        
 
-        
 
+    </div>
     </body>
 </html>
