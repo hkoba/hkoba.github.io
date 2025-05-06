@@ -1,8 +1,6 @@
-GENERATOR := ../../scripts/gen-revealjs.pl
-OG_GEN := ../../scripts/OpenGraphMeta.pm og_tsv_to_meta
+GENERATOR := marp
 
 HTMLS := $(patsubst %.md,%.html,$(wildcard *.md))
-OG_META := $(patsubst %.og.tsv,%.meta,$(wildcard index.og.tsv))
 
 all: $(HTMLS)
 
@@ -10,9 +8,10 @@ loop:
 	while inotifywait index.md; do make; done
 
 %.html: %.md
-	$(GENERATOR) -r -o $@ $^
+	$(GENERATOR) -o $@ $^
 
-%.meta: %.og.tsv
-	$(OG_GEN) $^ > $@
+%.png: %.md
+	$(GENERATOR) --image=png --allow-local-files -o $@ $^
 
-index.html: $(OG_META)
+server:
+	marp -p --server --allow-local-files .
