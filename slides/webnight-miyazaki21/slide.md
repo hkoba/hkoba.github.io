@@ -11,6 +11,7 @@ image: https://hkoba.github.io/slides/webnight-miyazaki21/slide.jpg
 [X: **@hkoba**](https://x.com/hkoba) （えちこば）、フリーランス<small>（一応）</small>
 
 <small>仕事：[Perl](https://metacpan.org/author/HKOBA), Tcl/Tk, GCP 上の Linux サーバー管理etc... TypeScriptは勉強中</small>
+<small>GitHub: [hkoba](https://github.com/hkoba)</small>
 <small>ブログ：[hkoba](https://hkoba.hatenablog.com/).hatenablog.com</small>
 <small>2023半ば、宮崎移住（木花地区）</small>
 
@@ -75,33 +76,31 @@ github.com/hkoba/[yatt-starter-html](https://github.com/hkoba/yatt-starter-html)
     * 手作業だと負荷が大きい・漏れが出る
 
 ---
-### そして何より、
-### 優れたテンプレートエンジンがあると、プログラマーとして
-# 仕事の手離れが良くなる
-
-* HTML から先（＝デザイン, コンテンツ, サービス, ビジネスの**個別案件**…）を  
-**HTMLを書ける人** に委ねられる
-
-* プログラマ・エンジニアは、汎用的な土台づくりに専念出来る
-
----
 
 ## けど一般的に、
 # テンプレートエンジンは…
 
-  * 構文が…まぁまぁ難しい（HTML らしくない）ものが多い
-
-  * 覚えてもらうハードルが高いと、導入しづらい
+- 構文が…まぁまぁ難しい（HTML らしくない）ものが多い
 
 ---
 
-## そこで、
-# こんなテンプレートエンジンを作っています
+### また、せっかく導入しても
+# プログラムから、部品として呼ばれる
+### だけのテンプレートだと
+
+-  **HTML 書き**は、不自由なまま
+
+* **自力で** 改善出来ることが少ない、主役感が無い
+
+---
+
+### そこで、
+# YATT というテンプレートエンジン
+### を作っています
 
 * 極力、HTML らしさを保つ
 
-  - ページの追加は、ファイルをポンと置くだけ
-  - タグを自分で定義できる（部品をタグとして定義できる）
+* ファイルをポンと足せば動く
 
 * 入力を間違ったら、すぐに lint が知らせてくれる
 
@@ -111,10 +110,7 @@ github.com/hkoba/[yatt-starter-html](https://github.com/hkoba/yatt-starter-html)
 
 ---
 
-### 繰り返しになりますが、
-# テンプレートエンジンは、
-
-# 難しいと、導入しづらい
+### 繰り返しですが…
 
 - 任意のサンプル HTML を
 
@@ -138,13 +134,9 @@ github.com/hkoba/[yatt-starter-html](https://github.com/hkoba/yatt-starter-html)
 
      * <small>名前空間は `yatt:` 以外にも設定できます</small>
 
-     * 引数も渡せます: `<yatt:ファイル名 引数="値" ... />`
-       - 引数置換は `&yatt:引数;`
-       - 引数宣言は `<!yatt:args 引数="型?デフォルト値" ...>`
-
 ---
 
-### 詳しくは
+### 引数の扱いなど
 
 [マニュアル](https://yatt-yl-podview-rrdekxdjda-an.a.run.app/mod/YATT::Lite::docs::yatt_manual)をご覧下さい
 
@@ -154,11 +146,9 @@ github.com/hkoba/[yatt-starter-html](https://github.com/hkoba/yatt-starter-html)
 
 ---
 
-### 細々と、10年以上も…
+### 10年以上も仕事に使って、改良を続けてます〜
 
-## そんなテンプレートエンジン YATT を作って、仕事に使ってます〜
-
-Yet Another Template Transpiler - YATT
+# Yet Another Template Transpiler - YATT
 
 - [YATT::Lite](https://github.com/hkoba/yatt_lite)  
 <small>Perl 版</small>
