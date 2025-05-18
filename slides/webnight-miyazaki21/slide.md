@@ -4,6 +4,10 @@ title: 再び*HTML書き*を Web の主役にする(?)ための、テンプレ�
 description: 私 hkoba（えちこば）がずっと作り続けているテンプレートエンジンについて紹介させて下さい〜
 image: https://hkoba.github.io/slides/webnight-miyazaki21/slide.jpg
 ---
+<style>
+    small {font-size: 70%;}
+</style>
+
 
 # 再び **HTML書き** を Web の主役(?)にする
 ## ための、テンプレートエンジン: [**YATT**](https://github.com/hkoba/yatt_lite)
@@ -96,7 +100,8 @@ github.com/hkoba/[yatt-starter-html](https://github.com/hkoba/yatt-starter-html)
 
 ### そこで、
 # YATT というテンプレートエンジン
-### を作っています
+
+### を作っています<small>（サーバーサイド、動的）</small>
 
 * 極力、HTML らしさを保つ
 
