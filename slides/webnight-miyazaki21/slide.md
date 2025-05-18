@@ -1,6 +1,6 @@
 ---
 marp: true
-title: 再び*HTML書き*を Web の主役にする(?)ための、テンプレートエンジン YATT
+title: 再び*HTML書き*を Web の主役(?)にするための、テンプレートエンジン YATT
 description: 私 hkoba（えちこば）がずっと作り続けているテンプレートエンジンについて紹介させて下さい〜
 image: https://hkoba.github.io/slides/webnight-miyazaki21/slide.jpg
 ---
@@ -9,7 +9,7 @@ image: https://hkoba.github.io/slides/webnight-miyazaki21/slide.jpg
 </style>
 
 
-# 再び **HTML書き** を Web の主役(?)にする
+# 再び **HTML書き** を Web の主役<small>(?)</small>にする
 ## ための、テンプレートエンジン: [**YATT**](https://github.com/hkoba/yatt_lite)
 
 [X: **@hkoba**](https://x.com/hkoba) （えちこば）、フリーランス<small>（一応）</small>
