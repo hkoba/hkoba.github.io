@@ -169,7 +169,129 @@ github.com/hkoba/[yatt-starter-html](https://github.com/hkoba/yatt-starter-html)
 
 ---
 
-# 想定 Q & A
+# 追記：当日に頂いたご質問へのお返事です
+
+当日はズレたお返事してしまった時もあったので、改めて書き直しました。
+
+---
+
+# Q: Linux での LT かな？
+
+A: はい、HP の Windows マシンの OS を Linux に載せ替えて使ってます。
+
+<hr>
+
+スライドは [marp](https://marp.app/) で書いてます
+
+---
+
+# Q: WebサーバもPerlですか？
+
+A: はい、デモで使っていたのは [plackup](https://metacpan.org/dist/Plack/view/script/plackup) です。
+
+<hr>
+
+その他の [starman](https://metacpan.org/dist/Starman/view/script/starman) などの [PSGI](https://metacpan.org/dist/PSGI/view/PSGI.pod) 互換サーバーも利用実績がありますし、古典的な CGI や FastCGI でも動きます。
+
+---
+
+# Q: yattの名前の由来は？？？
+
+A: **Y**et **A**nother **T**emplate **T**ranspiler です。
+
+<hr>
+
+以前は Yet Another Template **Toolkit** と呼んでました。
+
+---
+
+# Q: 部品のなかで、html タグ閉じずに動いてました？
+
+A: はい、デモの時短のため、今日は閉じない書き方を用いました。  
+YATT は一般の HTML タグを解釈しない（`<yatt:..>` タグだけを解釈する）ので、
+閉じない書き方をしても、それ自体はエラーにはなりません。
+
+<hr>
+
+とはいえ HTML タグの閉じ忘れはエラーにしたいので、普段は header, footer の代わりに`layout.yatt` 一つの中で、タグの開きと閉じを対応させておきます。
+```html
+<yatt:layout>
+  ...
+</yatt:layout>
+```
+layout.yatt の中で [body引数](https://yatt-yl-podview-rrdekxdjda-an.a.run.app/mod/YATT::Lite::docs::yatt_manual#--body_argument)を書いたところに `...` が埋め込まれます
+
+---
+
+# Q: OSはFedoraですか？
+
+A: はい、当日のデモで使ったのは Fedora42 です。
+
+
+---
+
+# Q: Emacs信者ですか？
+
+A: 信者を名乗れる自信はない(><)ですが、仕事の主役は依然として Emacs です〜
+
+<hr>
+
+とはいえ VSCode にも追随したいので、一生懸命 Language Server を書くなどしてます。
+
+---
+
+# Q: Perlの良さを一言で！
+
+A: 雑にも堅くも書ける、懐の広さです！
+
+<hr>
+
+個人的には、90年代から **変数名間違いを静的に検出する機能** が perl 本体に組み込まれていたこと（`use strict`, `use fields`）が、perl を使い続けてきた理由として大きいです。エディタの保存時に `perl -wc` するのがオススメです。
+
+---
+
+# Q: 普段Perlでどんなサービス作られてますか？
+
+A: お客様企業が医療従事者向けの Web アンケート屋さんなので、
+そのインフラと、関連すること何でもです。(tcltk も使います)
+
+<hr>
+
+最近で言うと、
+
+- 社内業務効率化のための DB化と Web ダッシュボードづくり
+- 特定の疾患領域で、先生が研究のため患者へアンケートをとって、その結果を把握しやすくする仕組み作り（…これもダッシュボードですね）
+
+---
+
+# Q: Raku には移行しないんですか？
+
+A: はい、今のところは…
+
+<hr>
+
+元々 YATT は Raku への移行に備えてチームのスキルセットの Perl 依存度を下げるために作り始めた面があります。現在は TypeScript (deno)への移行を目指してます。
+
+---
+# その他、頂いた反応へのお返事
+
+---
+# Perl エンジニアさん！貴重！
+# Perl使い！渋い
+# Perl!!
+
+→ ありがとうございます！
+
+---
+
+# コンセプトが明確
+# シンプルなポン出しいいですね！
+
+→ ありがとうございます！コンセプトが伝わって嬉しいです！
+
+---
+
+# 事前に想定した Q & A
 
 ---
 
