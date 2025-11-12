@@ -5,71 +5,85 @@ title: コマンド行から簡単に new してメソッドを試したい、�
 
 # コマンド行から簡単に new して
 # メソッドを試したい、タブ補完もしたい…
-# MouseX::OO_Modulino と
-# 関連モジュールのご紹介
+## MouseX::OO_Modulino と
+## 関連モジュールのご紹介
 
-by hkoba / @hkoba
-
----
-
-### 私が皆さんに布教したい、アイディア
-
-# **オブジェクト指向の** モジュリーノ
-
-* モジュリーノとは：**ライブラリ** を **実行プログラム** と兼用する技法
-
-* ↑ここ↑に **オブジェクト指向を組み合わせる**
-
-* **探索的なプログラム開発** が、はかどる〜
+by hkoba / [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
 
 ---
 
-### **ライブラリ** を **実行プログラム** と兼用する技法
+### 一番、伝えたいこと
 
-- Python
+# **モジュリーノ** x **オブジェクト指向**
+# ＝ **探索的なプログラム開発** に便利！
+
+* モジュリーノとは：<u>**ライブラリ・ファイル** に **実行プログラム** を兼ねさせる技法</u>
+
+  * Brian d foy 氏が命名(2004)
+
+---
+
+### **ライブラリ・ファイル** に **実行プログラム** を兼ねさせる技法
+
+- 多くの言語に存在
+
+- Perl の場合：
+  ```perl
+  unless (caller) {
+    main()
+  }
+  ```
+* Python
   ```python
   if __name__ == '__main__':
       main()
   ```
-- Ruby
+* Ruby
   ```ruby
   if __FILE__ == $0
     main()
   end
   ```
+
+---
+
+### **ライブラリ** に **実行プログラム** を兼ねさせる技法
+
 - Deno
   ```typescript
   if (import.meta.main) {
     main()
   }
   ```
+- Tcl
+  ```tcl
+  if {![info level] && [info script] eq $::argv0} {
+    main
+  }
+  ```
+- Zsh
+  ```sh
+  if (($#zsh_eval_context == 1 && $zsh_eval_context[1] == "toplevel")); then
+    main
+  fi
+  ```
 
 ---
 
-### Perl
+## この `main()` に代えて、
 
-```perl
-unless (caller) {
-  main()
-}
-```
-
-- Brian d foy 氏が Modulino（モジュリーノ）と命名(2004)
-
----
-
-## この `main()` で
-
-- オブジェクトの new
-- メソッドの dispatch
-- 結果のシリアライズ
+* オブジェクトの new
+* メソッドの dispatch
+* 結果のシリアライズ
 
 をすると、**探索的なプログラム開発** が、はかどりますよ！
 
 ---
 
-### 例えば、
-### こんな使い方をするオブジェクトを書いた時…
+# 例えば…
+---
+
+### こんな使い方をするクラスを書いた時…
 
 ```perl
   MyClass
@@ -111,38 +125,41 @@ perl -I$PWD -le 'use MyClass; use Data::Dumper; print Dumper(
 ### ↓このくらいで済ませたい！
 
 ```sh
-  ./MyClass.pm \
-     \
-     --foo=abc --bar='[3,4,5]' \
-     \
+  ./MyClass.pm                          \
+                                        \
+     --foo=abc --bar='[3,4,5]'          \
+                                        \
      funcA '{"a":3,"b":8}'
 ```
 
-- オプション＝オブジェクトのパラメータ
-- サブコマンド＝メソッド名
+- `--オプション=値` → new する時のパラメータ
+- `サブコマンド` → メソッド名
 
 ---
 
-### もっと言うと
-
-- `--<TAB>` で、オプション名を補完したい
-  ```sh
-    ./MyClass.pm --<TAB>
-  ```
+### もっと欲を言えば…
 
 - `<TAB>` で、メソッド名を補完したい
   ```sh
     ./MyClass.pm <TAB>
   ```
+- `--<TAB>` で、オプション名を補完したい
+  ```sh
+    ./MyClass.pm --<TAB>
+  ```
 
 ---
 
-# 作ってみました
+# 作ってみました！
 ## MouseX::OO_Modulino
 
 <https://github.com/hkoba/perl-MouseX-OO_Modulino>
 
-### Zsh のタブ補完：App::oo_modulino_zsh_completion_helper
+- Mouse （Perl の OOP フレームワークの一つ）の拡張
+
+---
+
+### Zsh のタブ補完も：App::oo_modulino_zsh_completion_helper
 
 <https://metacpan.org/pod/App::oo_modulino_zsh_completion_helper>
 
@@ -150,17 +167,17 @@ perl -I$PWD -le 'use MyClass; use Data::Dumper; print Dumper(
 
 # 使い方
 
-- 
+- Mouse を置き換え
   ```perl
   use Mouse;
   # ↓
   use MouseX::OO_Modulino -as_base;
   ```
-- 先頭
+- 先頭に shebang
   ```perl
   #!/usr/bin/env perl
   ```
-- 末尾
+- 末尾に unless caller
   ```perl
   __PACKAGE__->cli_run(\@ARGV) unless caller;
   1;
@@ -169,9 +186,57 @@ perl -I$PWD -le 'use MyClass; use Data::Dumper; print Dumper(
 ---
 # デモ
 
+```perl
+package MyClass;
+use Mouse;
+
+has foo => (is => 'rw', isa => 'Str');
+
+has bar => (is => 'rw', isa => 'ArrayRef[Int]');
+
+sub funcA {
+  my ($self, $param) = @_;
+  [$self->{foo}, $param, $self->{bar}]
+}
+
+sub funcB {
+  my ($self, $param) = @_;
+  +{foo => $self->{foo}, bar => $self->{bar}, baz => $param}
+}
+1;
+```
+
+---
+
+# まとめ
+
+- MouseX::OO_Modulino
+- App::oo_modulino_zsh_completion_helper
+- 他の言語でも、あると便利かも？（既に有る？）
+
 ---
 
 # ありそうな質問
+
+---
+
+# 使ってる？
+
+* 同じ仕組みの別モジュールを仕事で使ってる
+  - [CLI_JSON](https://metacpan.org/dist/MOP4Import-Declare/view/Base/CLI_JSON.pod) 2017〜
+  - Zsh 補完は 2020〜
+
+* アイディアだけでも広めたい → 今回 Mouse へ移植
+
+---
+
+# Zsh だけ？ Bash は？
+
+* 拡張子に対する補完を用いている
+  ```sh
+  compdef -P (*/)#*.pm
+  ```
+* bash だと難しそう…
 
 ---
 
@@ -181,4 +246,4 @@ perl -I$PWD -le 'use MyClass; use Data::Dumper; print Dumper(
 
 * 任意のメソッドを、コマンド行からすぐ試せるように
 
-  - 試しやすいメソッドを書く
+  - メソッドを小さく、試しやすく書く動機につながる
