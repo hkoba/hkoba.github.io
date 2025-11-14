@@ -1,6 +1,5 @@
-#!/usr/bin/env perl
 package MyClass;
-use MouseX::OO_Modulino -as_base;
+use Mouse;
 
 has foo => (is => 'rw', isa => 'Str', default => "FOO",
             documentation => "is string");
@@ -17,5 +16,4 @@ sub funcB {
   +{bar => $self->{bar}, baz => $param}
 }
 
-__PACKAGE__->cli_run(\@ARGV) unless caller;
 1;
