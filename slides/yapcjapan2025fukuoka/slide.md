@@ -187,14 +187,14 @@ perl -I$PWD -le 'use MyClass; use Data::Dumper; print Dumper(
   ```
 - `chmod +x ./MyClass.pm`
 ---
-# デモ
+# デモ（元のモジュール → OO Modulino）
 
 ```perl
 package MyClass;
 use Mouse;
 
-has foo => (is => 'rw', isa => 'Str', default => "FOO",
-            documentation => "is string");
+has foo => (is => 'rw', isa => 'Str', default => 'FOO',
+            documentation => 'some help message');
 
 has bar => (is => 'rw', isa => 'ArrayRef[Int]');
 
@@ -210,14 +210,25 @@ sub funcB {
 1;
 ```
 
----
-
+<!--
 1. 元のコードを説明
 2. CLI から Data::Dumper で試すコードを実行
 3. OO Modulino へ書き換え
 4. コマンド行から呼び出してみる
 5. タブ打ってみる
+-->
 
+---
+
+# 使い方の例（再掲）
+
+```perl
+  MyClass
+  
+    ->new(foo => "abc", bar => [3,4,5])
+  
+    ->funcA({a => 3, b => 8})
+```
 ---
 
 # まとめ
