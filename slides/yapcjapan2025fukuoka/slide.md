@@ -79,6 +79,8 @@ by hkoba / [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
 
 をすると、**探索的なプログラム開発** が、はかどりますよ！
 
+* 名付けて、OO Modulino（おーおー、モジュリーノ）！
+
 ---
 
 # 例えば…
@@ -191,28 +193,36 @@ perl -I$PWD -le 'use MyClass; use Data::Dumper; print Dumper(
 package MyClass;
 use Mouse;
 
-has foo => (is => 'rw', isa => 'Str');
+has foo => (is => 'rw', isa => 'Str', default => "FOO",
+            documentation => "is string");
 
 has bar => (is => 'rw', isa => 'ArrayRef[Int]');
 
 sub funcA {
   my ($self, $param) = @_;
-  [$self->{foo}, $param, $self->{bar}]
+  [$self->{foo}, $param]
 }
 
 sub funcB {
   my ($self, $param) = @_;
-  +{foo => $self->{foo}, bar => $self->{bar}, baz => $param}
+  +{bar => $self->{bar}, baz => $param}
 }
 1;
 ```
 
 ---
 
+1. 元のコードを説明
+2. CLI から Data::Dumper で試すコードを実行
+3. OO Modulino へ書き換え
+4. コマンド行から呼び出してみる
+5. タブ打ってみる
+
+---
+
 # まとめ
 
-- MouseX::OO_Modulino
-- App::oo_modulino_zsh_completion_helper
+- **モジュリーノ** x **オブジェクト指向** ＝ **探索的なプログラム開発** に便利！
 - 他の言語でも、あると便利かも？（既に有る？）
 
 ---

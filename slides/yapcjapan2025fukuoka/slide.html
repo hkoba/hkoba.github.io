@@ -78,7 +78,7 @@
 </li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="5" data-marpit-fragments="3" lang="ja-JP">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="5" data-marpit-fragments="4" lang="ja-JP">
 <h2 id="%E3%81%93%E3%81%AE-main-%E3%81%AB%E4%BB%A3%E3%81%88%E3%81%A6">この <code>main()</code> に代えて、</h2>
 <ul>
 <li data-marpit-fragment="1">オブジェクトの new</li>
@@ -86,6 +86,9 @@
 <li data-marpit-fragment="3">結果のシリアライズ</li>
 </ul>
 <p>をすると、<strong>探索的なプログラム開発</strong> が、はかどりますよ！</p>
+<ul>
+<li data-marpit-fragment="4">名付けて、OO Modulino（おーおー、モジュリーノ）！</li>
+</ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="6" lang="ja-JP">
 <h1 id="%E4%BE%8B%E3%81%88%E3%81%B0">例えば…</h1>
@@ -178,18 +181,19 @@
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-perl"><span class="hljs-keyword">package</span> MyClass;
 <span class="hljs-keyword">use</span> Mouse;
 
-has <span class="hljs-string">foo =&gt;</span> (<span class="hljs-string">is =&gt;</span> <span class="hljs-string">&#x27;rw&#x27;</span>, <span class="hljs-string">isa =&gt;</span> <span class="hljs-string">&#x27;Str&#x27;</span>);
+has <span class="hljs-string">foo =&gt;</span> (<span class="hljs-string">is =&gt;</span> <span class="hljs-string">&#x27;rw&#x27;</span>, <span class="hljs-string">isa =&gt;</span> <span class="hljs-string">&#x27;Str&#x27;</span>, <span class="hljs-string">default =&gt;</span> <span class="hljs-string">&quot;FOO&quot;</span>,
+            <span class="hljs-string">documentation =&gt;</span> <span class="hljs-string">&quot;is string&quot;</span>);
 
 has <span class="hljs-string">bar =&gt;</span> (<span class="hljs-string">is =&gt;</span> <span class="hljs-string">&#x27;rw&#x27;</span>, <span class="hljs-string">isa =&gt;</span> <span class="hljs-string">&#x27;ArrayRef[Int]&#x27;</span>);
 
 <span class="hljs-function"><span class="hljs-keyword">sub</span> <span class="hljs-title">funcA</span> </span>{
   <span class="hljs-keyword">my</span> (<span class="hljs-variable">$self</span>, <span class="hljs-variable">$param</span>) = <span class="hljs-variable">@_</span>;
-  [<span class="hljs-variable">$self</span>-&gt;{foo}, <span class="hljs-variable">$param</span>, <span class="hljs-variable">$self</span>-&gt;{bar}]
+  [<span class="hljs-variable">$self</span>-&gt;{foo}, <span class="hljs-variable">$param</span>]
 }
 
 <span class="hljs-function"><span class="hljs-keyword">sub</span> <span class="hljs-title">funcB</span> </span>{
   <span class="hljs-keyword">my</span> (<span class="hljs-variable">$self</span>, <span class="hljs-variable">$param</span>) = <span class="hljs-variable">@_</span>;
-  +{<span class="hljs-string">foo =&gt;</span> <span class="hljs-variable">$self</span>-&gt;{foo}, <span class="hljs-string">bar =&gt;</span> <span class="hljs-variable">$self</span>-&gt;{bar}, <span class="hljs-string">baz =&gt;</span> <span class="hljs-variable">$param</span>}
+  +{<span class="hljs-string">bar =&gt;</span> <span class="hljs-variable">$self</span>-&gt;{bar}, <span class="hljs-string">baz =&gt;</span> <span class="hljs-variable">$param</span>}
 }
 <span class="hljs-number">1</span>;
 </code></pre>
