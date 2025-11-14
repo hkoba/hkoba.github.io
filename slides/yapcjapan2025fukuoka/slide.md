@@ -1,6 +1,7 @@
 ---
 marp: true
 title: コマンド行から簡単に new してメソッドを試したい、タブ補完もしたい… MouseX::OO_Modulino と 関連モジュールのご紹介
+description: モジュリーノ x オブジェクト指向＝探索的なプログラム開発に便利！
 image: https://hkoba.github.io/slides/yapcjapan2025fukuoka/slide.jpg
 ---
 
