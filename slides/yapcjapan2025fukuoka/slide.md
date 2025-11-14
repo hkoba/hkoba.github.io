@@ -1,6 +1,7 @@
 ---
 marp: true
 title: コマンド行から簡単に new してメソッドを試したい、タブ補完もしたい… MouseX::OO_Modulino と 関連モジュールのご紹介
+image: https://hkoba.github.io/slides/yapcjapan2025fukuoka/slide.jpg
 ---
 
 # コマンド行から簡単に new して
@@ -9,6 +10,13 @@ title: コマンド行から簡単に new してメソッドを試したい、�
 ## 関連モジュールのご紹介
 
 by hkoba / [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
+
+---
+
+## スライドURL
+
+# [hkoba.github.io](http://hkoba.github.io/)
+# → [YAPC::Fukuoka 2025](https://hkoba.github.io/slides/yapcjapan2025fukuoka/slide.html)
 
 ---
 
