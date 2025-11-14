@@ -8,12 +8,12 @@ has bar => (is => 'rw', isa => 'ArrayRef[Int]');
 
 sub funcA {
   my ($self, $param) = @_;
-  [$self->{foo}, $param, $self->{bar}]
+  [$self->{foo}, $param]
 }
 
 sub funcB {
   my ($self, $param) = @_;
-  +{foo => $self->{foo}, bar => $self->{bar}, baz => $param}
+  +{bar => $self->{bar}, baz => $param}
 }
 
 __PACKAGE__->cli_run(\@ARGV) unless caller;
