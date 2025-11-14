@@ -2,7 +2,8 @@
 package MyClass;
 use MouseX::OO_Modulino -as_base;
 
-has foo => (is => 'rw', isa => 'Str', documentation => "is string");
+has foo => (is => 'rw', isa => 'Str', default => "FOO",
+            documentation => "is string");
 
 has bar => (is => 'rw', isa => 'ArrayRef[Int]');
 
