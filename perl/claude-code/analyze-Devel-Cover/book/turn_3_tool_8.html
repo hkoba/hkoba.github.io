@@ -154,11 +154,582 @@
                     <main>
                         <h1 id="ありがとうございますやはり-develcover-は実行時の情報をキャプチャーして活用している"><a class="header" href="#ありがとうございますやはり-develcover-は実行時の情報をキャプチャーして活用している">ありがとうございます。やはり Devel::Cover は実行時の情報をキャプチャーして活用している</a></h1>
 <h2 id="tool-interactions"><a class="header" href="#tool-interactions">Tool Interactions</a></h2>
-<p><strong>Tool: Write</strong></p>
-<pre><code class="language-json">{
-  "file_path": "/home/hkoba/db/monthly/202512/tmp/Devel--Cover/examples/logic_tree_builder.pl",
-  "content": "#!/usr/bin/env perl\nuse strict;\nuse warnings;\nuse v5.12;\n\n#\n# 論理式の木構造を静的に構築するサンプル\n# Devel::Cover の手法を参考に、B モジュールで OP ツリーを解析\n#\n\npackage LogicNode;\n\n# 論理式の木構造を表現するノード\n\nsub new {\n    my ($class, %args) = @_;\n    return bless \\%args, $class;\n}\n\nsub type     { $_[0]-&gt;{type} }\nsub op       { $_[0]-&gt;{op} }\nsub left     { $_[0]-&gt;{left} }\nsub right    { $_[0]-&gt;{right} }\nsub text     { $_[0]-&gt;{text} }\nsub children { @{$_[0]-&gt;{children} // []} }\n\nsub is_leaf {\n    my $self = shift;\n    return $self-&gt;{type} eq 'leaf';\n}\n\nsub to_string {\n    my ($self, $indent) = @_;\n    $indent //= 0;\n    my $pad = \"  \" x $indent;\n\n    if ($self-&gt;is_leaf) {\n        return \"${pad}LEAF: $self-&gt;{text}\";\n    }\n\n    my @lines = (\"${pad}$self-&gt;{type} [$self-&gt;{op}]\");\n\n    if ($self-&gt;{left}) {\n        push @lines, \"${pad}  LEFT:\";\n        if (ref $self-&gt;{left}) {\n            push @lines, $self-&gt;{left}-&gt;to_string($indent + 2);\n        } else {\n            push @lines, \"${pad}    $self-&gt;{left}\";\n        }\n    }\n\n    if ($self-&gt;{right}) {\n        push @lines, \"${pad}  RIGHT:\";\n        if (ref $self-&gt;{right}) {\n            push @lines, $self-&gt;{right}-&gt;to_string($indent + 2);\n        } else {\n            push @lines, \"${pad}    $self-&gt;{right}\";\n        }\n    }\n\n    return join(\"\\n\", @lines);\n}\n\n#==============================================================================\npackage LogicTreeBuilder;\n\nuse B qw(svref_2object OPf_KIDS);\nuse B::Deparse;\n\nmy %LOGIC_OPS = (\n    and       =&gt; { symbol =&gt; '&amp;&amp;',  short_circuit =&gt; 'left_false' },\n    andassign =&gt; { symbol =&gt; '&amp;&amp;=', short_circuit =&gt; 'left_false' },\n    or        =&gt; { symbol =&gt; '||',  short_circuit =&gt; 'left_true' },\n    orassign  =&gt; { symbol =&gt; '||=', short_circuit =&gt; 'left_true' },\n    dor       =&gt; { symbol =&gt; '//',  short_circuit =&gt; 'left_defined' },\n    dorassign =&gt; { symbol =&gt; '//=', short_circuit =&gt; 'left_defined' },\n    xor       =&gt; { symbol =&gt; 'xor', short_circuit =&gt; 'none' },\n);\n\nsub new {\n    my $class = shift;\n    my $self = bless {\n        deparse =&gt; B::Deparse-&gt;new('-x7'),  # -x7: 最小限の変形\n    }, $class;\n    return $self;\n}\n\n#------------------------------------------------------------------------------\n# コードリファレンスから論理式の木を構築\n#------------------------------------------------------------------------------\nsub build_from_coderef {\n    my ($self, $coderef) = @_;\n\n    my $cv = svref_2object($coderef);\n    return unless $cv-&gt;isa('B::CV');\n\n    $self-&gt;{deparse}{curcv} = $cv;\n    $self-&gt;{trees} = [];\n\n    my $root = $cv-&gt;ROOT;\n    return [] unless $root &amp;&amp; !$root-&gt;isa('B::NULL');\n\n    $self-&gt;_scan_for_logic($root);\n\n    return $self-&gt;{trees};\n}\n\n#------------------------------------------------------------------------------\n# 論理演算を探して木を構築\n#------------------------------------------------------------------------------\nsub _scan_for_logic {\n    my ($self, $op) = @_;\n\n    return unless $op &amp;&amp; !$op-&gt;isa('B::NULL');\n\n    my $name = $op-&gt;name;\n\n    if (exists $LOGIC_OPS{$name}) {\n        my $tree = $self-&gt;_build_logic_tree($op);\n        push @{$self-&gt;{trees}}, $tree if $tree;\n    } elsif ($name eq 'cond_expr') {\n        my $tree = $self-&gt;_build_cond_tree($op);\n        push @{$self-&gt;{trees}}, $tree if $tree;\n    }\n\n    # 子ノードを再帰的に走査\n    if ($op-&gt;flags &amp; OPf_KIDS) {\n        for (my $kid = $op-&gt;first; $kid &amp;&amp; !$kid-&gt;isa('B::NULL'); $kid = $kid-&gt;sibling) {\n            $self-&gt;_scan_for_logic($kid);\n        }\n    }\n}\n\n#------------------------------------------------------------------------------\n# 論理演算の木を構築 (再帰的に部分式も解析)\n#------------------------------------------------------------------------------\nsub _build_logic_tree {\n    my ($self, $op) = @_;\n\n    my $name = $op-&gt;name;\n    my $info = $LOGIC_OPS{$name} or return;\n\n    my $left_op = $op-&gt;first;\n    return unless $left_op &amp;&amp; !$left_op-&gt;isa('B::NULL');\n\n    my $right_op = $left_op-&gt;sibling;\n    return unless $right_op &amp;&amp; !$right_op-&gt;isa('B::NULL');\n\n    # 左辺と右辺を再帰的に解析\n    my $left  = $self-&gt;_analyze_operand($left_op);\n    my $right = $self-&gt;_analyze_operand($right_op);\n\n    return LogicNode-&gt;new(\n        type          =&gt; $name,\n        op            =&gt; $info-&gt;{symbol},\n        short_circuit =&gt; $info-&gt;{short_circuit},\n        left          =&gt; $left,\n        right         =&gt; $right,\n        right_const   =&gt; $self-&gt;_is_constant($right_op),\n    );\n}\n\n#------------------------------------------------------------------------------\n# 三項演算子の木を構築\n#------------------------------------------------------------------------------\nsub _build_cond_tree {\n    my ($self, $op) = @_;\n\n    my $cond_op = $op-&gt;first;\n    return unless $cond_op &amp;&amp; !$cond_op-&gt;isa('B::NULL');\n\n    my $true_op = $cond_op-&gt;sibling;\n    my $false_op = $true_op ? $true_op-&gt;sibling : undef;\n\n    return LogicNode-&gt;new(\n        type      =&gt; 'cond_expr',\n        op        =&gt; '?:',\n        condition =&gt; $self-&gt;_analyze_operand($cond_op),\n        left      =&gt; $self-&gt;_analyze_operand($true_op),\n        right     =&gt; $self-&gt;_analyze_operand($false_op),\n    );\n}\n\n#------------------------------------------------------------------------------\n# オペランドを解析 (論理演算なら再帰、そうでなければ葉ノード)\n#------------------------------------------------------------------------------\nsub _analyze_operand {\n    my ($self, $op) = @_;\n\n    return '' unless $op &amp;&amp; !$op-&gt;isa('B::NULL');\n\n    my $name = $op-&gt;name;\n\n    # 論理演算子なら再帰的に木を構築\n    if (exists $LOGIC_OPS{$name}) {\n        return $self-&gt;_build_logic_tree($op);\n    }\n\n    # null OP の場合は中身を見る\n    if ($name eq 'null') {\n        my $first = $op-&gt;first;\n        if ($first &amp;&amp; !$first-&gt;isa('B::NULL')) {\n            my $inner_name = $first-&gt;name;\n            if (exists $LOGIC_OPS{$inner_name}) {\n                return $self-&gt;_build_logic_tree($first);\n            }\n        }\n    }\n\n    # 葉ノード: deparse してテキストを取得\n    return LogicNode-&gt;new(\n        type =&gt; 'leaf',\n        text =&gt; $self-&gt;_deparse_simple($op),\n    );\n}\n\n#------------------------------------------------------------------------------\n# シンプルな deparse (論理演算子は展開しない)\n#------------------------------------------------------------------------------\nsub _deparse_simple {\n    my ($self, $op) = @_;\n\n    return '' unless $op &amp;&amp; !$op-&gt;isa('B::NULL');\n\n    local $@;\n    my $text = eval { $self-&gt;{deparse}-&gt;deparse($op, 0) };\n    return $text // '' if $@;\n\n    # 後処理\n    $text =~ s/^\\s+//;\n    $text =~ s/\\s+$//;\n\n    return $text;\n}\n\n#------------------------------------------------------------------------------\n# 定数判定\n#------------------------------------------------------------------------------\nsub _is_constant {\n    my ($self, $op) = @_;\n\n    return 0 unless $op &amp;&amp; !$op-&gt;isa('B::NULL');\n\n    my $name = $op-&gt;name;\n    return 1 if $name =~ /^(?:const|undef|s?refgen|null)$/;\n    return 1 if $name =~ /^(?:die|return|last|next|redo|goto)$/;\n    return 0;\n}\n\n#==============================================================================\npackage TruthTableGenerator;\n\n#------------------------------------------------------------------------------\n# LogicNode から真理値表を生成\n#------------------------------------------------------------------------------\nsub generate {\n    my ($class, $node) = @_;\n\n    return [] unless $node;\n\n    if ($node-&gt;is_leaf) {\n        return $class-&gt;_leaf_table($node);\n    }\n\n    my $type = $node-&gt;type;\n\n    if ($type eq 'cond_expr') {\n        return $class-&gt;_cond_table($node);\n    }\n\n    # 左右のオペランドの変数を収集\n    my @vars = $class-&gt;_collect_variables($node);\n\n    # 左右が複合式かどうかで分岐\n    my $left_complex  = ref($node-&gt;left)  &amp;&amp; !$node-&gt;left-&gt;is_leaf;\n    my $right_complex = ref($node-&gt;right) &amp;&amp; !$node-&gt;right-&gt;is_leaf;\n\n    if ($left_complex || $right_complex) {\n        return $class-&gt;_complex_table($node, \\@vars);\n    }\n\n    return $class-&gt;_simple_table($node);\n}\n\n#------------------------------------------------------------------------------\n# 変数を収集\n#------------------------------------------------------------------------------\nsub _collect_variables {\n    my ($class, $node) = @_;\n\n    return () unless $node;\n\n    if ($node-&gt;is_leaf) {\n        my $text = $node-&gt;text;\n        # $var 形式の変数を抽出\n        my @vars = $text =~ /(\\$\\w+)/g;\n        return @vars;\n    }\n\n    my @vars;\n    push @vars, $class-&gt;_collect_variables($node-&gt;left)  if ref $node-&gt;left;\n    push @vars, $class-&gt;_collect_variables($node-&gt;right) if ref $node-&gt;right;\n\n    # 重複を除去しつつ順序を保持\n    my %seen;\n    return grep { !$seen{$_}++ } @vars;\n}\n\n#------------------------------------------------------------------------------\n# 単純な真理値表 (and_3, or_3 など)\n#------------------------------------------------------------------------------\nsub _simple_table {\n    my ($class, $node) = @_;\n\n    my $type = $node-&gt;type;\n    my $op   = $node-&gt;op;\n\n    my $left_text  = ref($node-&gt;left)  ? $node-&gt;left-&gt;text  : $node-&gt;left;\n    my $right_text = ref($node-&gt;right) ? $node-&gt;right-&gt;text : $node-&gt;right;\n\n    my $right_const = $node-&gt;{right_const};\n\n    my @table;\n\n    if ($type =~ /^(?:and|andassign)$/) {\n        if ($right_const) {\n            # and_2\n            @table = (\n                { A =&gt; 0, result =&gt; 0, path =&gt; \"!$left_text (short-circuit)\" },\n                { A =&gt; 1, result =&gt; 1, path =&gt; \"$left_text\" },\n            );\n        } else {\n            # and_3\n            @table = (\n                { A =&gt; 0, B =&gt; 'X', result =&gt; 0, path =&gt; \"!$left_text (short-circuit)\" },\n                { A =&gt; 1, B =&gt; 0,   result =&gt; 0, path =&gt; \"$left_text $op !$right_text\" },\n                { A =&gt; 1, B =&gt; 1,   result =&gt; 1, path =&gt; \"$left_text $op $right_text\" },\n            );\n        }\n    } elsif ($type =~ /^(?:or|orassign|dor|dorassign)$/) {\n        if ($right_const) {\n            # or_2\n            @table = (\n                { A =&gt; 1, result =&gt; 1, path =&gt; \"$left_text (short-circuit)\" },\n                { A =&gt; 0, result =&gt; 0, path =&gt; \"!$left_text\" },\n            );\n        } else {\n            # or_3\n            @table = (\n                { A =&gt; 1, B =&gt; 'X', result =&gt; 1, path =&gt; \"$left_text (short-circuit)\" },\n                { A =&gt; 0, B =&gt; 1,   result =&gt; 1, path =&gt; \"!$left_text $op $right_text\" },\n                { A =&gt; 0, B =&gt; 0,   result =&gt; 0, path =&gt; \"!$left_text $op !$right_text\" },\n            );\n        }\n    } elsif ($type eq 'xor') {\n        # xor_4 (短絡評価なし)\n        @table = (\n            { A =&gt; 0, B =&gt; 0, result =&gt; 0, path =&gt; \"!$left_text xor !$right_text\" },\n            { A =&gt; 0, B =&gt; 1, result =&gt; 1, path =&gt; \"!$left_text xor $right_text\" },\n            { A =&gt; 1, B =&gt; 0, result =&gt; 1, path =&gt; \"$left_text xor !$right_text\" },\n            { A =&gt; 1, B =&gt; 1, result =&gt; 0, path =&gt; \"$left_text xor $right_text\" },\n        );\n    }\n\n    return {\n        expression =&gt; \"$left_text $op $right_text\",\n        type       =&gt; $type,\n        headers    =&gt; $right_const ? ['A'] : ['A', 'B'],\n        rows       =&gt; \\@table,\n    };\n}\n\n#------------------------------------------------------------------------------\n# 複合式の真理値表\n#------------------------------------------------------------------------------\nsub _complex_table {\n    my ($class, $node, $vars) = @_;\n\n    # 全変数の組み合わせを生成\n    my $n = @$vars;\n    my @table;\n\n    for my $i (0 .. (2**$n - 1)) {\n        my %vals;\n        for my $j (0 .. $n-1) {\n            $vals{$vars-&gt;[$j]} = ($i &gt;&gt; ($n - 1 - $j)) &amp; 1;\n        }\n\n        my $result = $class-&gt;_evaluate($node, \\%vals);\n        my @inputs = map { $vals{$_} } @$vars;\n\n        push @table, {\n            inputs =&gt; \\@inputs,\n            result =&gt; $result,\n            vals   =&gt; \\%vals,\n        };\n    }\n\n    return {\n        expression =&gt; $class-&gt;_node_to_expr($node),\n        variables  =&gt; $vars,\n        headers    =&gt; [map { s/^\\$//r } @$vars],\n        rows       =&gt; \\@table,\n    };\n}\n\n#------------------------------------------------------------------------------\n# 論理式を評価\n#------------------------------------------------------------------------------\nsub _evaluate {\n    my ($class, $node, $vals) = @_;\n\n    return 0 unless $node;\n\n    if ($node-&gt;is_leaf) {\n        my $text = $node-&gt;text;\n        # $var 形式を探して値を返す\n        if ($text =~ /^\\$(\\w+)$/) {\n            return $vals-&gt;{$text} // 0;\n        }\n        # 定数として評価\n        return $text ? 1 : 0;\n    }\n\n    my $type = $node-&gt;type;\n    my $left_val  = $class-&gt;_evaluate($node-&gt;left, $vals);\n    my $right_val = $class-&gt;_evaluate($node-&gt;right, $vals);\n\n    if ($type =~ /^(?:and|andassign)$/) {\n        return $left_val &amp;&amp; $right_val ? 1 : 0;\n    } elsif ($type =~ /^(?:or|orassign|dor|dorassign)$/) {\n        return $left_val || $right_val ? 1 : 0;\n    } elsif ($type eq 'xor') {\n        return ($left_val xor $right_val) ? 1 : 0;\n    } elsif ($type eq 'cond_expr') {\n        my $cond_val = $class-&gt;_evaluate($node-&gt;{condition}, $vals);\n        return $cond_val ? $left_val : $right_val;\n    }\n\n    return 0;\n}\n\n#------------------------------------------------------------------------------\n# ノードを式文字列に変換\n#------------------------------------------------------------------------------\nsub _node_to_expr {\n    my ($class, $node) = @_;\n\n    return '' unless $node;\n\n    if ($node-&gt;is_leaf) {\n        return $node-&gt;text;\n    }\n\n    my $left  = $class-&gt;_node_to_expr($node-&gt;left);\n    my $right = $class-&gt;_node_to_expr($node-&gt;right);\n    my $op    = $node-&gt;op;\n\n    return \"($left $op $right)\";\n}\n\n#------------------------------------------------------------------------------\n# 葉ノード用\n#------------------------------------------------------------------------------\nsub _leaf_table {\n    my ($class, $node) = @_;\n    return { expression =&gt; $node-&gt;text, type =&gt; 'leaf', rows =&gt; [] };\n}\n\n#------------------------------------------------------------------------------\n# 三項演算子用\n#------------------------------------------------------------------------------\nsub _cond_table {\n    my ($class, $node) = @_;\n\n    my $cond_text = ref($node-&gt;{condition}) ? $class-&gt;_node_to_expr($node-&gt;{condition}) : $node-&gt;{condition};\n    my $true_text = ref($node-&gt;left) ? $class-&gt;_node_to_expr($node-&gt;left) : $node-&gt;left;\n    my $false_text = ref($node-&gt;right) ? $class-&gt;_node_to_expr($node-&gt;right) : $node-&gt;right;\n\n    return {\n        expression =&gt; \"$cond_text ? $true_text : $false_text\",\n        type       =&gt; 'cond_expr',\n        headers    =&gt; ['cond'],\n        rows       =&gt; [\n            { cond =&gt; 1, result =&gt; $true_text,  path =&gt; \"condition is true\" },\n            { cond =&gt; 0, result =&gt; $false_text, path =&gt; \"condition is false\" },\n        ],\n    };\n}\n\n#------------------------------------------------------------------------------\n# テキスト形式で出力\n#------------------------------------------------------------------------------\nsub format_text {\n    my ($class, $table) = @_;\n\n    return '' unless $table &amp;&amp; $table-&gt;{rows} &amp;&amp; @{$table-&gt;{rows}};\n\n    my @lines;\n    push @lines, \"Expression: $table-&gt;{expression}\";\n    push @lines, \"Type: $table-&gt;{type}\" if $table-&gt;{type};\n    push @lines, \"-\" x 70;\n\n    my @headers = @{$table-&gt;{headers} // []};\n\n    if ($table-&gt;{variables}) {\n        # 複合式\n        push @lines, sprintf(\"| %s | result |\", join(\" | \", @headers));\n        push @lines, \"-\" x 70;\n\n        for my $row (@{$table-&gt;{rows}}) {\n            my $inputs = join(\" | \", @{$row-&gt;{inputs}});\n            push @lines, sprintf(\"| %s |   %d    |\", $inputs, $row-&gt;{result});\n        }\n    } else {\n        # 単純式\n        push @lines, sprintf(\"| %s | result | path\", join(\" | \", @headers));\n        push @lines, \"-\" x 70;\n\n        for my $row (@{$table-&gt;{rows}}) {\n            my @vals = map { $row-&gt;{$_} // 'X' } @headers;\n            my $inputs = join(\" | \", @vals);\n            push @lines, sprintf(\"| %s |   %s    | %s\",\n                $inputs, $row-&gt;{result}, $row-&gt;{path} // '');\n        }\n    }\n\n    push @lines, \"-\" x 70;\n    return join(\"\\n\", @lines);\n}\n\n#==============================================================================\npackage main;\n\n# テスト用サブルーチン\nsub test1 { my ($a, $b) = @_; $a &amp;&amp; $b }\nsub test2 { my ($a, $b) = @_; $a || $b }\nsub test3 { my ($a, $b, $c) = @_; ($a &amp;&amp; $b) || $c }\nsub test4 { my ($a, $b, $c) = @_; $a &amp;&amp; ($b || $c) }\nsub test5 { my ($a, $b, $c, $d) = @_; ($a || $b) &amp;&amp; ($c || $d) }\nsub test6 { my ($x) = @_; $x ? 1 : 0 }\n\nmy $builder = LogicTreeBuilder-&gt;new;\n\nprint \"=\" x 70, \"\\n\";\nprint \"Logic Tree Builder - Static Analysis Demo\\n\";\nprint \"=\" x 70, \"\\n\\n\";\n\nmy @tests = (\n    [\\&amp;test1, '$a &amp;&amp; $b'],\n    [\\&amp;test2, '$a || $b'],\n    [\\&amp;test3, '($a &amp;&amp; $b) || $c'],\n    [\\&amp;test4, '$a &amp;&amp; ($b || $c)'],\n    [\\&amp;test5, '($a || $b) &amp;&amp; ($c || $d)'],\n    [\\&amp;test6, '$x ? 1 : 0'],\n);\n\nfor my $test (@tests) {\n    my ($coderef, $desc) = @$test;\n\n    print \"### $desc\\n\\n\";\n\n    my $trees = $builder-&gt;build_from_coderef($coderef);\n\n    for my $tree (@$trees) {\n        print \"Logic Tree:\\n\";\n        print $tree-&gt;to_string(1), \"\\n\\n\";\n\n        my $table = TruthTableGenerator-&gt;generate($tree);\n        print TruthTableGenerator-&gt;format_text($table), \"\\n\\n\";\n    }\n\n    print \"-\" x 70, \"\\n\\n\";\n}\n"
+<p><strong>Tool: Write</strong> <code>/home/hkoba/db/monthly/202512/tmp/Devel--Cover/examples/logic_tree_builder.pl</code></p>
+<pre><code class="language-perl">#!/usr/bin/env perl
+use strict;
+use warnings;
+use v5.12;
+
+#
+# 論理式の木構造を静的に構築するサンプル
+# Devel::Cover の手法を参考に、B モジュールで OP ツリーを解析
+#
+
+package LogicNode;
+
+# 論理式の木構造を表現するノード
+
+sub new {
+    my ($class, %args) = @_;
+    return bless \%args, $class;
 }
+
+sub type     { $_[0]-&gt;{type} }
+sub op       { $_[0]-&gt;{op} }
+sub left     { $_[0]-&gt;{left} }
+sub right    { $_[0]-&gt;{right} }
+sub text     { $_[0]-&gt;{text} }
+sub children { @{$_[0]-&gt;{children} // []} }
+
+sub is_leaf {
+    my $self = shift;
+    return $self-&gt;{type} eq 'leaf';
+}
+
+sub to_string {
+    my ($self, $indent) = @_;
+    $indent //= 0;
+    my $pad = "  " x $indent;
+
+    if ($self-&gt;is_leaf) {
+        return "${pad}LEAF: $self-&gt;{text}";
+    }
+
+    my @lines = ("${pad}$self-&gt;{type} [$self-&gt;{op}]");
+
+    if ($self-&gt;{left}) {
+        push @lines, "${pad}  LEFT:";
+        if (ref $self-&gt;{left}) {
+            push @lines, $self-&gt;{left}-&gt;to_string($indent + 2);
+        } else {
+            push @lines, "${pad}    $self-&gt;{left}";
+        }
+    }
+
+    if ($self-&gt;{right}) {
+        push @lines, "${pad}  RIGHT:";
+        if (ref $self-&gt;{right}) {
+            push @lines, $self-&gt;{right}-&gt;to_string($indent + 2);
+        } else {
+            push @lines, "${pad}    $self-&gt;{right}";
+        }
+    }
+
+    return join("\n", @lines);
+}
+
+#==============================================================================
+package LogicTreeBuilder;
+
+use B qw(svref_2object OPf_KIDS);
+use B::Deparse;
+
+my %LOGIC_OPS = (
+    and       =&gt; { symbol =&gt; '&amp;&amp;',  short_circuit =&gt; 'left_false' },
+    andassign =&gt; { symbol =&gt; '&amp;&amp;=', short_circuit =&gt; 'left_false' },
+    or        =&gt; { symbol =&gt; '||',  short_circuit =&gt; 'left_true' },
+    orassign  =&gt; { symbol =&gt; '||=', short_circuit =&gt; 'left_true' },
+    dor       =&gt; { symbol =&gt; '//',  short_circuit =&gt; 'left_defined' },
+    dorassign =&gt; { symbol =&gt; '//=', short_circuit =&gt; 'left_defined' },
+    xor       =&gt; { symbol =&gt; 'xor', short_circuit =&gt; 'none' },
+);
+
+sub new {
+    my $class = shift;
+    my $self = bless {
+        deparse =&gt; B::Deparse-&gt;new('-x7'),  # -x7: 最小限の変形
+    }, $class;
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+# コードリファレンスから論理式の木を構築
+#------------------------------------------------------------------------------
+sub build_from_coderef {
+    my ($self, $coderef) = @_;
+
+    my $cv = svref_2object($coderef);
+    return unless $cv-&gt;isa('B::CV');
+
+    $self-&gt;{deparse}{curcv} = $cv;
+    $self-&gt;{trees} = [];
+
+    my $root = $cv-&gt;ROOT;
+    return [] unless $root &amp;&amp; !$root-&gt;isa('B::NULL');
+
+    $self-&gt;_scan_for_logic($root);
+
+    return $self-&gt;{trees};
+}
+
+#------------------------------------------------------------------------------
+# 論理演算を探して木を構築
+#------------------------------------------------------------------------------
+sub _scan_for_logic {
+    my ($self, $op) = @_;
+
+    return unless $op &amp;&amp; !$op-&gt;isa('B::NULL');
+
+    my $name = $op-&gt;name;
+
+    if (exists $LOGIC_OPS{$name}) {
+        my $tree = $self-&gt;_build_logic_tree($op);
+        push @{$self-&gt;{trees}}, $tree if $tree;
+    } elsif ($name eq 'cond_expr') {
+        my $tree = $self-&gt;_build_cond_tree($op);
+        push @{$self-&gt;{trees}}, $tree if $tree;
+    }
+
+    # 子ノードを再帰的に走査
+    if ($op-&gt;flags &amp; OPf_KIDS) {
+        for (my $kid = $op-&gt;first; $kid &amp;&amp; !$kid-&gt;isa('B::NULL'); $kid = $kid-&gt;sibling) {
+            $self-&gt;_scan_for_logic($kid);
+        }
+    }
+}
+
+#------------------------------------------------------------------------------
+# 論理演算の木を構築 (再帰的に部分式も解析)
+#------------------------------------------------------------------------------
+sub _build_logic_tree {
+    my ($self, $op) = @_;
+
+    my $name = $op-&gt;name;
+    my $info = $LOGIC_OPS{$name} or return;
+
+    my $left_op = $op-&gt;first;
+    return unless $left_op &amp;&amp; !$left_op-&gt;isa('B::NULL');
+
+    my $right_op = $left_op-&gt;sibling;
+    return unless $right_op &amp;&amp; !$right_op-&gt;isa('B::NULL');
+
+    # 左辺と右辺を再帰的に解析
+    my $left  = $self-&gt;_analyze_operand($left_op);
+    my $right = $self-&gt;_analyze_operand($right_op);
+
+    return LogicNode-&gt;new(
+        type          =&gt; $name,
+        op            =&gt; $info-&gt;{symbol},
+        short_circuit =&gt; $info-&gt;{short_circuit},
+        left          =&gt; $left,
+        right         =&gt; $right,
+        right_const   =&gt; $self-&gt;_is_constant($right_op),
+    );
+}
+
+#------------------------------------------------------------------------------
+# 三項演算子の木を構築
+#------------------------------------------------------------------------------
+sub _build_cond_tree {
+    my ($self, $op) = @_;
+
+    my $cond_op = $op-&gt;first;
+    return unless $cond_op &amp;&amp; !$cond_op-&gt;isa('B::NULL');
+
+    my $true_op = $cond_op-&gt;sibling;
+    my $false_op = $true_op ? $true_op-&gt;sibling : undef;
+
+    return LogicNode-&gt;new(
+        type      =&gt; 'cond_expr',
+        op        =&gt; '?:',
+        condition =&gt; $self-&gt;_analyze_operand($cond_op),
+        left      =&gt; $self-&gt;_analyze_operand($true_op),
+        right     =&gt; $self-&gt;_analyze_operand($false_op),
+    );
+}
+
+#------------------------------------------------------------------------------
+# オペランドを解析 (論理演算なら再帰、そうでなければ葉ノード)
+#------------------------------------------------------------------------------
+sub _analyze_operand {
+    my ($self, $op) = @_;
+
+    return '' unless $op &amp;&amp; !$op-&gt;isa('B::NULL');
+
+    my $name = $op-&gt;name;
+
+    # 論理演算子なら再帰的に木を構築
+    if (exists $LOGIC_OPS{$name}) {
+        return $self-&gt;_build_logic_tree($op);
+    }
+
+    # null OP の場合は中身を見る
+    if ($name eq 'null') {
+        my $first = $op-&gt;first;
+        if ($first &amp;&amp; !$first-&gt;isa('B::NULL')) {
+            my $inner_name = $first-&gt;name;
+            if (exists $LOGIC_OPS{$inner_name}) {
+                return $self-&gt;_build_logic_tree($first);
+            }
+        }
+    }
+
+    # 葉ノード: deparse してテキストを取得
+    return LogicNode-&gt;new(
+        type =&gt; 'leaf',
+        text =&gt; $self-&gt;_deparse_simple($op),
+    );
+}
+
+#------------------------------------------------------------------------------
+# シンプルな deparse (論理演算子は展開しない)
+#------------------------------------------------------------------------------
+sub _deparse_simple {
+    my ($self, $op) = @_;
+
+    return '' unless $op &amp;&amp; !$op-&gt;isa('B::NULL');
+
+    local $@;
+    my $text = eval { $self-&gt;{deparse}-&gt;deparse($op, 0) };
+    return $text // '' if $@;
+
+    # 後処理
+    $text =~ s/^\s+//;
+    $text =~ s/\s+$//;
+
+    return $text;
+}
+
+#------------------------------------------------------------------------------
+# 定数判定
+#------------------------------------------------------------------------------
+sub _is_constant {
+    my ($self, $op) = @_;
+
+    return 0 unless $op &amp;&amp; !$op-&gt;isa('B::NULL');
+
+    my $name = $op-&gt;name;
+    return 1 if $name =~ /^(?:const|undef|s?refgen|null)$/;
+    return 1 if $name =~ /^(?:die|return|last|next|redo|goto)$/;
+    return 0;
+}
+
+#==============================================================================
+package TruthTableGenerator;
+
+#------------------------------------------------------------------------------
+# LogicNode から真理値表を生成
+#------------------------------------------------------------------------------
+sub generate {
+    my ($class, $node) = @_;
+
+    return [] unless $node;
+
+    if ($node-&gt;is_leaf) {
+        return $class-&gt;_leaf_table($node);
+    }
+
+    my $type = $node-&gt;type;
+
+    if ($type eq 'cond_expr') {
+        return $class-&gt;_cond_table($node);
+    }
+
+    # 左右のオペランドの変数を収集
+    my @vars = $class-&gt;_collect_variables($node);
+
+    # 左右が複合式かどうかで分岐
+    my $left_complex  = ref($node-&gt;left)  &amp;&amp; !$node-&gt;left-&gt;is_leaf;
+    my $right_complex = ref($node-&gt;right) &amp;&amp; !$node-&gt;right-&gt;is_leaf;
+
+    if ($left_complex || $right_complex) {
+        return $class-&gt;_complex_table($node, \@vars);
+    }
+
+    return $class-&gt;_simple_table($node);
+}
+
+#------------------------------------------------------------------------------
+# 変数を収集
+#------------------------------------------------------------------------------
+sub _collect_variables {
+    my ($class, $node) = @_;
+
+    return () unless $node;
+
+    if ($node-&gt;is_leaf) {
+        my $text = $node-&gt;text;
+        # $var 形式の変数を抽出
+        my @vars = $text =~ /(\$\w+)/g;
+        return @vars;
+    }
+
+    my @vars;
+    push @vars, $class-&gt;_collect_variables($node-&gt;left)  if ref $node-&gt;left;
+    push @vars, $class-&gt;_collect_variables($node-&gt;right) if ref $node-&gt;right;
+
+    # 重複を除去しつつ順序を保持
+    my %seen;
+    return grep { !$seen{$_}++ } @vars;
+}
+
+#------------------------------------------------------------------------------
+# 単純な真理値表 (and_3, or_3 など)
+#------------------------------------------------------------------------------
+sub _simple_table {
+    my ($class, $node) = @_;
+
+    my $type = $node-&gt;type;
+    my $op   = $node-&gt;op;
+
+    my $left_text  = ref($node-&gt;left)  ? $node-&gt;left-&gt;text  : $node-&gt;left;
+    my $right_text = ref($node-&gt;right) ? $node-&gt;right-&gt;text : $node-&gt;right;
+
+    my $right_const = $node-&gt;{right_const};
+
+    my @table;
+
+    if ($type =~ /^(?:and|andassign)$/) {
+        if ($right_const) {
+            # and_2
+            @table = (
+                { A =&gt; 0, result =&gt; 0, path =&gt; "!$left_text (short-circuit)" },
+                { A =&gt; 1, result =&gt; 1, path =&gt; "$left_text" },
+            );
+        } else {
+            # and_3
+            @table = (
+                { A =&gt; 0, B =&gt; 'X', result =&gt; 0, path =&gt; "!$left_text (short-circuit)" },
+                { A =&gt; 1, B =&gt; 0,   result =&gt; 0, path =&gt; "$left_text $op !$right_text" },
+                { A =&gt; 1, B =&gt; 1,   result =&gt; 1, path =&gt; "$left_text $op $right_text" },
+            );
+        }
+    } elsif ($type =~ /^(?:or|orassign|dor|dorassign)$/) {
+        if ($right_const) {
+            # or_2
+            @table = (
+                { A =&gt; 1, result =&gt; 1, path =&gt; "$left_text (short-circuit)" },
+                { A =&gt; 0, result =&gt; 0, path =&gt; "!$left_text" },
+            );
+        } else {
+            # or_3
+            @table = (
+                { A =&gt; 1, B =&gt; 'X', result =&gt; 1, path =&gt; "$left_text (short-circuit)" },
+                { A =&gt; 0, B =&gt; 1,   result =&gt; 1, path =&gt; "!$left_text $op $right_text" },
+                { A =&gt; 0, B =&gt; 0,   result =&gt; 0, path =&gt; "!$left_text $op !$right_text" },
+            );
+        }
+    } elsif ($type eq 'xor') {
+        # xor_4 (短絡評価なし)
+        @table = (
+            { A =&gt; 0, B =&gt; 0, result =&gt; 0, path =&gt; "!$left_text xor !$right_text" },
+            { A =&gt; 0, B =&gt; 1, result =&gt; 1, path =&gt; "!$left_text xor $right_text" },
+            { A =&gt; 1, B =&gt; 0, result =&gt; 1, path =&gt; "$left_text xor !$right_text" },
+            { A =&gt; 1, B =&gt; 1, result =&gt; 0, path =&gt; "$left_text xor $right_text" },
+        );
+    }
+
+    return {
+        expression =&gt; "$left_text $op $right_text",
+        type       =&gt; $type,
+        headers    =&gt; $right_const ? ['A'] : ['A', 'B'],
+        rows       =&gt; \@table,
+    };
+}
+
+#------------------------------------------------------------------------------
+# 複合式の真理値表
+#------------------------------------------------------------------------------
+sub _complex_table {
+    my ($class, $node, $vars) = @_;
+
+    # 全変数の組み合わせを生成
+    my $n = @$vars;
+    my @table;
+
+    for my $i (0 .. (2**$n - 1)) {
+        my %vals;
+        for my $j (0 .. $n-1) {
+            $vals{$vars-&gt;[$j]} = ($i &gt;&gt; ($n - 1 - $j)) &amp; 1;
+        }
+
+        my $result = $class-&gt;_evaluate($node, \%vals);
+        my @inputs = map { $vals{$_} } @$vars;
+
+        push @table, {
+            inputs =&gt; \@inputs,
+            result =&gt; $result,
+            vals   =&gt; \%vals,
+        };
+    }
+
+    return {
+        expression =&gt; $class-&gt;_node_to_expr($node),
+        variables  =&gt; $vars,
+        headers    =&gt; [map { s/^\$//r } @$vars],
+        rows       =&gt; \@table,
+    };
+}
+
+#------------------------------------------------------------------------------
+# 論理式を評価
+#------------------------------------------------------------------------------
+sub _evaluate {
+    my ($class, $node, $vals) = @_;
+
+    return 0 unless $node;
+
+    if ($node-&gt;is_leaf) {
+        my $text = $node-&gt;text;
+        # $var 形式を探して値を返す
+        if ($text =~ /^\$(\w+)$/) {
+            return $vals-&gt;{$text} // 0;
+        }
+        # 定数として評価
+        return $text ? 1 : 0;
+    }
+
+    my $type = $node-&gt;type;
+    my $left_val  = $class-&gt;_evaluate($node-&gt;left, $vals);
+    my $right_val = $class-&gt;_evaluate($node-&gt;right, $vals);
+
+    if ($type =~ /^(?:and|andassign)$/) {
+        return $left_val &amp;&amp; $right_val ? 1 : 0;
+    } elsif ($type =~ /^(?:or|orassign|dor|dorassign)$/) {
+        return $left_val || $right_val ? 1 : 0;
+    } elsif ($type eq 'xor') {
+        return ($left_val xor $right_val) ? 1 : 0;
+    } elsif ($type eq 'cond_expr') {
+        my $cond_val = $class-&gt;_evaluate($node-&gt;{condition}, $vals);
+        return $cond_val ? $left_val : $right_val;
+    }
+
+    return 0;
+}
+
+#------------------------------------------------------------------------------
+# ノードを式文字列に変換
+#------------------------------------------------------------------------------
+sub _node_to_expr {
+    my ($class, $node) = @_;
+
+    return '' unless $node;
+
+    if ($node-&gt;is_leaf) {
+        return $node-&gt;text;
+    }
+
+    my $left  = $class-&gt;_node_to_expr($node-&gt;left);
+    my $right = $class-&gt;_node_to_expr($node-&gt;right);
+    my $op    = $node-&gt;op;
+
+    return "($left $op $right)";
+}
+
+#------------------------------------------------------------------------------
+# 葉ノード用
+#------------------------------------------------------------------------------
+sub _leaf_table {
+    my ($class, $node) = @_;
+    return { expression =&gt; $node-&gt;text, type =&gt; 'leaf', rows =&gt; [] };
+}
+
+#------------------------------------------------------------------------------
+# 三項演算子用
+#------------------------------------------------------------------------------
+sub _cond_table {
+    my ($class, $node) = @_;
+
+    my $cond_text = ref($node-&gt;{condition}) ? $class-&gt;_node_to_expr($node-&gt;{condition}) : $node-&gt;{condition};
+    my $true_text = ref($node-&gt;left) ? $class-&gt;_node_to_expr($node-&gt;left) : $node-&gt;left;
+    my $false_text = ref($node-&gt;right) ? $class-&gt;_node_to_expr($node-&gt;right) : $node-&gt;right;
+
+    return {
+        expression =&gt; "$cond_text ? $true_text : $false_text",
+        type       =&gt; 'cond_expr',
+        headers    =&gt; ['cond'],
+        rows       =&gt; [
+            { cond =&gt; 1, result =&gt; $true_text,  path =&gt; "condition is true" },
+            { cond =&gt; 0, result =&gt; $false_text, path =&gt; "condition is false" },
+        ],
+    };
+}
+
+#------------------------------------------------------------------------------
+# テキスト形式で出力
+#------------------------------------------------------------------------------
+sub format_text {
+    my ($class, $table) = @_;
+
+    return '' unless $table &amp;&amp; $table-&gt;{rows} &amp;&amp; @{$table-&gt;{rows}};
+
+    my @lines;
+    push @lines, "Expression: $table-&gt;{expression}";
+    push @lines, "Type: $table-&gt;{type}" if $table-&gt;{type};
+    push @lines, "-" x 70;
+
+    my @headers = @{$table-&gt;{headers} // []};
+
+    if ($table-&gt;{variables}) {
+        # 複合式
+        push @lines, sprintf("| %s | result |", join(" | ", @headers));
+        push @lines, "-" x 70;
+
+        for my $row (@{$table-&gt;{rows}}) {
+            my $inputs = join(" | ", @{$row-&gt;{inputs}});
+            push @lines, sprintf("| %s |   %d    |", $inputs, $row-&gt;{result});
+        }
+    } else {
+        # 単純式
+        push @lines, sprintf("| %s | result | path", join(" | ", @headers));
+        push @lines, "-" x 70;
+
+        for my $row (@{$table-&gt;{rows}}) {
+            my @vals = map { $row-&gt;{$_} // 'X' } @headers;
+            my $inputs = join(" | ", @vals);
+            push @lines, sprintf("| %s |   %s    | %s",
+                $inputs, $row-&gt;{result}, $row-&gt;{path} // '');
+        }
+    }
+
+    push @lines, "-" x 70;
+    return join("\n", @lines);
+}
+
+#==============================================================================
+package main;
+
+# テスト用サブルーチン
+sub test1 { my ($a, $b) = @_; $a &amp;&amp; $b }
+sub test2 { my ($a, $b) = @_; $a || $b }
+sub test3 { my ($a, $b, $c) = @_; ($a &amp;&amp; $b) || $c }
+sub test4 { my ($a, $b, $c) = @_; $a &amp;&amp; ($b || $c) }
+sub test5 { my ($a, $b, $c, $d) = @_; ($a || $b) &amp;&amp; ($c || $d) }
+sub test6 { my ($x) = @_; $x ? 1 : 0 }
+
+my $builder = LogicTreeBuilder-&gt;new;
+
+print "=" x 70, "\n";
+print "Logic Tree Builder - Static Analysis Demo\n";
+print "=" x 70, "\n\n";
+
+my @tests = (
+    [\&amp;test1, '$a &amp;&amp; $b'],
+    [\&amp;test2, '$a || $b'],
+    [\&amp;test3, '($a &amp;&amp; $b) || $c'],
+    [\&amp;test4, '$a &amp;&amp; ($b || $c)'],
+    [\&amp;test5, '($a || $b) &amp;&amp; ($c || $d)'],
+    [\&amp;test6, '$x ? 1 : 0'],
+);
+
+for my $test (@tests) {
+    my ($coderef, $desc) = @$test;
+
+    print "### $desc\n\n";
+
+    my $trees = $builder-&gt;build_from_coderef($coderef);
+
+    for my $tree (@$trees) {
+        print "Logic Tree:\n";
+        print $tree-&gt;to_string(1), "\n\n";
+
+        my $table = TruthTableGenerator-&gt;generate($tree);
+        print TruthTableGenerator-&gt;format_text($table), "\n\n";
+    }
+
+    print "-" x 70, "\n\n";
+}
+
 </code></pre>
 <h3 id="results"><a class="header" href="#results">Results</a></h3>
 <p><strong>Result:</strong></p>
