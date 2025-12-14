@@ -1,0 +1,320 @@
+<!DOCTYPE HTML>
+<html lang="ja" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Assistant (Tools 8) - Claude Code に Devel::Cover の真理値表生成の仕組みを解読してもらった</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Claude Code に Devel::Cover の真理値表生成の仕組みを解読してもらった</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="ありがとうございますやはり-develcover-は実行時の情報をキャプチャーして活用している"><a class="header" href="#ありがとうございますやはり-develcover-は実行時の情報をキャプチャーして活用している">ありがとうございます。やはり Devel::Cover は実行時の情報をキャプチャーして活用している</a></h1>
+<h2 id="tool-interactions"><a class="header" href="#tool-interactions">Tool Interactions</a></h2>
+<p><strong>Tool: Write</strong></p>
+<pre><code class="language-json">{
+  "file_path": "/home/hkoba/db/monthly/202512/tmp/Devel--Cover/examples/logic_tree_builder.pl",
+  "content": "#!/usr/bin/env perl\nuse strict;\nuse warnings;\nuse v5.12;\n\n#\n# 論理式の木構造を静的に構築するサンプル\n# Devel::Cover の手法を参考に、B モジュールで OP ツリーを解析\n#\n\npackage LogicNode;\n\n# 論理式の木構造を表現するノード\n\nsub new {\n    my ($class, %args) = @_;\n    return bless \\%args, $class;\n}\n\nsub type     { $_[0]-&gt;{type} }\nsub op       { $_[0]-&gt;{op} }\nsub left     { $_[0]-&gt;{left} }\nsub right    { $_[0]-&gt;{right} }\nsub text     { $_[0]-&gt;{text} }\nsub children { @{$_[0]-&gt;{children} // []} }\n\nsub is_leaf {\n    my $self = shift;\n    return $self-&gt;{type} eq 'leaf';\n}\n\nsub to_string {\n    my ($self, $indent) = @_;\n    $indent //= 0;\n    my $pad = \"  \" x $indent;\n\n    if ($self-&gt;is_leaf) {\n        return \"${pad}LEAF: $self-&gt;{text}\";\n    }\n\n    my @lines = (\"${pad}$self-&gt;{type} [$self-&gt;{op}]\");\n\n    if ($self-&gt;{left}) {\n        push @lines, \"${pad}  LEFT:\";\n        if (ref $self-&gt;{left}) {\n            push @lines, $self-&gt;{left}-&gt;to_string($indent + 2);\n        } else {\n            push @lines, \"${pad}    $self-&gt;{left}\";\n        }\n    }\n\n    if ($self-&gt;{right}) {\n        push @lines, \"${pad}  RIGHT:\";\n        if (ref $self-&gt;{right}) {\n            push @lines, $self-&gt;{right}-&gt;to_string($indent + 2);\n        } else {\n            push @lines, \"${pad}    $self-&gt;{right}\";\n        }\n    }\n\n    return join(\"\\n\", @lines);\n}\n\n#==============================================================================\npackage LogicTreeBuilder;\n\nuse B qw(svref_2object OPf_KIDS);\nuse B::Deparse;\n\nmy %LOGIC_OPS = (\n    and       =&gt; { symbol =&gt; '&amp;&amp;',  short_circuit =&gt; 'left_false' },\n    andassign =&gt; { symbol =&gt; '&amp;&amp;=', short_circuit =&gt; 'left_false' },\n    or        =&gt; { symbol =&gt; '||',  short_circuit =&gt; 'left_true' },\n    orassign  =&gt; { symbol =&gt; '||=', short_circuit =&gt; 'left_true' },\n    dor       =&gt; { symbol =&gt; '//',  short_circuit =&gt; 'left_defined' },\n    dorassign =&gt; { symbol =&gt; '//=', short_circuit =&gt; 'left_defined' },\n    xor       =&gt; { symbol =&gt; 'xor', short_circuit =&gt; 'none' },\n);\n\nsub new {\n    my $class = shift;\n    my $self = bless {\n        deparse =&gt; B::Deparse-&gt;new('-x7'),  # -x7: 最小限の変形\n    }, $class;\n    return $self;\n}\n\n#------------------------------------------------------------------------------\n# コードリファレンスから論理式の木を構築\n#------------------------------------------------------------------------------\nsub build_from_coderef {\n    my ($self, $coderef) = @_;\n\n    my $cv = svref_2object($coderef);\n    return unless $cv-&gt;isa('B::CV');\n\n    $self-&gt;{deparse}{curcv} = $cv;\n    $self-&gt;{trees} = [];\n\n    my $root = $cv-&gt;ROOT;\n    return [] unless $root &amp;&amp; !$root-&gt;isa('B::NULL');\n\n    $self-&gt;_scan_for_logic($root);\n\n    return $self-&gt;{trees};\n}\n\n#------------------------------------------------------------------------------\n# 論理演算を探して木を構築\n#------------------------------------------------------------------------------\nsub _scan_for_logic {\n    my ($self, $op) = @_;\n\n    return unless $op &amp;&amp; !$op-&gt;isa('B::NULL');\n\n    my $name = $op-&gt;name;\n\n    if (exists $LOGIC_OPS{$name}) {\n        my $tree = $self-&gt;_build_logic_tree($op);\n        push @{$self-&gt;{trees}}, $tree if $tree;\n    } elsif ($name eq 'cond_expr') {\n        my $tree = $self-&gt;_build_cond_tree($op);\n        push @{$self-&gt;{trees}}, $tree if $tree;\n    }\n\n    # 子ノードを再帰的に走査\n    if ($op-&gt;flags &amp; OPf_KIDS) {\n        for (my $kid = $op-&gt;first; $kid &amp;&amp; !$kid-&gt;isa('B::NULL'); $kid = $kid-&gt;sibling) {\n            $self-&gt;_scan_for_logic($kid);\n        }\n    }\n}\n\n#------------------------------------------------------------------------------\n# 論理演算の木を構築 (再帰的に部分式も解析)\n#------------------------------------------------------------------------------\nsub _build_logic_tree {\n    my ($self, $op) = @_;\n\n    my $name = $op-&gt;name;\n    my $info = $LOGIC_OPS{$name} or return;\n\n    my $left_op = $op-&gt;first;\n    return unless $left_op &amp;&amp; !$left_op-&gt;isa('B::NULL');\n\n    my $right_op = $left_op-&gt;sibling;\n    return unless $right_op &amp;&amp; !$right_op-&gt;isa('B::NULL');\n\n    # 左辺と右辺を再帰的に解析\n    my $left  = $self-&gt;_analyze_operand($left_op);\n    my $right = $self-&gt;_analyze_operand($right_op);\n\n    return LogicNode-&gt;new(\n        type          =&gt; $name,\n        op            =&gt; $info-&gt;{symbol},\n        short_circuit =&gt; $info-&gt;{short_circuit},\n        left          =&gt; $left,\n        right         =&gt; $right,\n        right_const   =&gt; $self-&gt;_is_constant($right_op),\n    );\n}\n\n#------------------------------------------------------------------------------\n# 三項演算子の木を構築\n#------------------------------------------------------------------------------\nsub _build_cond_tree {\n    my ($self, $op) = @_;\n\n    my $cond_op = $op-&gt;first;\n    return unless $cond_op &amp;&amp; !$cond_op-&gt;isa('B::NULL');\n\n    my $true_op = $cond_op-&gt;sibling;\n    my $false_op = $true_op ? $true_op-&gt;sibling : undef;\n\n    return LogicNode-&gt;new(\n        type      =&gt; 'cond_expr',\n        op        =&gt; '?:',\n        condition =&gt; $self-&gt;_analyze_operand($cond_op),\n        left      =&gt; $self-&gt;_analyze_operand($true_op),\n        right     =&gt; $self-&gt;_analyze_operand($false_op),\n    );\n}\n\n#------------------------------------------------------------------------------\n# オペランドを解析 (論理演算なら再帰、そうでなければ葉ノード)\n#------------------------------------------------------------------------------\nsub _analyze_operand {\n    my ($self, $op) = @_;\n\n    return '' unless $op &amp;&amp; !$op-&gt;isa('B::NULL');\n\n    my $name = $op-&gt;name;\n\n    # 論理演算子なら再帰的に木を構築\n    if (exists $LOGIC_OPS{$name}) {\n        return $self-&gt;_build_logic_tree($op);\n    }\n\n    # null OP の場合は中身を見る\n    if ($name eq 'null') {\n        my $first = $op-&gt;first;\n        if ($first &amp;&amp; !$first-&gt;isa('B::NULL')) {\n            my $inner_name = $first-&gt;name;\n            if (exists $LOGIC_OPS{$inner_name}) {\n                return $self-&gt;_build_logic_tree($first);\n            }\n        }\n    }\n\n    # 葉ノード: deparse してテキストを取得\n    return LogicNode-&gt;new(\n        type =&gt; 'leaf',\n        text =&gt; $self-&gt;_deparse_simple($op),\n    );\n}\n\n#------------------------------------------------------------------------------\n# シンプルな deparse (論理演算子は展開しない)\n#------------------------------------------------------------------------------\nsub _deparse_simple {\n    my ($self, $op) = @_;\n\n    return '' unless $op &amp;&amp; !$op-&gt;isa('B::NULL');\n\n    local $@;\n    my $text = eval { $self-&gt;{deparse}-&gt;deparse($op, 0) };\n    return $text // '' if $@;\n\n    # 後処理\n    $text =~ s/^\\s+//;\n    $text =~ s/\\s+$//;\n\n    return $text;\n}\n\n#------------------------------------------------------------------------------\n# 定数判定\n#------------------------------------------------------------------------------\nsub _is_constant {\n    my ($self, $op) = @_;\n\n    return 0 unless $op &amp;&amp; !$op-&gt;isa('B::NULL');\n\n    my $name = $op-&gt;name;\n    return 1 if $name =~ /^(?:const|undef|s?refgen|null)$/;\n    return 1 if $name =~ /^(?:die|return|last|next|redo|goto)$/;\n    return 0;\n}\n\n#==============================================================================\npackage TruthTableGenerator;\n\n#------------------------------------------------------------------------------\n# LogicNode から真理値表を生成\n#------------------------------------------------------------------------------\nsub generate {\n    my ($class, $node) = @_;\n\n    return [] unless $node;\n\n    if ($node-&gt;is_leaf) {\n        return $class-&gt;_leaf_table($node);\n    }\n\n    my $type = $node-&gt;type;\n\n    if ($type eq 'cond_expr') {\n        return $class-&gt;_cond_table($node);\n    }\n\n    # 左右のオペランドの変数を収集\n    my @vars = $class-&gt;_collect_variables($node);\n\n    # 左右が複合式かどうかで分岐\n    my $left_complex  = ref($node-&gt;left)  &amp;&amp; !$node-&gt;left-&gt;is_leaf;\n    my $right_complex = ref($node-&gt;right) &amp;&amp; !$node-&gt;right-&gt;is_leaf;\n\n    if ($left_complex || $right_complex) {\n        return $class-&gt;_complex_table($node, \\@vars);\n    }\n\n    return $class-&gt;_simple_table($node);\n}\n\n#------------------------------------------------------------------------------\n# 変数を収集\n#------------------------------------------------------------------------------\nsub _collect_variables {\n    my ($class, $node) = @_;\n\n    return () unless $node;\n\n    if ($node-&gt;is_leaf) {\n        my $text = $node-&gt;text;\n        # $var 形式の変数を抽出\n        my @vars = $text =~ /(\\$\\w+)/g;\n        return @vars;\n    }\n\n    my @vars;\n    push @vars, $class-&gt;_collect_variables($node-&gt;left)  if ref $node-&gt;left;\n    push @vars, $class-&gt;_collect_variables($node-&gt;right) if ref $node-&gt;right;\n\n    # 重複を除去しつつ順序を保持\n    my %seen;\n    return grep { !$seen{$_}++ } @vars;\n}\n\n#------------------------------------------------------------------------------\n# 単純な真理値表 (and_3, or_3 など)\n#------------------------------------------------------------------------------\nsub _simple_table {\n    my ($class, $node) = @_;\n\n    my $type = $node-&gt;type;\n    my $op   = $node-&gt;op;\n\n    my $left_text  = ref($node-&gt;left)  ? $node-&gt;left-&gt;text  : $node-&gt;left;\n    my $right_text = ref($node-&gt;right) ? $node-&gt;right-&gt;text : $node-&gt;right;\n\n    my $right_const = $node-&gt;{right_const};\n\n    my @table;\n\n    if ($type =~ /^(?:and|andassign)$/) {\n        if ($right_const) {\n            # and_2\n            @table = (\n                { A =&gt; 0, result =&gt; 0, path =&gt; \"!$left_text (short-circuit)\" },\n                { A =&gt; 1, result =&gt; 1, path =&gt; \"$left_text\" },\n            );\n        } else {\n            # and_3\n            @table = (\n                { A =&gt; 0, B =&gt; 'X', result =&gt; 0, path =&gt; \"!$left_text (short-circuit)\" },\n                { A =&gt; 1, B =&gt; 0,   result =&gt; 0, path =&gt; \"$left_text $op !$right_text\" },\n                { A =&gt; 1, B =&gt; 1,   result =&gt; 1, path =&gt; \"$left_text $op $right_text\" },\n            );\n        }\n    } elsif ($type =~ /^(?:or|orassign|dor|dorassign)$/) {\n        if ($right_const) {\n            # or_2\n            @table = (\n                { A =&gt; 1, result =&gt; 1, path =&gt; \"$left_text (short-circuit)\" },\n                { A =&gt; 0, result =&gt; 0, path =&gt; \"!$left_text\" },\n            );\n        } else {\n            # or_3\n            @table = (\n                { A =&gt; 1, B =&gt; 'X', result =&gt; 1, path =&gt; \"$left_text (short-circuit)\" },\n                { A =&gt; 0, B =&gt; 1,   result =&gt; 1, path =&gt; \"!$left_text $op $right_text\" },\n                { A =&gt; 0, B =&gt; 0,   result =&gt; 0, path =&gt; \"!$left_text $op !$right_text\" },\n            );\n        }\n    } elsif ($type eq 'xor') {\n        # xor_4 (短絡評価なし)\n        @table = (\n            { A =&gt; 0, B =&gt; 0, result =&gt; 0, path =&gt; \"!$left_text xor !$right_text\" },\n            { A =&gt; 0, B =&gt; 1, result =&gt; 1, path =&gt; \"!$left_text xor $right_text\" },\n            { A =&gt; 1, B =&gt; 0, result =&gt; 1, path =&gt; \"$left_text xor !$right_text\" },\n            { A =&gt; 1, B =&gt; 1, result =&gt; 0, path =&gt; \"$left_text xor $right_text\" },\n        );\n    }\n\n    return {\n        expression =&gt; \"$left_text $op $right_text\",\n        type       =&gt; $type,\n        headers    =&gt; $right_const ? ['A'] : ['A', 'B'],\n        rows       =&gt; \\@table,\n    };\n}\n\n#------------------------------------------------------------------------------\n# 複合式の真理値表\n#------------------------------------------------------------------------------\nsub _complex_table {\n    my ($class, $node, $vars) = @_;\n\n    # 全変数の組み合わせを生成\n    my $n = @$vars;\n    my @table;\n\n    for my $i (0 .. (2**$n - 1)) {\n        my %vals;\n        for my $j (0 .. $n-1) {\n            $vals{$vars-&gt;[$j]} = ($i &gt;&gt; ($n - 1 - $j)) &amp; 1;\n        }\n\n        my $result = $class-&gt;_evaluate($node, \\%vals);\n        my @inputs = map { $vals{$_} } @$vars;\n\n        push @table, {\n            inputs =&gt; \\@inputs,\n            result =&gt; $result,\n            vals   =&gt; \\%vals,\n        };\n    }\n\n    return {\n        expression =&gt; $class-&gt;_node_to_expr($node),\n        variables  =&gt; $vars,\n        headers    =&gt; [map { s/^\\$//r } @$vars],\n        rows       =&gt; \\@table,\n    };\n}\n\n#------------------------------------------------------------------------------\n# 論理式を評価\n#------------------------------------------------------------------------------\nsub _evaluate {\n    my ($class, $node, $vals) = @_;\n\n    return 0 unless $node;\n\n    if ($node-&gt;is_leaf) {\n        my $text = $node-&gt;text;\n        # $var 形式を探して値を返す\n        if ($text =~ /^\\$(\\w+)$/) {\n            return $vals-&gt;{$text} // 0;\n        }\n        # 定数として評価\n        return $text ? 1 : 0;\n    }\n\n    my $type = $node-&gt;type;\n    my $left_val  = $class-&gt;_evaluate($node-&gt;left, $vals);\n    my $right_val = $class-&gt;_evaluate($node-&gt;right, $vals);\n\n    if ($type =~ /^(?:and|andassign)$/) {\n        return $left_val &amp;&amp; $right_val ? 1 : 0;\n    } elsif ($type =~ /^(?:or|orassign|dor|dorassign)$/) {\n        return $left_val || $right_val ? 1 : 0;\n    } elsif ($type eq 'xor') {\n        return ($left_val xor $right_val) ? 1 : 0;\n    } elsif ($type eq 'cond_expr') {\n        my $cond_val = $class-&gt;_evaluate($node-&gt;{condition}, $vals);\n        return $cond_val ? $left_val : $right_val;\n    }\n\n    return 0;\n}\n\n#------------------------------------------------------------------------------\n# ノードを式文字列に変換\n#------------------------------------------------------------------------------\nsub _node_to_expr {\n    my ($class, $node) = @_;\n\n    return '' unless $node;\n\n    if ($node-&gt;is_leaf) {\n        return $node-&gt;text;\n    }\n\n    my $left  = $class-&gt;_node_to_expr($node-&gt;left);\n    my $right = $class-&gt;_node_to_expr($node-&gt;right);\n    my $op    = $node-&gt;op;\n\n    return \"($left $op $right)\";\n}\n\n#------------------------------------------------------------------------------\n# 葉ノード用\n#------------------------------------------------------------------------------\nsub _leaf_table {\n    my ($class, $node) = @_;\n    return { expression =&gt; $node-&gt;text, type =&gt; 'leaf', rows =&gt; [] };\n}\n\n#------------------------------------------------------------------------------\n# 三項演算子用\n#------------------------------------------------------------------------------\nsub _cond_table {\n    my ($class, $node) = @_;\n\n    my $cond_text = ref($node-&gt;{condition}) ? $class-&gt;_node_to_expr($node-&gt;{condition}) : $node-&gt;{condition};\n    my $true_text = ref($node-&gt;left) ? $class-&gt;_node_to_expr($node-&gt;left) : $node-&gt;left;\n    my $false_text = ref($node-&gt;right) ? $class-&gt;_node_to_expr($node-&gt;right) : $node-&gt;right;\n\n    return {\n        expression =&gt; \"$cond_text ? $true_text : $false_text\",\n        type       =&gt; 'cond_expr',\n        headers    =&gt; ['cond'],\n        rows       =&gt; [\n            { cond =&gt; 1, result =&gt; $true_text,  path =&gt; \"condition is true\" },\n            { cond =&gt; 0, result =&gt; $false_text, path =&gt; \"condition is false\" },\n        ],\n    };\n}\n\n#------------------------------------------------------------------------------\n# テキスト形式で出力\n#------------------------------------------------------------------------------\nsub format_text {\n    my ($class, $table) = @_;\n\n    return '' unless $table &amp;&amp; $table-&gt;{rows} &amp;&amp; @{$table-&gt;{rows}};\n\n    my @lines;\n    push @lines, \"Expression: $table-&gt;{expression}\";\n    push @lines, \"Type: $table-&gt;{type}\" if $table-&gt;{type};\n    push @lines, \"-\" x 70;\n\n    my @headers = @{$table-&gt;{headers} // []};\n\n    if ($table-&gt;{variables}) {\n        # 複合式\n        push @lines, sprintf(\"| %s | result |\", join(\" | \", @headers));\n        push @lines, \"-\" x 70;\n\n        for my $row (@{$table-&gt;{rows}}) {\n            my $inputs = join(\" | \", @{$row-&gt;{inputs}});\n            push @lines, sprintf(\"| %s |   %d    |\", $inputs, $row-&gt;{result});\n        }\n    } else {\n        # 単純式\n        push @lines, sprintf(\"| %s | result | path\", join(\" | \", @headers));\n        push @lines, \"-\" x 70;\n\n        for my $row (@{$table-&gt;{rows}}) {\n            my @vals = map { $row-&gt;{$_} // 'X' } @headers;\n            my $inputs = join(\" | \", @vals);\n            push @lines, sprintf(\"| %s |   %s    | %s\",\n                $inputs, $row-&gt;{result}, $row-&gt;{path} // '');\n        }\n    }\n\n    push @lines, \"-\" x 70;\n    return join(\"\\n\", @lines);\n}\n\n#==============================================================================\npackage main;\n\n# テスト用サブルーチン\nsub test1 { my ($a, $b) = @_; $a &amp;&amp; $b }\nsub test2 { my ($a, $b) = @_; $a || $b }\nsub test3 { my ($a, $b, $c) = @_; ($a &amp;&amp; $b) || $c }\nsub test4 { my ($a, $b, $c) = @_; $a &amp;&amp; ($b || $c) }\nsub test5 { my ($a, $b, $c, $d) = @_; ($a || $b) &amp;&amp; ($c || $d) }\nsub test6 { my ($x) = @_; $x ? 1 : 0 }\n\nmy $builder = LogicTreeBuilder-&gt;new;\n\nprint \"=\" x 70, \"\\n\";\nprint \"Logic Tree Builder - Static Analysis Demo\\n\";\nprint \"=\" x 70, \"\\n\\n\";\n\nmy @tests = (\n    [\\&amp;test1, '$a &amp;&amp; $b'],\n    [\\&amp;test2, '$a || $b'],\n    [\\&amp;test3, '($a &amp;&amp; $b) || $c'],\n    [\\&amp;test4, '$a &amp;&amp; ($b || $c)'],\n    [\\&amp;test5, '($a || $b) &amp;&amp; ($c || $d)'],\n    [\\&amp;test6, '$x ? 1 : 0'],\n);\n\nfor my $test (@tests) {\n    my ($coderef, $desc) = @$test;\n\n    print \"### $desc\\n\\n\";\n\n    my $trees = $builder-&gt;build_from_coderef($coderef);\n\n    for my $tree (@$trees) {\n        print \"Logic Tree:\\n\";\n        print $tree-&gt;to_string(1), \"\\n\\n\";\n\n        my $table = TruthTableGenerator-&gt;generate($tree);\n        print TruthTableGenerator-&gt;format_text($table), \"\\n\\n\";\n    }\n\n    print \"-\" x 70, \"\\n\\n\";\n}\n"
+}
+</code></pre>
+<h3 id="results"><a class="header" href="#results">Results</a></h3>
+<p><strong>Result:</strong></p>
+<pre><code>File created successfully at: /home/hkoba/db/monthly/202512/tmp/Devel--Cover/examples/logic_tree_builder.pl
+</code></pre>
+<blockquote>
+<p>より完成度の高いバージョンを作成しました。実行して結果を確認してみましょう。</p>
+</blockquote>
+<p><strong>Tool: Bash</strong></p>
+<pre><code class="language-json">{
+  "command": "perl examples/logic_tree_builder.pl 2&gt;&amp;1",
+  "description": "Run logic tree builder"
+}
+</code></pre>
+<h3 id="results-1"><a class="header" href="#results-1">Results</a></h3>
+<p><strong>Result:</strong></p>
+<pre><code>======================================================================
+Logic Tree Builder - Static Analysis Demo
+======================================================================
+
+### $a &amp;&amp; $b
+
+Logic Tree:
+  and [&amp;&amp;]
+    LEFT:
+      LEAF: $a
+    RIGHT:
+      LEAF: $b
+
+Expression: $a &amp;&amp; $b
+Type: and
+----------------------------------------------------------------------
+| A | B | result | path
+----------------------------------------------------------------------
+| 0 | X |   0    | !$a (short-circuit)
+| 1 | 0 |   0    | $a &amp;&amp; !$b
+| 1 | 1 |   1    | $a &amp;&amp; $b
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+
+### $a || $b
+
+Logic Tree:
+  or [||]
+    LEFT:
+      LEAF: $a
+    RIGHT:
+      LEAF: $b
+
+Expression: $a || $b
+Type: or
+----------------------------------------------------------------------
+| A | B | result | path
+----------------------------------------------------------------------
+| 1 | X |   1    | $a (short-circuit)
+| 0 | 1 |   1    | !$a || $b
+| 0 | 0 |   0    | !$a || !$b
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+
+### ($a &amp;&amp; $b) || $c
+
+Logic Tree:
+  or [||]
+    LEFT:
+      and [&amp;&amp;]
+        LEFT:
+          LEAF: $a
+        RIGHT:
+          LEAF: $b
+    RIGHT:
+      LEAF: $c
+
+Expression: (($a &amp;&amp; $b) || $c)
+----------------------------------------------------------------------
+| a | b | c | result |
+----------------------------------------------------------------------
+| 0 | 0 | 0 |   0    |
+| 0 | 0 | 1 |   1    |
+| 0 | 1 | 0 |   0    |
+| 0 | 1 | 1 |   1    |
+| 1 | 0 | 0 |   0    |
+| 1 | 0 | 1 |   1    |
+| 1 | 1 | 0 |   1    |
+| 1 | 1 | 1 |   1    |
+----------------------------------------------------------------------
+
+Logic Tree:
+  and [&amp;&amp;]
+    LEFT:
+      LEAF: $a
+    RIGHT:
+      LEAF: $b
+
+Expression: $a &amp;&amp; $b
+Type: and
+-------------------------------------------
+... (truncated)
+</code></pre>
+<blockquote>
+<p>素晴らしい！うまく動作しています。論理式の木構造が正しく解析され、真理値表も生成されています。</p>
+<p>ユーザーにサンプルコードの概要と、Devel::Cover との違いを説明しましょう。</p>
+</blockquote>
+<hr />
+<p><small style="color: gray">uuid: assistant: 8f0c2413-893b-437f-85cc-244f015da68c, assistant: 517abd0d-5fd9-40df-8d2e-fc30b432c361, assistant: f4b1e88e-30af-4963-8c7c-ea1a9adb7729, assistant: df1427ae-14f2-423a-a66d-90baea54990f</small></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="turn_3_text_7.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="turn_3_text_9.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="turn_3_text_7.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="turn_3_text_9.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

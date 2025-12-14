@@ -1,0 +1,223 @@
+<!DOCTYPE HTML>
+<html lang="ja" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Assistant (Tools 4) - Claude Code に Devel::Cover の真理値表生成の仕組みを解読してもらった</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Claude Code に Devel::Cover の真理値表生成の仕組みを解読してもらった</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="ありがとうございますやはり-develcover-は実行時の情報をキャプチャーして活用している"><a class="header" href="#ありがとうございますやはり-develcover-は実行時の情報をキャプチャーして活用している">ありがとうございます。やはり Devel::Cover は実行時の情報をキャプチャーして活用している</a></h1>
+<h2 id="tool-interactions"><a class="header" href="#tool-interactions">Tool Interactions</a></h2>
+<p><strong>Tool: Write</strong></p>
+<pre><code class="language-json">{
+  "file_path": "/home/hkoba/db/monthly/202512/tmp/Devel--Cover/examples/static_logic_analyzer.pl",
+  "content": "#!/usr/bin/env perl\nuse strict;\nuse warnings;\nuse v5.12;\n\n#\n# 静的にPerlコードの論理構造を解析し、真理値表を生成するサンプル\n# Devel::Cover の手法を参考に、実行せずに B::Deparse で解析\n#\n\npackage LogicAnalyzer;\n\nuse B qw(main_cv svref_2object OPf_KIDS);\nuse B::Deparse;\n\n# 論理演算子の OP 名\nmy %LOGIC_OPS = map { $_ =&gt; 1 } qw(and or dor xor andassign orassign dorassign cond_expr);\n\nsub new {\n    my $class = shift;\n    my $self = bless {\n        deparse   =&gt; B::Deparse-&gt;new,\n        conditions =&gt; [],  # 検出した条件式\n    }, $class;\n    return $self;\n}\n\n#------------------------------------------------------------------------------\n# サブルーチンを解析\n#------------------------------------------------------------------------------\nsub analyze_sub {\n    my ($self, $coderef) = @_;\n\n    my $cv = svref_2object($coderef);\n    return unless $cv-&gt;isa('B::CV');\n\n    $self-&gt;{deparse}{curcv} = $cv;\n    $self-&gt;{conditions} = [];\n\n    my $root = $cv-&gt;ROOT;\n    return unless $root &amp;&amp; !$root-&gt;isa('B::NULL');\n\n    $self-&gt;_walk_op($root);\n\n    return $self-&gt;{conditions};\n}\n\n#------------------------------------------------------------------------------\n# OP ツリーを再帰的に走査\n#------------------------------------------------------------------------------\nsub _walk_op {\n    my ($self, $op) = @_;\n\n    return unless $op &amp;&amp; !$op-&gt;isa('B::NULL');\n\n    my $name = $op-&gt;name;\n\n    # 論理演算子を検出\n    if ($LOGIC_OPS{$name}) {\n        my $info = $self-&gt;_analyze_logop($op);\n        push @{$self-&gt;{conditions}}, $info if $info;\n    }\n\n    # 子ノードを再帰的に走査\n    if ($op-&gt;flags &amp; OPf_KIDS) {\n        for (my $kid = $op-&gt;first; $kid &amp;&amp; !$kid-&gt;isa('B::NULL'); $kid = $kid-&gt;sibling) {\n            $self-&gt;_walk_op($kid);\n        }\n    }\n}\n\n#------------------------------------------------------------------------------\n# 論理演算子を解析\n#------------------------------------------------------------------------------\nsub _analyze_logop {\n    my ($self, $op) = @_;\n\n    my $name = $op-&gt;name;\n    my $left_op = $op-&gt;first;\n\n    return unless $left_op &amp;&amp; !$left_op-&gt;isa('B::NULL');\n\n    my $right_op;\n    if ($name eq 'cond_expr') {\n        # 三項演算子: cond ? true : false\n        my $cond_op = $left_op;\n        my $true_op = $cond_op-&gt;sibling;\n        my $false_op = $true_op ? $true_op-&gt;sibling : undef;\n\n        return {\n            type      =&gt; 'cond_expr',\n            op        =&gt; '?:',\n            condition =&gt; $self-&gt;_deparse_op($cond_op),\n            true_branch  =&gt; $self-&gt;_deparse_op($true_op),\n            false_branch =&gt; $self-&gt;_deparse_op($false_op),\n            line      =&gt; $self-&gt;_get_line($op),\n        };\n    }\n\n    $right_op = $left_op-&gt;sibling;\n    return unless $right_op &amp;&amp; !$right_op-&gt;isa('B::NULL');\n\n    my $op_symbol = $self-&gt;_op_to_symbol($name);\n    my $left_text  = $self-&gt;_deparse_op($left_op);\n    my $right_text = $self-&gt;_deparse_op($right_op);\n\n    # 右辺が定数かどうか判定\n    my $right_is_const = $self-&gt;_is_constant($right_op);\n\n    return {\n        type       =&gt; $name,\n        op         =&gt; $op_symbol,\n        left       =&gt; $left_text,\n        right      =&gt; $right_text,\n        right_const =&gt; $right_is_const,\n        line       =&gt; $self-&gt;_get_line($op),\n        # 真理値表のタイプを決定\n        tt_type    =&gt; $self-&gt;_determine_tt_type($name, $right_is_const),\n    };\n}\n\n#------------------------------------------------------------------------------\n# OP をテキストに変換\n#------------------------------------------------------------------------------\nsub _deparse_op {\n    my ($self, $op) = @_;\n\n    return '' unless $op &amp;&amp; !$op-&gt;isa('B::NULL');\n\n    local $@;\n    my $text = eval { $self-&gt;{deparse}-&gt;deparse($op, 0) };\n    return '' if $@;\n\n    # 前後の空白を除去\n    $text =~ s/^\\s+//;\n    $text =~ s/\\s+$//;\n\n    return $text;\n}\n\n#------------------------------------------------------------------------------\n# OP 名からシンボルへ\n#------------------------------------------------------------------------------\nsub _op_to_symbol {\n    my ($self, $name) = @_;\n\n    my %symbols = (\n        and       =&gt; '&amp;&amp;',\n        andassign =&gt; '&amp;&amp;=',\n        or        =&gt; '||',\n        orassign  =&gt; '||=',\n        dor       =&gt; '//',\n        dorassign =&gt; '//=',\n        xor       =&gt; 'xor',\n    );\n\n    return $symbols{$name} // $name;\n}\n\n#------------------------------------------------------------------------------\n# 定数かどうか判定\n#------------------------------------------------------------------------------\nsub _is_constant {\n    my ($self, $op) = @_;\n\n    return 0 unless $op &amp;&amp; !$op-&gt;isa('B::NULL');\n\n    my $name = $op-&gt;name;\n\n    # const, undef, refgen などは定数扱い\n    return 1 if $name =~ /^(?:const|undef|s?refgen|null)$/;\n\n    # die, return, last, next, redo, goto も「評価されない」扱い\n    return 1 if $name =~ /^(?:die|return|last|next|redo|goto)$/;\n\n    return 0;\n}\n\n#------------------------------------------------------------------------------\n# 真理値表タイプを決定\n#------------------------------------------------------------------------------\nsub _determine_tt_type {\n    my ($self, $op_name, $right_is_const) = @_;\n\n    if ($op_name eq 'xor') {\n        return 'xor_4';\n    } elsif ($op_name =~ /^(?:and|andassign)$/) {\n        return $right_is_const ? 'and_2' : 'and_3';\n    } elsif ($op_name =~ /^(?:or|orassign|dor|dorassign)$/) {\n        return $right_is_const ? 'or_2' : 'or_3';\n    }\n\n    return 'unknown';\n}\n\n#------------------------------------------------------------------------------\n# 行番号を取得\n#------------------------------------------------------------------------------\nsub _get_line {\n    my ($self, $op) = @_;\n\n    # COP (statement) から行番号を取得するのは複雑なので、簡易版\n    return 0;  # 実際にはより複雑な処理が必要\n}\n\n#==============================================================================\n# 真理値表生成\n#==============================================================================\npackage TruthTable;\n\nsub new {\n    my ($class, $condition) = @_;\n    return bless { condition =&gt; $condition }, $class;\n}\n\nsub generate {\n    my ($self) = @_;\n\n    my $cond = $self-&gt;{condition};\n    my $type = $cond-&gt;{tt_type} // '';\n\n    if ($type eq 'and_3') {\n        return $self-&gt;_and_3_table($cond);\n    } elsif ($type eq 'and_2') {\n        return $self-&gt;_and_2_table($cond);\n    } elsif ($type eq 'or_3') {\n        return $self-&gt;_or_3_table($cond);\n    } elsif ($type eq 'or_2') {\n        return $self-&gt;_or_2_table($cond);\n    } elsif ($type eq 'xor_4') {\n        return $self-&gt;_xor_4_table($cond);\n    } elsif ($cond-&gt;{type} eq 'cond_expr') {\n        return $self-&gt;_cond_expr_table($cond);\n    }\n\n    return [];\n}\n\nsub _and_3_table {\n    my ($self, $cond) = @_;\n    my ($l, $r, $op) = @{$cond}{qw(left right op)};\n\n    return [\n        { inputs =&gt; [0, 'X'], result =&gt; 0, desc =&gt; \"!($l)\" },\n        { inputs =&gt; [1, 0],   result =&gt; 0, desc =&gt; \"($l) $op !($r)\" },\n        { inputs =&gt; [1, 1],   result =&gt; 1, desc =&gt; \"($l) $op ($r)\" },\n    ];\n}\n\nsub _and_2_table {\n    my ($self, $cond) = @_;\n    my ($l, $op) = @{$cond}{qw(left op)};\n\n    return [\n        { inputs =&gt; [0], result =&gt; 0, desc =&gt; \"!($l)\" },\n        { inputs =&gt; [1], result =&gt; 1, desc =&gt; \"($l)\" },\n    ];\n}\n\nsub _or_3_table {\n    my ($self, $cond) = @_;\n    my ($l, $r, $op) = @{$cond}{qw(left right op)};\n\n    return [\n        { inputs =&gt; [1, 'X'], result =&gt; 1, desc =&gt; \"($l)\" },\n        { inputs =&gt; [0, 1],   result =&gt; 1, desc =&gt; \"!($l) $op ($r)\" },\n        { inputs =&gt; [0, 0],   result =&gt; 0, desc =&gt; \"!($l) $op !($r)\" },\n    ];\n}\n\nsub _or_2_table {\n    my ($self, $cond) = @_;\n    my ($l, $op) = @{$cond}{qw(left op)};\n\n    return [\n        { inputs =&gt; [1], result =&gt; 1, desc =&gt; \"($l)\" },\n        { inputs =&gt; [0], result =&gt; 0, desc =&gt; \"!($l)\" },\n    ];\n}\n\nsub _xor_4_table {\n    my ($self, $cond) = @_;\n    my ($l, $r) = @{$cond}{qw(left right)};\n\n    return [\n        { inputs =&gt; [0, 0], result =&gt; 0, desc =&gt; \"!($l) xor !($r)\" },\n        { inputs =&gt; [0, 1], result =&gt; 1, desc =&gt; \"!($l) xor ($r)\" },\n        { inputs =&gt; [1, 0], result =&gt; 1, desc =&gt; \"($l) xor !($r)\" },\n        { inputs =&gt; [1, 1], result =&gt; 0, desc =&gt; \"($l) xor ($r)\" },\n    ];\n}\n\nsub _cond_expr_table {\n    my ($self, $cond) = @_;\n    my ($c, $t, $f) = @{$cond}{qw(condition true_branch false_branch)};\n\n    return [\n        { inputs =&gt; [1], result =&gt; $t, desc =&gt; \"($c) ? $t : ...\" },\n        { inputs =&gt; [0], result =&gt; $f, desc =&gt; \"!($c) ? ... : $f\" },\n    ];\n}\n\nsub format_text {\n    my ($self) = @_;\n\n    my $table = $self-&gt;generate;\n    return '' unless @$table;\n\n    my $cond = $self-&gt;{condition};\n    my @lines;\n\n    # ヘッダー\n    my $expr = $cond-&gt;{type} eq 'cond_expr'\n        ? \"$cond-&gt;{condition} ? $cond-&gt;{true_branch} : $cond-&gt;{false_branch}\"\n        : \"$cond-&gt;{left} $cond-&gt;{op} $cond-&gt;{right}\";\n\n    push @lines, \"Expression: $expr\";\n    push @lines, \"Type: $cond-&gt;{tt_type}\" if $cond-&gt;{tt_type};\n    push @lines, \"-\" x 60;\n\n    # 入力ヘッダー\n    my $n_inputs = @{$table-&gt;[0]{inputs}};\n    my @headers = map { chr(ord('A') + $_) } 0 .. $n_inputs - 1;\n    push @lines, sprintf(\"| %s | Result | Description\", join(\" | \", @headers));\n    push @lines, \"-\" x 60;\n\n    # 各行\n    for my $row (@$table) {\n        my $inputs = join(\" | \", map { $_ eq 'X' ? 'X' : $_ } @{$row-&gt;{inputs}});\n        push @lines, sprintf(\"| %s |   %s    | %s\", $inputs, $row-&gt;{result}, $row-&gt;{desc});\n    }\n\n    push @lines, \"-\" x 60;\n\n    return join(\"\\n\", @lines);\n}\n\n#==============================================================================\n# メイン\n#==============================================================================\npackage main;\n\n# テスト用サブルーチン\nsub test_simple_and {\n    my ($a, $b) = @_;\n    return $a &amp;&amp; $b;\n}\n\nsub test_simple_or {\n    my ($a, $b) = @_;\n    return $a || $b;\n}\n\nsub test_or_with_const {\n    my ($a) = @_;\n    return $a || die \"error\";\n}\n\nsub test_complex {\n    my ($a, $b, $c) = @_;\n    return ($a || $b) &amp;&amp; $c;\n}\n\nsub test_ternary {\n    my ($x) = @_;\n    return $x ? \"yes\" : \"no\";\n}\n\nsub test_xor {\n    my ($a, $b) = @_;\n    return $a xor $b;\n}\n\nsub test_dor {\n    my ($a, $b) = @_;\n    return $a // $b;\n}\n\n# 解析実行\nmy $analyzer = LogicAnalyzer-&gt;new;\n\nprint \"=\" x 60, \"\\n\";\nprint \"Static Logic Structure Analyzer\\n\";\nprint \"=\" x 60, \"\\n\\n\";\n\nmy @test_subs = (\n    [\\&amp;test_simple_and,    'test_simple_and:    $a &amp;&amp; $b'],\n    [\\&amp;test_simple_or,     'test_simple_or:     $a || $b'],\n    [\\&amp;test_or_with_const, 'test_or_with_const: $a || die'],\n    [\\&amp;test_complex,       'test_complex:       ($a || $b) &amp;&amp; $c'],\n    [\\&amp;test_ternary,       'test_ternary:       $x ? \"yes\" : \"no\"'],\n    [\\&amp;test_xor,           'test_xor:           $a xor $b'],\n    [\\&amp;test_dor,           'test_dor:           $a // $b'],\n);\n\nfor my $test (@test_subs) {\n    my ($coderef, $name) = @$test;\n\n    print \"### $name\\n\\n\";\n\n    my $conditions = $analyzer-&gt;analyze_sub($coderef);\n\n    if (@$conditions) {\n        for my $cond (@$conditions) {\n            my $tt = TruthTable-&gt;new($cond);\n            print $tt-&gt;format_text, \"\\n\\n\";\n        }\n    } else {\n        print \"(No logical conditions found)\\n\\n\";\n    }\n}\n\n# 文字列からコードを解析するデモ\nprint \"=\" x 60, \"\\n\";\nprint \"Analyzing code from string\\n\";\nprint \"=\" x 60, \"\\n\\n\";\n\nmy $code = q{\n    sub complex_logic {\n        my ($x, $y, $z) = @_;\n        if ($x &amp;&amp; $y || $z) {\n            return 1;\n        }\n        return 0;\n    }\n};\n\nprint \"Source code:\\n$code\\n\";\n\n# eval でコードをコンパイル (実行はしない)\neval $code;\nif ($@) {\n    die \"Compile error: $@\";\n}\n\nmy $conditions = $analyzer-&gt;analyze_sub(\\&amp;complex_logic);\nfor my $cond (@$conditions) {\n    my $tt = TruthTable-&gt;new($cond);\n    print $tt-&gt;format_text, \"\\n\\n\";\n}\n"
+}
+</code></pre>
+<h3 id="results"><a class="header" href="#results">Results</a></h3>
+<p><strong>Result:</strong></p>
+<pre><code>File created successfully at: /home/hkoba/db/monthly/202512/tmp/Devel--Cover/examples/static_logic_analyzer.pl
+</code></pre>
+<blockquote>
+<p>サンプルコードを書きました。実行して結果を確認してみましょう。</p>
+</blockquote>
+<hr />
+<p><small style="color: gray">uuid: assistant: f0d2a0ce-018f-4539-8449-18d2c54af0c0, assistant: af324036-ebe7-467e-8151-8f6ec15feccd</small></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="turn_3_text_3.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="turn_3_text_5.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="turn_3_text_3.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="turn_3_text_5.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
