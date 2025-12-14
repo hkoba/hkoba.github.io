@@ -2,13 +2,450 @@
 
 ## Tool Interactions
 
-**Tool: Write**
+**Tool: Write** `/home/hkoba/db/monthly/202512/tmp/Devel--Cover/examples/static_logic_analyzer.pl`
 
-```json
-{
-  "file_path": "/home/hkoba/db/monthly/202512/tmp/Devel--Cover/examples/static_logic_analyzer.pl",
-  "content": "#!/usr/bin/env perl\nuse strict;\nuse warnings;\nuse v5.12;\n\n#\n# 静的にPerlコードの論理構造を解析し、真理値表を生成するサンプル\n# Devel::Cover の手法を参考に、実行せずに B::Deparse で解析\n#\n\npackage LogicAnalyzer;\n\nuse B qw(main_cv svref_2object OPf_KIDS);\nuse B::Deparse;\n\n# 論理演算子の OP 名\nmy %LOGIC_OPS = map { $_ => 1 } qw(and or dor xor andassign orassign dorassign cond_expr);\n\nsub new {\n    my $class = shift;\n    my $self = bless {\n        deparse   => B::Deparse->new,\n        conditions => [],  # 検出した条件式\n    }, $class;\n    return $self;\n}\n\n#------------------------------------------------------------------------------\n# サブルーチンを解析\n#------------------------------------------------------------------------------\nsub analyze_sub {\n    my ($self, $coderef) = @_;\n\n    my $cv = svref_2object($coderef);\n    return unless $cv->isa('B::CV');\n\n    $self->{deparse}{curcv} = $cv;\n    $self->{conditions} = [];\n\n    my $root = $cv->ROOT;\n    return unless $root && !$root->isa('B::NULL');\n\n    $self->_walk_op($root);\n\n    return $self->{conditions};\n}\n\n#------------------------------------------------------------------------------\n# OP ツリーを再帰的に走査\n#------------------------------------------------------------------------------\nsub _walk_op {\n    my ($self, $op) = @_;\n\n    return unless $op && !$op->isa('B::NULL');\n\n    my $name = $op->name;\n\n    # 論理演算子を検出\n    if ($LOGIC_OPS{$name}) {\n        my $info = $self->_analyze_logop($op);\n        push @{$self->{conditions}}, $info if $info;\n    }\n\n    # 子ノードを再帰的に走査\n    if ($op->flags & OPf_KIDS) {\n        for (my $kid = $op->first; $kid && !$kid->isa('B::NULL'); $kid = $kid->sibling) {\n            $self->_walk_op($kid);\n        }\n    }\n}\n\n#------------------------------------------------------------------------------\n# 論理演算子を解析\n#------------------------------------------------------------------------------\nsub _analyze_logop {\n    my ($self, $op) = @_;\n\n    my $name = $op->name;\n    my $left_op = $op->first;\n\n    return unless $left_op && !$left_op->isa('B::NULL');\n\n    my $right_op;\n    if ($name eq 'cond_expr') {\n        # 三項演算子: cond ? true : false\n        my $cond_op = $left_op;\n        my $true_op = $cond_op->sibling;\n        my $false_op = $true_op ? $true_op->sibling : undef;\n\n        return {\n            type      => 'cond_expr',\n            op        => '?:',\n            condition => $self->_deparse_op($cond_op),\n            true_branch  => $self->_deparse_op($true_op),\n            false_branch => $self->_deparse_op($false_op),\n            line      => $self->_get_line($op),\n        };\n    }\n\n    $right_op = $left_op->sibling;\n    return unless $right_op && !$right_op->isa('B::NULL');\n\n    my $op_symbol = $self->_op_to_symbol($name);\n    my $left_text  = $self->_deparse_op($left_op);\n    my $right_text = $self->_deparse_op($right_op);\n\n    # 右辺が定数かどうか判定\n    my $right_is_const = $self->_is_constant($right_op);\n\n    return {\n        type       => $name,\n        op         => $op_symbol,\n        left       => $left_text,\n        right      => $right_text,\n        right_const => $right_is_const,\n        line       => $self->_get_line($op),\n        # 真理値表のタイプを決定\n        tt_type    => $self->_determine_tt_type($name, $right_is_const),\n    };\n}\n\n#------------------------------------------------------------------------------\n# OP をテキストに変換\n#------------------------------------------------------------------------------\nsub _deparse_op {\n    my ($self, $op) = @_;\n\n    return '' unless $op && !$op->isa('B::NULL');\n\n    local $@;\n    my $text = eval { $self->{deparse}->deparse($op, 0) };\n    return '' if $@;\n\n    # 前後の空白を除去\n    $text =~ s/^\\s+//;\n    $text =~ s/\\s+$//;\n\n    return $text;\n}\n\n#------------------------------------------------------------------------------\n# OP 名からシンボルへ\n#------------------------------------------------------------------------------\nsub _op_to_symbol {\n    my ($self, $name) = @_;\n\n    my %symbols = (\n        and       => '&&',\n        andassign => '&&=',\n        or        => '||',\n        orassign  => '||=',\n        dor       => '//',\n        dorassign => '//=',\n        xor       => 'xor',\n    );\n\n    return $symbols{$name} // $name;\n}\n\n#------------------------------------------------------------------------------\n# 定数かどうか判定\n#------------------------------------------------------------------------------\nsub _is_constant {\n    my ($self, $op) = @_;\n\n    return 0 unless $op && !$op->isa('B::NULL');\n\n    my $name = $op->name;\n\n    # const, undef, refgen などは定数扱い\n    return 1 if $name =~ /^(?:const|undef|s?refgen|null)$/;\n\n    # die, return, last, next, redo, goto も「評価されない」扱い\n    return 1 if $name =~ /^(?:die|return|last|next|redo|goto)$/;\n\n    return 0;\n}\n\n#------------------------------------------------------------------------------\n# 真理値表タイプを決定\n#------------------------------------------------------------------------------\nsub _determine_tt_type {\n    my ($self, $op_name, $right_is_const) = @_;\n\n    if ($op_name eq 'xor') {\n        return 'xor_4';\n    } elsif ($op_name =~ /^(?:and|andassign)$/) {\n        return $right_is_const ? 'and_2' : 'and_3';\n    } elsif ($op_name =~ /^(?:or|orassign|dor|dorassign)$/) {\n        return $right_is_const ? 'or_2' : 'or_3';\n    }\n\n    return 'unknown';\n}\n\n#------------------------------------------------------------------------------\n# 行番号を取得\n#------------------------------------------------------------------------------\nsub _get_line {\n    my ($self, $op) = @_;\n\n    # COP (statement) から行番号を取得するのは複雑なので、簡易版\n    return 0;  # 実際にはより複雑な処理が必要\n}\n\n#==============================================================================\n# 真理値表生成\n#==============================================================================\npackage TruthTable;\n\nsub new {\n    my ($class, $condition) = @_;\n    return bless { condition => $condition }, $class;\n}\n\nsub generate {\n    my ($self) = @_;\n\n    my $cond = $self->{condition};\n    my $type = $cond->{tt_type} // '';\n\n    if ($type eq 'and_3') {\n        return $self->_and_3_table($cond);\n    } elsif ($type eq 'and_2') {\n        return $self->_and_2_table($cond);\n    } elsif ($type eq 'or_3') {\n        return $self->_or_3_table($cond);\n    } elsif ($type eq 'or_2') {\n        return $self->_or_2_table($cond);\n    } elsif ($type eq 'xor_4') {\n        return $self->_xor_4_table($cond);\n    } elsif ($cond->{type} eq 'cond_expr') {\n        return $self->_cond_expr_table($cond);\n    }\n\n    return [];\n}\n\nsub _and_3_table {\n    my ($self, $cond) = @_;\n    my ($l, $r, $op) = @{$cond}{qw(left right op)};\n\n    return [\n        { inputs => [0, 'X'], result => 0, desc => \"!($l)\" },\n        { inputs => [1, 0],   result => 0, desc => \"($l) $op !($r)\" },\n        { inputs => [1, 1],   result => 1, desc => \"($l) $op ($r)\" },\n    ];\n}\n\nsub _and_2_table {\n    my ($self, $cond) = @_;\n    my ($l, $op) = @{$cond}{qw(left op)};\n\n    return [\n        { inputs => [0], result => 0, desc => \"!($l)\" },\n        { inputs => [1], result => 1, desc => \"($l)\" },\n    ];\n}\n\nsub _or_3_table {\n    my ($self, $cond) = @_;\n    my ($l, $r, $op) = @{$cond}{qw(left right op)};\n\n    return [\n        { inputs => [1, 'X'], result => 1, desc => \"($l)\" },\n        { inputs => [0, 1],   result => 1, desc => \"!($l) $op ($r)\" },\n        { inputs => [0, 0],   result => 0, desc => \"!($l) $op !($r)\" },\n    ];\n}\n\nsub _or_2_table {\n    my ($self, $cond) = @_;\n    my ($l, $op) = @{$cond}{qw(left op)};\n\n    return [\n        { inputs => [1], result => 1, desc => \"($l)\" },\n        { inputs => [0], result => 0, desc => \"!($l)\" },\n    ];\n}\n\nsub _xor_4_table {\n    my ($self, $cond) = @_;\n    my ($l, $r) = @{$cond}{qw(left right)};\n\n    return [\n        { inputs => [0, 0], result => 0, desc => \"!($l) xor !($r)\" },\n        { inputs => [0, 1], result => 1, desc => \"!($l) xor ($r)\" },\n        { inputs => [1, 0], result => 1, desc => \"($l) xor !($r)\" },\n        { inputs => [1, 1], result => 0, desc => \"($l) xor ($r)\" },\n    ];\n}\n\nsub _cond_expr_table {\n    my ($self, $cond) = @_;\n    my ($c, $t, $f) = @{$cond}{qw(condition true_branch false_branch)};\n\n    return [\n        { inputs => [1], result => $t, desc => \"($c) ? $t : ...\" },\n        { inputs => [0], result => $f, desc => \"!($c) ? ... : $f\" },\n    ];\n}\n\nsub format_text {\n    my ($self) = @_;\n\n    my $table = $self->generate;\n    return '' unless @$table;\n\n    my $cond = $self->{condition};\n    my @lines;\n\n    # ヘッダー\n    my $expr = $cond->{type} eq 'cond_expr'\n        ? \"$cond->{condition} ? $cond->{true_branch} : $cond->{false_branch}\"\n        : \"$cond->{left} $cond->{op} $cond->{right}\";\n\n    push @lines, \"Expression: $expr\";\n    push @lines, \"Type: $cond->{tt_type}\" if $cond->{tt_type};\n    push @lines, \"-\" x 60;\n\n    # 入力ヘッダー\n    my $n_inputs = @{$table->[0]{inputs}};\n    my @headers = map { chr(ord('A') + $_) } 0 .. $n_inputs - 1;\n    push @lines, sprintf(\"| %s | Result | Description\", join(\" | \", @headers));\n    push @lines, \"-\" x 60;\n\n    # 各行\n    for my $row (@$table) {\n        my $inputs = join(\" | \", map { $_ eq 'X' ? 'X' : $_ } @{$row->{inputs}});\n        push @lines, sprintf(\"| %s |   %s    | %s\", $inputs, $row->{result}, $row->{desc});\n    }\n\n    push @lines, \"-\" x 60;\n\n    return join(\"\\n\", @lines);\n}\n\n#==============================================================================\n# メイン\n#==============================================================================\npackage main;\n\n# テスト用サブルーチン\nsub test_simple_and {\n    my ($a, $b) = @_;\n    return $a && $b;\n}\n\nsub test_simple_or {\n    my ($a, $b) = @_;\n    return $a || $b;\n}\n\nsub test_or_with_const {\n    my ($a) = @_;\n    return $a || die \"error\";\n}\n\nsub test_complex {\n    my ($a, $b, $c) = @_;\n    return ($a || $b) && $c;\n}\n\nsub test_ternary {\n    my ($x) = @_;\n    return $x ? \"yes\" : \"no\";\n}\n\nsub test_xor {\n    my ($a, $b) = @_;\n    return $a xor $b;\n}\n\nsub test_dor {\n    my ($a, $b) = @_;\n    return $a // $b;\n}\n\n# 解析実行\nmy $analyzer = LogicAnalyzer->new;\n\nprint \"=\" x 60, \"\\n\";\nprint \"Static Logic Structure Analyzer\\n\";\nprint \"=\" x 60, \"\\n\\n\";\n\nmy @test_subs = (\n    [\\&test_simple_and,    'test_simple_and:    $a && $b'],\n    [\\&test_simple_or,     'test_simple_or:     $a || $b'],\n    [\\&test_or_with_const, 'test_or_with_const: $a || die'],\n    [\\&test_complex,       'test_complex:       ($a || $b) && $c'],\n    [\\&test_ternary,       'test_ternary:       $x ? \"yes\" : \"no\"'],\n    [\\&test_xor,           'test_xor:           $a xor $b'],\n    [\\&test_dor,           'test_dor:           $a // $b'],\n);\n\nfor my $test (@test_subs) {\n    my ($coderef, $name) = @$test;\n\n    print \"### $name\\n\\n\";\n\n    my $conditions = $analyzer->analyze_sub($coderef);\n\n    if (@$conditions) {\n        for my $cond (@$conditions) {\n            my $tt = TruthTable->new($cond);\n            print $tt->format_text, \"\\n\\n\";\n        }\n    } else {\n        print \"(No logical conditions found)\\n\\n\";\n    }\n}\n\n# 文字列からコードを解析するデモ\nprint \"=\" x 60, \"\\n\";\nprint \"Analyzing code from string\\n\";\nprint \"=\" x 60, \"\\n\\n\";\n\nmy $code = q{\n    sub complex_logic {\n        my ($x, $y, $z) = @_;\n        if ($x && $y || $z) {\n            return 1;\n        }\n        return 0;\n    }\n};\n\nprint \"Source code:\\n$code\\n\";\n\n# eval でコードをコンパイル (実行はしない)\neval $code;\nif ($@) {\n    die \"Compile error: $@\";\n}\n\nmy $conditions = $analyzer->analyze_sub(\\&complex_logic);\nfor my $cond (@$conditions) {\n    my $tt = TruthTable->new($cond);\n    print $tt->format_text, \"\\n\\n\";\n}\n"
+```perl
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use v5.12;
+
+#
+# 静的にPerlコードの論理構造を解析し、真理値表を生成するサンプル
+# Devel::Cover の手法を参考に、実行せずに B::Deparse で解析
+#
+
+package LogicAnalyzer;
+
+use B qw(main_cv svref_2object OPf_KIDS);
+use B::Deparse;
+
+# 論理演算子の OP 名
+my %LOGIC_OPS = map { $_ => 1 } qw(and or dor xor andassign orassign dorassign cond_expr);
+
+sub new {
+    my $class = shift;
+    my $self = bless {
+        deparse   => B::Deparse->new,
+        conditions => [],  # 検出した条件式
+    }, $class;
+    return $self;
 }
+
+#------------------------------------------------------------------------------
+# サブルーチンを解析
+#------------------------------------------------------------------------------
+sub analyze_sub {
+    my ($self, $coderef) = @_;
+
+    my $cv = svref_2object($coderef);
+    return unless $cv->isa('B::CV');
+
+    $self->{deparse}{curcv} = $cv;
+    $self->{conditions} = [];
+
+    my $root = $cv->ROOT;
+    return unless $root && !$root->isa('B::NULL');
+
+    $self->_walk_op($root);
+
+    return $self->{conditions};
+}
+
+#------------------------------------------------------------------------------
+# OP ツリーを再帰的に走査
+#------------------------------------------------------------------------------
+sub _walk_op {
+    my ($self, $op) = @_;
+
+    return unless $op && !$op->isa('B::NULL');
+
+    my $name = $op->name;
+
+    # 論理演算子を検出
+    if ($LOGIC_OPS{$name}) {
+        my $info = $self->_analyze_logop($op);
+        push @{$self->{conditions}}, $info if $info;
+    }
+
+    # 子ノードを再帰的に走査
+    if ($op->flags & OPf_KIDS) {
+        for (my $kid = $op->first; $kid && !$kid->isa('B::NULL'); $kid = $kid->sibling) {
+            $self->_walk_op($kid);
+        }
+    }
+}
+
+#------------------------------------------------------------------------------
+# 論理演算子を解析
+#------------------------------------------------------------------------------
+sub _analyze_logop {
+    my ($self, $op) = @_;
+
+    my $name = $op->name;
+    my $left_op = $op->first;
+
+    return unless $left_op && !$left_op->isa('B::NULL');
+
+    my $right_op;
+    if ($name eq 'cond_expr') {
+        # 三項演算子: cond ? true : false
+        my $cond_op = $left_op;
+        my $true_op = $cond_op->sibling;
+        my $false_op = $true_op ? $true_op->sibling : undef;
+
+        return {
+            type      => 'cond_expr',
+            op        => '?:',
+            condition => $self->_deparse_op($cond_op),
+            true_branch  => $self->_deparse_op($true_op),
+            false_branch => $self->_deparse_op($false_op),
+            line      => $self->_get_line($op),
+        };
+    }
+
+    $right_op = $left_op->sibling;
+    return unless $right_op && !$right_op->isa('B::NULL');
+
+    my $op_symbol = $self->_op_to_symbol($name);
+    my $left_text  = $self->_deparse_op($left_op);
+    my $right_text = $self->_deparse_op($right_op);
+
+    # 右辺が定数かどうか判定
+    my $right_is_const = $self->_is_constant($right_op);
+
+    return {
+        type       => $name,
+        op         => $op_symbol,
+        left       => $left_text,
+        right      => $right_text,
+        right_const => $right_is_const,
+        line       => $self->_get_line($op),
+        # 真理値表のタイプを決定
+        tt_type    => $self->_determine_tt_type($name, $right_is_const),
+    };
+}
+
+#------------------------------------------------------------------------------
+# OP をテキストに変換
+#------------------------------------------------------------------------------
+sub _deparse_op {
+    my ($self, $op) = @_;
+
+    return '' unless $op && !$op->isa('B::NULL');
+
+    local $@;
+    my $text = eval { $self->{deparse}->deparse($op, 0) };
+    return '' if $@;
+
+    # 前後の空白を除去
+    $text =~ s/^\s+//;
+    $text =~ s/\s+$//;
+
+    return $text;
+}
+
+#------------------------------------------------------------------------------
+# OP 名からシンボルへ
+#------------------------------------------------------------------------------
+sub _op_to_symbol {
+    my ($self, $name) = @_;
+
+    my %symbols = (
+        and       => '&&',
+        andassign => '&&=',
+        or        => '||',
+        orassign  => '||=',
+        dor       => '//',
+        dorassign => '//=',
+        xor       => 'xor',
+    );
+
+    return $symbols{$name} // $name;
+}
+
+#------------------------------------------------------------------------------
+# 定数かどうか判定
+#------------------------------------------------------------------------------
+sub _is_constant {
+    my ($self, $op) = @_;
+
+    return 0 unless $op && !$op->isa('B::NULL');
+
+    my $name = $op->name;
+
+    # const, undef, refgen などは定数扱い
+    return 1 if $name =~ /^(?:const|undef|s?refgen|null)$/;
+
+    # die, return, last, next, redo, goto も「評価されない」扱い
+    return 1 if $name =~ /^(?:die|return|last|next|redo|goto)$/;
+
+    return 0;
+}
+
+#------------------------------------------------------------------------------
+# 真理値表タイプを決定
+#------------------------------------------------------------------------------
+sub _determine_tt_type {
+    my ($self, $op_name, $right_is_const) = @_;
+
+    if ($op_name eq 'xor') {
+        return 'xor_4';
+    } elsif ($op_name =~ /^(?:and|andassign)$/) {
+        return $right_is_const ? 'and_2' : 'and_3';
+    } elsif ($op_name =~ /^(?:or|orassign|dor|dorassign)$/) {
+        return $right_is_const ? 'or_2' : 'or_3';
+    }
+
+    return 'unknown';
+}
+
+#------------------------------------------------------------------------------
+# 行番号を取得
+#------------------------------------------------------------------------------
+sub _get_line {
+    my ($self, $op) = @_;
+
+    # COP (statement) から行番号を取得するのは複雑なので、簡易版
+    return 0;  # 実際にはより複雑な処理が必要
+}
+
+#==============================================================================
+# 真理値表生成
+#==============================================================================
+package TruthTable;
+
+sub new {
+    my ($class, $condition) = @_;
+    return bless { condition => $condition }, $class;
+}
+
+sub generate {
+    my ($self) = @_;
+
+    my $cond = $self->{condition};
+    my $type = $cond->{tt_type} // '';
+
+    if ($type eq 'and_3') {
+        return $self->_and_3_table($cond);
+    } elsif ($type eq 'and_2') {
+        return $self->_and_2_table($cond);
+    } elsif ($type eq 'or_3') {
+        return $self->_or_3_table($cond);
+    } elsif ($type eq 'or_2') {
+        return $self->_or_2_table($cond);
+    } elsif ($type eq 'xor_4') {
+        return $self->_xor_4_table($cond);
+    } elsif ($cond->{type} eq 'cond_expr') {
+        return $self->_cond_expr_table($cond);
+    }
+
+    return [];
+}
+
+sub _and_3_table {
+    my ($self, $cond) = @_;
+    my ($l, $r, $op) = @{$cond}{qw(left right op)};
+
+    return [
+        { inputs => [0, 'X'], result => 0, desc => "!($l)" },
+        { inputs => [1, 0],   result => 0, desc => "($l) $op !($r)" },
+        { inputs => [1, 1],   result => 1, desc => "($l) $op ($r)" },
+    ];
+}
+
+sub _and_2_table {
+    my ($self, $cond) = @_;
+    my ($l, $op) = @{$cond}{qw(left op)};
+
+    return [
+        { inputs => [0], result => 0, desc => "!($l)" },
+        { inputs => [1], result => 1, desc => "($l)" },
+    ];
+}
+
+sub _or_3_table {
+    my ($self, $cond) = @_;
+    my ($l, $r, $op) = @{$cond}{qw(left right op)};
+
+    return [
+        { inputs => [1, 'X'], result => 1, desc => "($l)" },
+        { inputs => [0, 1],   result => 1, desc => "!($l) $op ($r)" },
+        { inputs => [0, 0],   result => 0, desc => "!($l) $op !($r)" },
+    ];
+}
+
+sub _or_2_table {
+    my ($self, $cond) = @_;
+    my ($l, $op) = @{$cond}{qw(left op)};
+
+    return [
+        { inputs => [1], result => 1, desc => "($l)" },
+        { inputs => [0], result => 0, desc => "!($l)" },
+    ];
+}
+
+sub _xor_4_table {
+    my ($self, $cond) = @_;
+    my ($l, $r) = @{$cond}{qw(left right)};
+
+    return [
+        { inputs => [0, 0], result => 0, desc => "!($l) xor !($r)" },
+        { inputs => [0, 1], result => 1, desc => "!($l) xor ($r)" },
+        { inputs => [1, 0], result => 1, desc => "($l) xor !($r)" },
+        { inputs => [1, 1], result => 0, desc => "($l) xor ($r)" },
+    ];
+}
+
+sub _cond_expr_table {
+    my ($self, $cond) = @_;
+    my ($c, $t, $f) = @{$cond}{qw(condition true_branch false_branch)};
+
+    return [
+        { inputs => [1], result => $t, desc => "($c) ? $t : ..." },
+        { inputs => [0], result => $f, desc => "!($c) ? ... : $f" },
+    ];
+}
+
+sub format_text {
+    my ($self) = @_;
+
+    my $table = $self->generate;
+    return '' unless @$table;
+
+    my $cond = $self->{condition};
+    my @lines;
+
+    # ヘッダー
+    my $expr = $cond->{type} eq 'cond_expr'
+        ? "$cond->{condition} ? $cond->{true_branch} : $cond->{false_branch}"
+        : "$cond->{left} $cond->{op} $cond->{right}";
+
+    push @lines, "Expression: $expr";
+    push @lines, "Type: $cond->{tt_type}" if $cond->{tt_type};
+    push @lines, "-" x 60;
+
+    # 入力ヘッダー
+    my $n_inputs = @{$table->[0]{inputs}};
+    my @headers = map { chr(ord('A') + $_) } 0 .. $n_inputs - 1;
+    push @lines, sprintf("| %s | Result | Description", join(" | ", @headers));
+    push @lines, "-" x 60;
+
+    # 各行
+    for my $row (@$table) {
+        my $inputs = join(" | ", map { $_ eq 'X' ? 'X' : $_ } @{$row->{inputs}});
+        push @lines, sprintf("| %s |   %s    | %s", $inputs, $row->{result}, $row->{desc});
+    }
+
+    push @lines, "-" x 60;
+
+    return join("\n", @lines);
+}
+
+#==============================================================================
+# メイン
+#==============================================================================
+package main;
+
+# テスト用サブルーチン
+sub test_simple_and {
+    my ($a, $b) = @_;
+    return $a && $b;
+}
+
+sub test_simple_or {
+    my ($a, $b) = @_;
+    return $a || $b;
+}
+
+sub test_or_with_const {
+    my ($a) = @_;
+    return $a || die "error";
+}
+
+sub test_complex {
+    my ($a, $b, $c) = @_;
+    return ($a || $b) && $c;
+}
+
+sub test_ternary {
+    my ($x) = @_;
+    return $x ? "yes" : "no";
+}
+
+sub test_xor {
+    my ($a, $b) = @_;
+    return $a xor $b;
+}
+
+sub test_dor {
+    my ($a, $b) = @_;
+    return $a // $b;
+}
+
+# 解析実行
+my $analyzer = LogicAnalyzer->new;
+
+print "=" x 60, "\n";
+print "Static Logic Structure Analyzer\n";
+print "=" x 60, "\n\n";
+
+my @test_subs = (
+    [\&test_simple_and,    'test_simple_and:    $a && $b'],
+    [\&test_simple_or,     'test_simple_or:     $a || $b'],
+    [\&test_or_with_const, 'test_or_with_const: $a || die'],
+    [\&test_complex,       'test_complex:       ($a || $b) && $c'],
+    [\&test_ternary,       'test_ternary:       $x ? "yes" : "no"'],
+    [\&test_xor,           'test_xor:           $a xor $b'],
+    [\&test_dor,           'test_dor:           $a // $b'],
+);
+
+for my $test (@test_subs) {
+    my ($coderef, $name) = @$test;
+
+    print "### $name\n\n";
+
+    my $conditions = $analyzer->analyze_sub($coderef);
+
+    if (@$conditions) {
+        for my $cond (@$conditions) {
+            my $tt = TruthTable->new($cond);
+            print $tt->format_text, "\n\n";
+        }
+    } else {
+        print "(No logical conditions found)\n\n";
+    }
+}
+
+# 文字列からコードを解析するデモ
+print "=" x 60, "\n";
+print "Analyzing code from string\n";
+print "=" x 60, "\n\n";
+
+my $code = q{
+    sub complex_logic {
+        my ($x, $y, $z) = @_;
+        if ($x && $y || $z) {
+            return 1;
+        }
+        return 0;
+    }
+};
+
+print "Source code:\n$code\n";
+
+# eval でコードをコンパイル (実行はしない)
+eval $code;
+if ($@) {
+    die "Compile error: $@";
+}
+
+my $conditions = $analyzer->analyze_sub(\&complex_logic);
+for my $cond (@$conditions) {
+    my $tt = TruthTable->new($cond);
+    print $tt->format_text, "\n\n";
+}
+
 ```
 
 ### Results
