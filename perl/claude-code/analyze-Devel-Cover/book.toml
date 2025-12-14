@@ -1,0 +1,6 @@
+[book]
+title = "Claude Code に Devel::Cover の真理値表生成の仕組みを解読してもらった"
+language = "ja"
+
+[build]
+build-dir = "book"
