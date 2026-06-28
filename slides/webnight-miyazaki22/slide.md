@@ -1,13 +1,14 @@
 ---
 marp: true
 theme: beamer
+image: https://hkoba.github.io/slides/webnight-miyazaki22/slide.jpg
 ---
 
 # Webナイト宮崎 Vol.22
 
 # Shell（Bash）の苦労（の一部）は 
 # Tcl に任せても良いかも？
-
+[（→関連blog: Dry-run の実現技法、個人的な定番）](https://hkoba.hatenablog.com/entry/2025/02/08/125644)
 
 by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
 
@@ -16,35 +17,22 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
 
 # Bash でどこまで書くか、悩みませんか？ ↓
 
-- ローカルPC への導入手順（git clone 後の setup.sh みたいなやつ）
-
+- 社内ツールの導入手順（git clone 後の setup.sh みたいなやつ）
+  ```sh
+  git clone ... && cd ...
+  chmod g+ws var var/db
+  chown nginx var var/run
+  sqlite3 var/db/myapp.db3 < sql/schema.sql
+  ```
 - CI/CD の中のアクション
 
 - クラウドだけど、一台しか立てないやつ（terraform？ AI が書くから気にしない？）
 
-* **一部は** Tcl に任せても良いかも？
+* Python/Ruby/Node,Deno... で書き直すのはやりすぎ感有るもの（AIが（略）？）
 
 ---
-# Tcl ってどんな言語？
 
-- Shell に似た構文
-  ```tcl
-  # 変数代入
-  set pattern *.o
-  
-  #            ↓[...] でコマンド置換
-  set fileList [glob -nocomplain $pattern]
-
-  # exec で外部コマンド呼び出し
-  exec rm -f {*}$fileList
-  ```
-  - `"..."` 不要
-  - `,` 不要
-
-- Shell 向けのコマンド例が<small>（ある程度）</small>流用できる
-
-
----
+# 皆さんに質問
 
 # Shell(Bash) で苦しんだこと、無いですか？
 
@@ -54,21 +42,52 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
 
 - ファイルのパス名とかにスペースが入る時に、書き方に注意が必要
 
-* Tcl なら
-  - エラーは例外処理に
+* **Tcl なら**
+  - エラーは例外処理に（catch 箇所まで脱出）
   - 値にスペースが入っても、勝手に分割されない
+
+---
+# Tcl ってどんな言語？
+
+- Shell に似た構文
+  ```tcl
+  # 変数代入
+  set pattern *.o
+  
+  #            ↓[...] で部分式の呼び出し（コマンド置換）
+  set fileList [glob -nocomplain $pattern]
+
+  # exec で外部コマンド呼び出し
+  exec rm -f {*}$fileList
+  ```
+  * 文字列に `"..."` 不要
+  * 引数列に `,` 不要
+  * リストを展開したい箇所は `{*}` で明示
+
+* Shell 向けのコマンド例が<small>（ある程度）</small>流用できる
+
 
 ---
 # (個人的) Tcl の最推しポイント
 
-# `Dry-Run` や`べき等`、`undo` の仕組みを作りやすい
+# コマンド行（List）を操作する体系の上に作られた言語
 
-- `Dry-Run` - 試運転（コマンドを表示するだけ。実行はしない）
+```tcl
+foo bar baz; # コマンド foo に引数 bar baz を渡す
 
-- `べき等(idempotent)` - 目標状態を満たしてない時だけ実行（複数回呼んでも安全）
+set cmd [list foo bar baz]; # 上記と同じことを表す list を変数 cmd に入れる
 
+{*}$cmd; # 変数に入ったコマンドを実行
+```
 
-* **構文を簡略化** ＋ **コマンド行（ワード列）を正規化可能なデータ構造に** した、おかげ
+- 文字列を中心に作り直された lisp 、感（弱点も多いけど…）
+
+* → `Dry-Run` や`べき等`、`undo` の仕組みを被せやすい
+
+  - `Dry-Run` - 試運転（コマンドを表示するだけ。実行はしない）
+
+  - `べき等(idempotent)` - 目標状態を満たしてない時だけ実行（何回呼んでも安全）
+
 
 ---
 # Dry-Run - Shell と Tcl を比較
@@ -87,7 +106,7 @@ function x {
 
 使い方の例
 ```sh
-x rm *.o
+x rm -f *.o
 ```
 `-n` オプションが指定されたときは、 rm は実行されない
 
@@ -161,12 +180,31 @@ RUN rm {*}$fileListtt;  # ERROR! ここで止まる
 ```
 
 ---
+
+# お断り：Tcl も不満な点は沢山
+
+- 変数が<small>（手続き毎にスコープが隔離されるにも関わらず）</small>動的スコープ
+
+- 静的検査が無い（実行するまで typo すら見つからない）
+
+- 記述が長くなりがち
+
+- lisp ならアレが出来るのに…って不満が沢山出る（少しずつ改善中）
+
+- pip, gem, npm みたいなの無いの？（→ tcllib と tcler's wiki で我慢）
+
+- tclsh に `-e EXPR`, `-c CMD` みたいなオプションが無いのはとても不便
+
+* **全て**を任せる言語じゃない、けど、**雑用**言語としては有益
+
+---
 # まとめ
 
-## Bash 全部を置き換える話じゃない
+## Bash 全部の置き換えは無理（インストールが要るもんね）
 
-* けど、**仕方なく bash を使っている箇所** の何割かは、置き換えても良いかも？
+- けど、**仕方なく bash を使っている箇所** の何割かは、置き換えても良いかも？
 
+- メタプログラミングに強い shell と考えると良いかも？
 
 ---
 # Bash と Tcl の比較(1/2)
