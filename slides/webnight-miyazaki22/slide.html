@@ -11,7 +11,7 @@
 </style></head><body><div class="bespoke-marp-osc"><button data-bespoke-marp-osc="prev" tabindex="-1" title="Previous slide">Previous slide</button><span data-bespoke-marp-osc="page"></span><button data-bespoke-marp-osc="next" tabindex="-1" title="Next slide">Next slide</button><button data-bespoke-marp-osc="fullscreen" tabindex="-1" title="Toggle fullscreen (f)">Toggle fullscreen</button><button data-bespoke-marp-osc="presenter" tabindex="-1" title="Open presenter view (p)">Open presenter view</button></div><div id=":$p"><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="1" lang="ja-JP">
 <h1 id="web%E3%83%8A%E3%82%A4%E3%83%88%E5%AE%AE%E5%B4%8E-vol22">Webナイト宮崎 Vol.22</h1>
 <h1 id="shellsmallbashsmall%E3%81%AE%E3%83%84%E3%83%A9%E3%83%9Fsmall%E3%81%AE%E4%B8%80%E9%83%A8small%E3%81%AF">Shell<small>（Bash）</small>のツラミ<small>（の一部）</small>は</h1>
-<h1 id="tcl-%E3%81%A7%E6%A5%BD%E3%81%AB%E3%81%AA%E3%82%8Bsmall%E3%81%8B%E3%82%82small">Tcl で楽になる、<small>かも？</small></h1>
+<h1 id="tclsmall%E3%83%86%E3%82%A3%E3%82%AF%E3%83%ABsmall%E3%81%A7%E6%A5%BD%E3%81%AB%E3%81%AA%E3%82%8Bsmall%E3%81%8B%E3%82%82small">Tcl<small>（ティクル）</small>で楽になる、<small>かも？</small></h1>
 <p>by <a href="https://github.com/hkoba/">@hkoba</a> <img src="img/myfistrect.jpg" alt="" /></p>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-marpit-fragments="2" lang="ja-JP" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right" style="--marpit-advanced-background-split:50%;"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;img/webnight-miyazaki21.jpg&quot;);background-size:auto 400px;"></figure></div></section></foreignObject><foreignObject width="50%" height="720"><section id="2" data-marpit-fragments="2" lang="ja-JP" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right" style="--marpit-advanced-background-split:50%;">
@@ -21,7 +21,7 @@
 <p><a href="https://github.com/hkoba/">@hkoba</a>（えちこば） <img src="img/myfistrect.jpg" alt="" /></p>
 </li>
 <li>
-<p>2023半ば、宮崎移住</p>
+<p>今日のスライド： <a href="https://hkoba.github.io">hkoba.github.io</a> → <a href="https://hkoba.github.io/slides/webnight-miyazaki22/slide.html">Webナイト宮崎 Vol.22</a></p>
 </li>
 <li>
 <p><strong>昨年のWebナイト宮崎 Vol.21</strong>：</p>
@@ -30,100 +30,111 @@
 
 <ul>
 <li data-marpit-fragment="1">
-<p>主な言語：<a href="https://metacpan.org/author/HKOBA">Perl</a></p>
+<p>普段の言語：<a href="https://metacpan.org/author/HKOBA">Perl</a></p>
 <ul>
 <li data-marpit-fragment="2">今日は Shell と Tcl の話</li>
 </ul>
 </li>
 </ul>
 </section>
-</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-marpit-fragments="2" lang="ja-JP" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right" style=""></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="3" data-marpit-fragments="1" lang="ja-JP">
-<h1 id="%E7%9A%86%E3%81%95%E3%82%93%E3%81%AB%E8%B3%AA%E5%95%8F12">皆さんに質問(1/2)</h1>
-<h1 id="bash-%E3%81%A7%E3%81%A9%E3%81%93%E3%81%BE%E3%81%A7%E6%9B%B8%E3%81%8F%E3%81%8B%E6%82%A9%E3%81%BF%E3%81%BE%E3%81%9B%E3%82%93%E3%81%8B-%E2%86%93">Bash でどこまで書くか、悩みませんか？ ↓</h1>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-marpit-fragments="2" lang="ja-JP" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right" style=""></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="3" data-marpit-fragments="2" lang="ja-JP">
+<h1 id="%E7%9A%86%E3%81%95%E3%82%93%E3%81%B8%E3%81%AE%E5%95%8F%E3%81%84%E3%81%8B%E3%81%9112">皆さんへの問いかけ(1/2)</h1>
 <ul>
-<li>
-<p>社内ツールの導入手順（git clone 後の setup.sh みたいなやつ）</p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-sh">git <span class="hljs-built_in">clone</span> ... &amp;&amp; <span class="hljs-built_in">cd</span> ...
+<li>例：<strong>社内ツールの導入手順</strong> Shell で書くか、本格的に Python等で書くか<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-sh">git <span class="hljs-built_in">clone</span> ... &amp;&amp; <span class="hljs-built_in">cd</span> ...
 <span class="hljs-built_in">chmod</span> g+ws var var/db
 <span class="hljs-built_in">chown</span> nginx var var/run
 sqlite3 var/db/myapp.db3 &lt; sql/schema.sql
 </code></pre>
-</li>
-<li>
-<p>CI/CD の中のアクション</p>
-</li>
-<li>
-<p>クラウドだけど、一台しか立てないやつ（terraform？ AI が書くから気にしない？）</p>
-</li>
-</ul>
 <ul>
-<li data-marpit-fragment="1">Python/Ruby/Node,Deno... で書き直すのはやりすぎ感有るもの（AIが（略）？）</li>
-</ul>
-</section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="4" data-marpit-fragments="1" lang="ja-JP">
-<h1 id="%E7%9A%86%E3%81%95%E3%82%93%E3%81%AB%E8%B3%AA%E5%95%8F22">皆さんに質問(2/2)</h1>
-<h1 id="shellbash-%E3%81%A7%E8%8B%A6%E3%81%97%E3%82%93%E3%81%A0%E3%81%93%E3%81%A8%E7%84%A1%E3%81%84%E3%81%A7%E3%81%99%E3%81%8B">Shell(Bash) で苦しんだこと、無いですか？</h1>
-<ul>
-<li>
-<p>変数名を打ち間違ってもエラーにならない</p>
-</li>
-<li>
-<p>エラーが起きても止まらない、残りの行が実行される</p>
-</li>
-<li>
-<p>ファイルのパス名とかにスペースが入る時に、書き方に注意が必要</p>
-</li>
-</ul>
-<ul>
-<li data-marpit-fragment="1"><strong>Tcl なら</strong>
-<ul>
-<li>エラーは例外処理に（catch 箇所まで脱出）</li>
-<li>値にスペースが入っても、勝手に分割されない</li>
+<li><u>外部コマンド</u>の呼び出しや<u>ファイル操作</u>の、単なる羅列</li>
 </ul>
 </li>
-</ul>
-</section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="5" data-marpit-fragments="4" lang="ja-JP">
-<h1 id="tcl-%E3%81%A3%E3%81%A6%E3%81%A9%E3%82%93%E3%81%AA%E8%A8%80%E8%AA%9E">Tcl ってどんな言語？</h1>
-<ul>
-<li>Shell に似た構文<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-tcl"><span class="hljs-comment"># 変数代入</span>
-<span class="hljs-keyword">set</span> pattern *.o
-
-<span class="hljs-comment">#            ↓[...] で部分式の呼び出し（コマンド置換）</span>
-<span class="hljs-keyword">set</span> fileList [<span class="hljs-keyword">glob</span> -nocomplain <span class="hljs-variable">$pattern</span>]
-
-<span class="hljs-comment"># exec で外部コマンド呼び出し</span>
-<span class="hljs-keyword">exec</span> rm -f {*}<span class="hljs-variable">$fileList</span>
-</code></pre>
-<ul>
-<li data-marpit-fragment="1">文字列に <code>&quot;...&quot;</code> 不要</li>
-<li data-marpit-fragment="2">引数列に <code>,</code> 不要</li>
-<li data-marpit-fragment="3">リストを展開したい箇所は <code>{*}</code> で明示</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li data-marpit-fragment="4">Shell 向けのコマンド例が<small>（ある程度）</small>流用できる</li>
-</ul>
-</section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="6" data-marpit-fragments="1" lang="ja-JP">
-<h1 id="%E5%80%8B%E4%BA%BA%E7%9A%84-tcl-%E3%81%AE%E6%9C%80%E6%8E%A8%E3%81%97%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88">(個人的) Tcl の最推しポイント</h1>
-<h1 id="%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E8%A1%8Clist%E3%82%92%E6%93%8D%E4%BD%9C%E3%81%99%E3%82%8B%E4%BD%93%E7%B3%BB%E3%81%AE%E4%B8%8A%E3%81%AB%E4%BD%9C%E3%82%89%E3%82%8C%E3%81%9F%E8%A8%80%E8%AA%9E">コマンド行（List）を操作する体系の上に作られた言語</h1>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-tcl">foo bar baz<span class="hljs-comment">; # コマンド foo に引数 bar baz を渡す</span>
-
-<span class="hljs-keyword">set</span> cmd [<span class="hljs-keyword">list</span> foo bar baz]<span class="hljs-comment">; # 上記と同じことを表す list を変数 cmd に入れる</span>
-
-{*}<span class="hljs-variable">$cmd</span><span class="hljs-comment">; # 変数に入ったコマンドを実行</span>
-</code></pre>
-<ul>
-<li>文字列を中心に作り直された lisp 、感（弱点も多いけど…）</li>
 </ul>
 <ul>
 <li data-marpit-fragment="1">
-<p>→ <code>Dry-Run</code> や<code>べき等</code>、<code>undo</code> の仕組みを被せやすい</p>
+<p>短い処理だから Shell で済ませるってケース、有りませんか？</p>
+<ul>
+<li>（AI に Python に書き直させるから、気にしない？）</li>
+</ul>
+</li>
+<li data-marpit-fragment="2">
+<p>他にも：CI/CD の中のアクションとか</p>
+</li>
+</ul>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="4" data-marpit-fragments="2" lang="ja-JP">
+<h1 id="%E7%9A%86%E3%81%95%E3%82%93%E3%81%B8%E3%81%AE%E5%95%8F%E3%81%84%E3%81%8B%E3%81%9122">皆さんへの問いかけ(2/2)</h1>
+<h1 id="shellbash%E3%81%A7%E8%8B%A6%E3%81%97%E3%82%93%E3%81%A0%E3%81%93%E3%81%A8%E7%84%A1%E3%81%84%E3%81%A7%E3%81%99%E3%81%8B">Shell（Bash）で苦しんだこと、無いですか？</h1>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-sh">workDir=_build
+
+fileList=*.dat
+
+<span class="hljs-built_in">cp</span> --update <span class="hljs-variable">$fileListtt</span> <span class="hljs-variable">$workDir</span>;  <span class="hljs-comment"># ←変数名間違い！</span>
+
+...                                <span class="hljs-comment"># なのに停止せず、実行が続いてしまう！</span>
+</code></pre>
 <ul>
 <li>
-<p><code>Dry-Run</code> - 試運転（コマンドを表示するだけ。実行はしない）</p>
+<p>変数名を打ち間違ってもエラーにならなず、実行されちゃう！</p>
+</li>
+<li>
+<p>エラーが起きても停止しない！</p>
+</li>
+</ul>
+<ul>
+<li data-marpit-fragment="1">
+<p>他にも：<u>ファイル名にスペース</u>が入る時に、書き方に注意が必要</p>
+</li>
+<li data-marpit-fragment="2">
+<p>そんな悩みに、<strong>Tcl</strong>！</p>
+</li>
+</ul>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="5" data-marpit-fragments="3" lang="ja-JP">
+<h1 id="tcl-%E3%81%A3%E3%81%A6%E3%81%A9%E3%82%93%E3%81%AA%E8%A8%80%E8%AA%9E">Tcl ってどんな言語？</h1>
+<ul>
+<li>Shell に似た構文<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-tcl"><span class="hljs-comment"># 変数代入</span>
+<span class="hljs-keyword">set</span> workDir _build
+
+<span class="hljs-comment">#            ↓[...] はコマンド置換（＝呼び出して、値をそこに返す）</span>
+<span class="hljs-keyword">set</span> fileList [<span class="hljs-keyword">glob</span> -nocomplain *.dat]
+
+<span class="hljs-comment"># exec で外部コマンド呼び出し（可変長引数）</span>
+<span class="hljs-keyword">exec</span> cp --<span class="hljs-keyword">update</span> {*}<span class="hljs-variable">$fileList</span> <span class="hljs-variable">$workDir</span>
+</code></pre>
+<ul>
+<li>文字列に <code>&quot;...&quot;</code> 不要、引数の区切りに <code>,</code> 不要<small>（Shell に近い書き味）</small></li>
+</ul>
+<ul>
+<li data-marpit-fragment="1">変数名・コマンド名の間違いは<strong>即エラーで停止</strong>、例外処理へ</li>
+<li data-marpit-fragment="2">リストを展開したい箇所は <code>{*}</code> で明示</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li data-marpit-fragment="3">Shell 向けのコマンド例が<small>（ある程度）</small>流用できる</li>
+</ul>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="6" data-marpit-fragments="2" lang="ja-JP">
+<h1 id="%E5%80%8B%E4%BA%BA%E7%9A%84-tcl-%E3%81%AE%E6%9C%80%E6%8E%A8%E3%81%97%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88">(個人的) Tcl の最推しポイント</h1>
+<ul>
+<li>コマンドとリストが同じデータ構造<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-tcl">foo bar baz<span class="hljs-comment">; # コマンド foo に引数 bar baz を渡す</span>
+
+<span class="hljs-keyword">set</span> cmd [<span class="hljs-keyword">list</span> foo bar baz]<span class="hljs-comment">; # 上記の処理を表す list を変数 cmd に入れる</span>
+
+{*}<span class="hljs-variable">$cmd</span><span class="hljs-comment">; # 変数に入ったコマンドを実行</span>
+</code></pre>
+</li>
+</ul>
+<ul>
+<li data-marpit-fragment="1">
+<p>つまり：<strong>コマンドを操作するコマンド</strong>を作りやすい</p>
+</li>
+<li data-marpit-fragment="2">
+<p>→ <code>Dry-Run</code> や<code>べき等</code>、<code>undo</code> の仕組みを作りやすい</p>
+<ul>
+<li>
+<p><code>Dry-Run</code> - 試運転（コマンドを表示するだけ。実行はしない。<code>make -n</code>）</p>
 </li>
 <li>
 <p><code>べき等(idempotent)</code> - 目標状態を満たしてない時だけ実行（何回呼んでも安全）</p>
@@ -133,9 +144,14 @@ sqlite3 var/db/myapp.db3 &lt; sql/schema.sql
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="7" lang="ja-JP">
-<h1 id="dry-run---shell-%E3%81%A8-tcl-%E3%82%92%E6%AF%94%E8%BC%83">Dry-Run - Shell と Tcl を比較</h1>
-<h1 id="shell%E3%81%AE%E5%A0%B4%E5%90%88small%E3%81%93%E3%81%93%E3%81%A0%E3%81%91-zsh-%E3%81%A7%E3%81%99small">Shellの場合<small>（ここだけ <code>Zsh</code> です）</small></h1>
-<p>任意のコマンドを dry-run 対応にする shell 関数の例</p>
+<h1 id="%E6%AF%94%E8%BC%83">比較</h1>
+<h1 id="dry-run-%E3%82%92%E9%A1%8C%E6%9D%90%E3%81%AB">Dry-Run を題材に</h1>
+<h1 id="shell-%E3%81%A8-tcl-%E3%82%92%E6%AF%94%E8%BC%83%E3%81%97%E3%81%BE%E3%81%99">Shell と Tcl を比較します</h1>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="8" lang="ja-JP">
+<h1 id="dry-run-%E3%81%AE%E5%AE%9F%E8%A3%85%E4%BE%8Bshell%E3%81%AE%E5%A0%B4%E5%90%88">Dry-Run の実装例：Shellの場合</h1>
+<h3 id="small%E3%81%93%E3%81%93%E3%81%A0%E3%81%91-zsh-%E3%81%A7%E3%81%99small"><small>（ここだけ <code>Zsh</code> です）</small></h3>
+<p><code>-n</code> オプションで dry-run にする shell 関数 <code>x</code> の例</p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-sh"><span class="hljs-built_in">zparseopts</span> -D -K n=o_dryrun; <span class="hljs-comment"># -n なら配列 o_dryrun に保存</span>
 <span class="hljs-keyword">function</span> x {
     <span class="hljs-built_in">print</span> <span class="hljs-string">&quot;# <span class="hljs-variable">$argv</span>&quot;</span>
@@ -143,12 +159,11 @@ sqlite3 var/db/myapp.db3 &lt; sql/schema.sql
     <span class="hljs-string">&quot;<span class="hljs-variable">$argv</span>[@]&quot;</span> || <span class="hljs-built_in">exit</span> $?
 }
 </code></pre>
-<p>使い方の例</p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-sh">x <span class="hljs-built_in">rm</span> -f *.o
+<p>使い方の例<small>（<code>-n</code> オプションが指定されたときは、 rm は実行されない）</small></p>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-sh">x <span class="hljs-built_in">rm</span> -f *.bak
 </code></pre>
-<p><code>-n</code> オプションが指定されたときは、 rm は実行されない</p>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="8" lang="ja-JP">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="9" lang="ja-JP">
 <h1 id="shell-%E3%81%AE-dry-run-%E3%81%AE%E9%99%90%E7%95%8C">Shell の Dry-Run の限界</h1>
 <p>先の仕組みでは dry-run 化できないもの：<strong>リダイレクト</strong>と<strong>パイプ</strong></p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-sh"><span class="hljs-comment"># リダイレクト</span>
@@ -157,9 +172,9 @@ x <span class="hljs-built_in">echo</span> foobar &gt; foo.txt
 <span class="hljs-comment"># パイプ</span>
 x find -size +10M | xargs <span class="hljs-built_in">rm</span> -f
 </code></pre>
-<p><strong>Shell の組み込み構文</strong> なので、関数の引数にならない</p>
+<p><code>&gt;</code> <code>|</code> は <strong>Shell の組み込み構文</strong> → 関数の外側で動いてしまう</p>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="9" lang="ja-JP">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="10" lang="ja-JP">
 <h1 id="tcl-%E3%81%A7%E3%81%AF%E3%83%AA%E3%83%80%E3%82%A4%E3%83%AC%E3%82%AF%E3%83%88%E3%83%BB%E3%83%91%E3%82%A4%E3%83%97%E3%81%AF-exec-%E3%81%8C%E8%A7%A3%E9%87%88%E3%81%99%E3%82%8B">Tcl ではリダイレクト・パイプは exec が解釈する</h1>
 <p>Tcl ではリダイレクトやパイプは言語の構文<strong>ではない</strong></p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-tcl"><span class="hljs-keyword">exec</span> echo foobar &gt; foo.txt
@@ -168,8 +183,8 @@ x find -size +10M | xargs <span class="hljs-built_in">rm</span> -f
 </code></pre>
 <p>exec コマンドが <strong>単なる引数</strong> 文字列として <code>&gt;</code> や <code>|</code> を受け取り、それを解釈して実行</p>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="10" lang="ja-JP">
-<h1 id="tcl-%E3%81%A7-dry-run-%E3%81%AE%E4%BE%8B">Tcl で Dry-Run の例</h1>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="11" lang="ja-JP">
+<h1 id="dry-run-%E3%81%AE%E5%AE%9F%E8%A3%85%E4%BE%8Btcl%E7%89%88">Dry-Run の実装例：Tcl版</h1>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-tcl"><span class="hljs-keyword">package</span> require cmdline
 <span class="hljs-keyword">array</span> <span class="hljs-keyword">set</span> ::opts [cmdline::getoptions ::argv {
   {n <span class="hljs-string">&quot;dry-run&quot;</span>}
@@ -181,7 +196,7 @@ x find -size +10M | xargs <span class="hljs-built_in">rm</span> -f
 <span class="hljs-keyword">proc</span><span class="hljs-title"> RUN</span> args {
     <span class="hljs-keyword">puts</span> <span class="hljs-string">&quot;# $args&quot;</span>
     <span class="hljs-keyword">if</span> {<span class="hljs-variable">$::opts</span>(n)} <span class="hljs-keyword">return</span>
-<span class="hljs-comment">    # リダイレクトが指定されていない時は stdout へリダイレクト。末尾のみ認識。</span>
+<span class="hljs-comment">    # 最後の手前の引数にリダイレクトが指定されていない時は stdout へリダイレクト</span>
     <span class="hljs-keyword">if</span> {[<span class="hljs-keyword">lindex</span> <span class="hljs-variable">$args</span> end<span class="hljs-number">-1</span>] ni {<span class="hljs-string">&quot;&gt;&quot;</span> <span class="hljs-string">&quot;&gt;@&quot;</span> <span class="hljs-string">&quot;&gt;&gt;&quot;</span>}} {
         <span class="hljs-keyword">lappend</span> args &gt;@ stdout
     }
@@ -189,7 +204,7 @@ x find -size +10M | xargs <span class="hljs-built_in">rm</span> -f
 }
 </code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="11" lang="ja-JP">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="12" lang="ja-JP">
 <h1 id="tcl%E7%89%88%E3%81%AE%E4%BD%BF%E7%94%A8%E4%BE%8B">Tcl版の使用例</h1>
 <p>exec を RUN に変えるだけ: <strong>リダイレクト</strong>と<strong>パイプ</strong> も OK</p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-tcl">RUN echo foobar &gt; foo.txt
@@ -197,25 +212,22 @@ x find -size +10M | xargs <span class="hljs-built_in">rm</span> -f
 RUN find -size +<span class="hljs-number">10</span>M | xargs rm -f
 </code></pre>
 <p>変数間違いも、Dry-Run 時点でエラーになる</p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-tcl"><span class="hljs-keyword">set</span> fileList [<span class="hljs-keyword">glob</span> *.o]
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-tcl"><span class="hljs-keyword">set</span> fileList [<span class="hljs-keyword">glob</span> *.bak]
 
 RUN rm {*}<span class="hljs-variable">$fileListtt</span><span class="hljs-comment">;  # ERROR! ここで止まる</span>
 </code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="12" data-marpit-fragments="1" lang="ja-JP">
-<h1 id="%E3%81%8A%E6%96%AD%E3%82%8Atcl-%E3%82%82%E4%B8%8D%E6%BA%80%E3%81%AA%E7%82%B9%E3%81%AF%E6%B2%A2%E5%B1%B1">お断り：Tcl も不満な点は沢山</h1>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="13" data-marpit-fragments="1" lang="ja-JP">
+<h1 id="%E3%81%8A%E6%96%AD%E3%82%8Atcl-%E3%81%AB%E3%82%82%E5%BC%B1%E7%82%B9%E3%83%BB%E4%B8%8D%E6%BA%80%E3%81%AF%E6%B2%A2%E5%B1%B1%E3%80%9C">お断り：Tcl にも弱点・不満は沢山〜</h1>
 <ul>
 <li>
-<p>動的スコープなのに厳格←トラブりがち</p>
+<p>動的スコープなのに厳格 ← Shell慣れした人のつまずきポイント</p>
 </li>
 <li>
 <p>静的検査が無い（実行するまで typo すら見つからない）</p>
 </li>
 <li>
 <p>記述が長くなりがち</p>
-</li>
-<li>
-<p>lisp ならアレが出来るのに…って不満が沢山出る（少しずつ改善中）</p>
 </li>
 <li>
 <p>pip, gem, npm みたいなの無いの？（→ tcllib と tcler's wiki で我慢）</p>
@@ -228,25 +240,36 @@ RUN rm {*}<span class="hljs-variable">$fileListtt</span><span class="hljs-commen
 <li data-marpit-fragment="1"><strong>全て</strong>を任せる言語じゃない、けど、<strong>雑用</strong>言語としては有益</li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="13" lang="ja-JP">
-<h1 id="%E3%81%BE%E3%81%A8%E3%82%81">まとめ</h1>
-<h2 id="bash-%E5%85%A8%E9%83%A8%E3%81%AE%E7%BD%AE%E3%81%8D%E6%8F%9B%E3%81%88%E3%81%AF%E7%84%A1%E7%90%86%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB%E3%81%8C%E8%A6%81%E3%82%8B%E3%82%82%E3%82%93%E3%81%AD">Bash 全部の置き換えは無理（インストールが要るもんね）</h2>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="14" data-marpit-fragments="3" lang="ja-JP">
+<h1 id="%E3%81%BE%E3%81%A8%E3%82%81%E4%BC%9D%E3%81%88%E3%81%9F%E3%81%84%E3%81%93%E3%81%A8">まとめ（伝えたいこと）</h1>
 <ul>
 <li>
-<p>けど、<strong>仕方なく bash を使っている箇所</strong> の何割かは、置き換えても良いかも？</p>
-</li>
-<li>
-<p>メタプログラミングに強い shell と考えると良いかも？</p>
+<p>Tcl はコマンド行に対するメタプログラミングが出来る shell風言語！！？</p>
+<ul>
+<li>コマンド文字列のために再設計された Lisp 、みたいな…（弱点も多いけど…）</li>
+</ul>
 </li>
 </ul>
-</section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="14" lang="ja-JP">
-<h1 id="%E9%96%A2%E9%80%A3blog">関連blog</h1>
 <ul>
-<li><a href="https://hkoba.hatenablog.com/entry/2025/02/08/125644">Dry-run の実現技法、個人的な定番</a></li>
+<li data-marpit-fragment="1">
+<p>もちろん Bash <strong>全部</strong>の置き換えは<strong>無理</strong></p>
+<ul>
+<li>インストールが要るから</li>
+</ul>
+</li>
+<li data-marpit-fragment="2">
+<p>けど <strong>仕方なく bash を使っている箇所</strong> の<u>何割か</u>は、置き換えても良いかも？</p>
+</li>
+<li data-marpit-fragment="3">
+<p>ご清聴、ありがとうございました〜〜</p>
+</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="15" lang="ja-JP">
+<h1 id="%E9%96%A2%E9%80%A3%E8%A8%98%E4%BA%8B">関連記事</h1>
+<h2 id="%E2%86%92-dry-run-%E3%81%AE%E5%AE%9F%E7%8F%BE%E6%8A%80%E6%B3%95%E5%80%8B%E4%BA%BA%E7%9A%84%E3%81%AA%E5%AE%9A%E7%95%AA"><a href="https://hkoba.hatenablog.com/entry/2025/02/08/125644">→ Dry-run の実現技法、個人的な定番</a></h2>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="16" lang="ja-JP">
 <h1 id="bash-%E3%81%A8-tcl-%E3%81%AE%E6%AF%94%E8%BC%8312">Bash と Tcl の比較(1/2)</h1>
 <table>
 <thead>
@@ -275,7 +298,7 @@ RUN rm {*}<span class="hljs-variable">$fileListtt</span><span class="hljs-commen
 </tbody>
 </table>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="16" lang="ja-JP">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="17" lang="ja-JP">
 <h1 id="bash-%E3%81%A8-tcl-%E3%81%AE%E6%AF%94%E8%BC%8322">Bash と Tcl の比較(2/2)</h1>
 <table>
 <thead>
@@ -304,7 +327,7 @@ RUN rm {*}<span class="hljs-variable">$fileListtt</span><span class="hljs-commen
 </tbody>
 </table>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="17" lang="ja-JP">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="18" lang="ja-JP">
 <h1 id="%E3%81%B9%E3%81%8D%E7%AD%89%E3%81%AE%E4%BE%8B">べき等の例</h1>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-tcl"><span class="hljs-comment"># Google Cloud の現在のプロジェクトの VM の一覧を取得</span>
 <span class="hljs-keyword">set</span> vmList [=RUN gcloud compute instances <span class="hljs-keyword">list</span> --<span class="hljs-keyword">format</span>=value(name)]
@@ -316,7 +339,7 @@ RUN rm {*}<span class="hljs-variable">$fileListtt</span><span class="hljs-commen
 }
 </code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="18" lang="ja-JP">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="19" lang="ja-JP">
 <h1 id="undo-%E3%81%AE%E4%BE%8B">undo の例</h1>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-tcl"><span class="hljs-comment"># @ は順方向のときはそのまま RUN, 逆実行の時は変数 @ に貯めるようなコマンドにしておく</span>
 @ gcloud compute networks create <span class="hljs-variable">$vpcName</span> \
