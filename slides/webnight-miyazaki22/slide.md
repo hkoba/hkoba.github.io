@@ -11,10 +11,11 @@ image: https://hkoba.github.io/slides/webnight-miyazaki22/slide.jpg
 # Webナイト宮崎 Vol.22
 
 # Shell<small>（Bash）</small>のツラミ<small>（の一部）</small>は
-# Tcl で楽になる、<small>かも？</small>
+# Tcl<small>（ティクル）</small>で楽になる、<small>かも？</small>
 
 
 by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
+
 
 ---
 
@@ -22,54 +23,57 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
 
 - [@hkoba](https://github.com/hkoba/)（えちこば） ![](img/myfistrect.jpg)
 
-- 2023半ば、宮崎移住
+- 今日のスライド： [hkoba.github.io](https://hkoba.github.io) → [Webナイト宮崎 Vol.22](https://hkoba.github.io/slides/webnight-miyazaki22/slide.html)
 
 - **昨年のWebナイト宮崎 Vol.21**：
 
 ![bg right h:400px](img/webnight-miyazaki21.jpg)
 
-* 主な言語：[Perl](https://metacpan.org/author/HKOBA)
+* 普段の言語：[Perl](https://metacpan.org/author/HKOBA)
 
   * 今日は Shell と Tcl の話
 
 
 ---
-# 皆さんへの問いかけ(1/2)どこまで、Shell で書く？
+# 皆さんへの問いかけ(1/2)
 
-単なる、<u>外部コマンド</u>の呼び出し、<u>ファイル操作</u>の羅列
-
-* 例：**社内ツールの導入手順**（git clone 後の setup.sh みたいなやつ）
+- 例：**社内ツールの導入手順** Shell で書くか、本格的に Python等で書くか
   ```sh
   git clone ... && cd ...
   chmod g+ws var var/db
   chown nginx var var/run
   sqlite3 var/db/myapp.db3 < sql/schema.sql
   ```
+  - <u>外部コマンド</u>の呼び出しや<u>ファイル操作</u>の、単なる羅列
+
+* 短い処理だから Shell で済ませるってケース、有りませんか？
+  - （AI に Python に書き直させるから、気にしない？）
+
 * 他にも：CI/CD の中のアクションとか
-
-* Python とかで書き直すのは大げさに感じる規模のもの
-  - （AIが書くから気にしない？）
-
 
 ---
 
 # 皆さんへの問いかけ(2/2)
 
-# Shell(Bash) で苦しんだこと、無いですか？
+# Shell（Bash）で苦しんだこと、無いですか？
 
 ```sh
-fileList=*.o
+workDir=_build
 
-rm -f $fileListt;  # ←変数名間違い！
+fileList=*.dat
 
-...                # なのに停止せず、実行が続いてしまう！
+cp --update $fileListtt $workDir;  # ←変数名間違い！
+
+...                                # なのに停止せず、実行が続いてしまう！
 ```
 
-- 変数名を打ち間違ってもエラーにならない
+- 変数名を打ち間違ってもエラーにならなず、実行されちゃう！
 
-- エラーが起きても止まらない、以降の行も実行され続けてしまう
+- エラーが起きても停止しない！
 
-- ファイルのパス名とかにスペースが入る時に、書き方に注意が必要
+* 他にも：<u>ファイル名にスペース</u>が入る時に、書き方に注意が必要
+
+* そんな悩みに、**Tcl**！
 
 ---
 # Tcl ってどんな言語？
@@ -77,47 +81,53 @@ rm -f $fileListt;  # ←変数名間違い！
 - Shell に似た構文
   ```tcl
   # 変数代入
-  set pattern *.o
-  
+  set workDir _build
+
   #            ↓[...] はコマンド置換（＝呼び出して、値をそこに返す）
-  set fileList [glob -nocomplain $pattern]
+  set fileList [glob -nocomplain *.dat]
 
   # exec で外部コマンド呼び出し（可変長引数）
-  exec rm -f {*}$fileList
+  exec cp --update {*}$fileList $workDir
   ```
-  * 文字列に `"..."` 不要、引数の区切りに `,` 不要<small>（Shell に近い書き味）</small>
+  - 文字列に `"..."` 不要、引数の区切りに `,` 不要<small>（Shell に近い書き味）</small>
   * 変数名・コマンド名の間違いは**即エラーで停止**、例外処理へ
   * リストを展開したい箇所は `{*}` で明示
 
+* Shell 向けのコマンド例が<small>（ある程度）</small>流用できる
 
 ---
 # (個人的) Tcl の最推しポイント
 
-## <u>コマンド行のようなデータ構造（List）</u>の上に作られた言語<small>である点</small>
+- コマンドとリストが同じデータ構造
+  ```tcl
+  foo bar baz; # コマンド foo に引数 bar baz を渡す
+  
+  set cmd [list foo bar baz]; # 上記の処理を表す list を変数 cmd に入れる
+  
+  {*}$cmd; # 変数に入ったコマンドを実行
+  ```
 
-```tcl
-foo bar baz; # コマンド foo に引数 bar baz を渡す
+* つまり：**コマンドを操作するコマンド**を作りやすい
 
-set cmd [list foo bar baz]; # 上記の処理を表す list を変数 cmd に入れる
+* → `Dry-Run` や`べき等`、`undo` の仕組みを作りやすい
 
-{*}$cmd; # 変数に入ったコマンドを実行
-```
-
-- コマンド文字列のために再設計された Lisp 、みたいな…（弱点も多いけど…）
-
-* → `Dry-Run` や`べき等`、`undo` の仕組みを被せやすい
-
-  - `Dry-Run` - 試運転（コマンドを表示するだけ。実行はしない）
+  - `Dry-Run` - 試運転（コマンドを表示するだけ。実行はしない。`make -n`）
 
   - `べき等(idempotent)` - 目標状態を満たしてない時だけ実行（何回呼んでも安全）
 
+---
+# 比較
+
+# Dry-Run を題材に
+
+# Shell と Tcl を比較します
 
 ---
-# Dry-Run - Shell と Tcl を比較
+# Dry-Run の実装例：Shellの場合
 
-# Shellの場合の実装例<small>（ここだけ `Zsh` です）</small> 
+### <small>（ここだけ `Zsh` です）</small>
 
-任意のコマンドを dry-run 対応にする shell 関数の例
+`-n` オプションで dry-run にする shell 関数 `x` の例
 ```sh
 zparseopts -D -K n=o_dryrun; # -n なら配列 o_dryrun に保存
 function x {
@@ -127,11 +137,11 @@ function x {
 }
 ```
 
-使い方の例
+使い方の例<small>（`-n` オプションが指定されたときは、 rm は実行されない）</small>
 ```sh
-x rm -f *.o
+x rm -f *.bak
 ```
-`-n` オプションが指定されたときは、 rm は実行されない
+
 
 ---
 
@@ -163,7 +173,8 @@ exec find -size +10M | xargs rm -f
 exec コマンドが **単なる引数** 文字列として `>` や `|` を受け取り、それを解釈して実行
 
 ---
-# Tcl版： Dry-Run の実装例
+# Dry-Run の実装例：Tcl版
+
 ```tcl
 package require cmdline
 array set ::opts [cmdline::getoptions ::argv {
@@ -176,7 +187,7 @@ proc =RUN args {
 proc RUN args {
     puts "# $args"
     if {$::opts(n)} return
-    # リダイレクトが指定されていない時は stdout へリダイレクト。末尾のみ認識。
+    # 最後の手前の引数にリダイレクトが指定されていない時は stdout へリダイレクト
     if {[lindex $args end-1] ni {">" ">@" ">>"}} {
         lappend args >@ stdout
     }
@@ -197,7 +208,7 @@ RUN find -size +10M | xargs rm -f
 変数間違いも、Dry-Run 時点でエラーになる
 
 ```tcl
-set fileList [glob *.o]
+set fileList [glob *.bak]
 
 RUN rm {*}$fileListtt;  # ERROR! ここで止まる
 ```
@@ -206,13 +217,11 @@ RUN rm {*}$fileListtt;  # ERROR! ここで止まる
 
 # お断り：Tcl にも弱点・不満は沢山〜
 
-- 動的スコープなのに厳格 ← Shell慣れした人がつまずく
+- 動的スコープなのに厳格 ← Shell慣れした人のつまずきポイント
 
 - 静的検査が無い（実行するまで typo すら見つからない）
 
 - 記述が長くなりがち
-
-- lisp ならアレが出来るのに…って不満が沢山出る（少しずつ改善中）
 
 - pip, gem, npm みたいなの無いの？（→ tcllib と tcler's wiki で我慢）
 
@@ -223,22 +232,25 @@ RUN rm {*}$fileListtt;  # ERROR! ここで止まる
 ---
 # まとめ（伝えたいこと）
 
-- コマンド行に対するメタプログラミングが出来る shell風言語？！
+- Tcl はコマンド行に対するメタプログラミングが出来る shell風言語！！？
 
-- もちろん Bash **全部**の置き換えは**無理**
+  - コマンド文字列のために再設計された Lisp 、みたいな…（弱点も多いけど…）
+
+* もちろん Bash **全部**の置き換えは**無理**
 
   - インストールが要るから
 
-- けど **仕方なく bash を使っている箇所** の何割かは、置き換えても良いかも？
+* けど **仕方なく bash を使っている箇所** の<u>何割か</u>は、置き換えても良いかも？
 
 
-
+* ご清聴、ありがとうございました〜〜
 
 
 ---
-# 関連blog
+# 関連記事
 
-- [Dry-run の実現技法、個人的な定番](https://hkoba.hatenablog.com/entry/2025/02/08/125644)
+## [→ Dry-run の実現技法、個人的な定番](https://hkoba.hatenablog.com/entry/2025/02/08/125644)
+
 
 ---
 # Bash と Tcl の比較(1/2)
