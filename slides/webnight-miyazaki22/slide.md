@@ -3,48 +3,73 @@ marp: true
 theme: beamer
 image: https://hkoba.github.io/slides/webnight-miyazaki22/slide.jpg
 ---
+<style>
+    small {font-size: 70%;}
+</style>
+
 
 # Webナイト宮崎 Vol.22
 
-# Shell（Bash）の苦労（の一部）は 
-# Tcl に任せても良いかも？
-[（→関連blog: Dry-run の実現技法、個人的な定番）](https://hkoba.hatenablog.com/entry/2025/02/08/125644)
+# Shell<small>（Bash）</small>のツラミ<small>（の一部）</small>は
+# Tcl で楽になる、<small>かも？</small>
+
 
 by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
 
 ---
-# 皆さんに質問
 
-# Bash でどこまで書くか、悩みませんか？ ↓
+# 自己紹介
 
-- 社内ツールの導入手順（git clone 後の setup.sh みたいなやつ）
+- [@hkoba](https://github.com/hkoba/)（えちこば） ![](img/myfistrect.jpg)
+
+- 2023半ば、宮崎移住
+
+- **昨年のWebナイト宮崎 Vol.21**：
+
+![bg right h:400px](img/webnight-miyazaki21.jpg)
+
+* 主な言語：[Perl](https://metacpan.org/author/HKOBA)
+
+  * 今日は Shell と Tcl の話
+
+
+---
+# 皆さんへの問いかけ(1/2)どこまで、Shell で書く？
+
+単なる、<u>外部コマンド</u>の呼び出し、<u>ファイル操作</u>の羅列
+
+* 例：**社内ツールの導入手順**（git clone 後の setup.sh みたいなやつ）
   ```sh
   git clone ... && cd ...
   chmod g+ws var var/db
   chown nginx var var/run
   sqlite3 var/db/myapp.db3 < sql/schema.sql
   ```
-- CI/CD の中のアクション
+* 他にも：CI/CD の中のアクションとか
 
-- クラウドだけど、一台しか立てないやつ（terraform？ AI が書くから気にしない？）
+* Python とかで書き直すのは大げさに感じる規模のもの
+  - （AIが書くから気にしない？）
 
-* Python/Ruby/Node,Deno... で書き直すのはやりすぎ感有るもの（AIが（略）？）
 
 ---
 
-# 皆さんに質問
+# 皆さんへの問いかけ(2/2)
 
 # Shell(Bash) で苦しんだこと、無いですか？
 
+```sh
+fileList=*.o
+
+rm -f $fileListt;  # ←変数名間違い！
+
+...                # なのに停止せず、実行が続いてしまう！
+```
+
 - 変数名を打ち間違ってもエラーにならない
 
-- エラーが起きても止まらない、残りの行が実行される
+- エラーが起きても止まらない、以降の行も実行され続けてしまう
 
 - ファイルのパス名とかにスペースが入る時に、書き方に注意が必要
-
-* **Tcl なら**
-  - エラーは例外処理に（catch 箇所まで脱出）
-  - 値にスペースが入っても、勝手に分割されない
 
 ---
 # Tcl ってどんな言語？
@@ -54,33 +79,31 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
   # 変数代入
   set pattern *.o
   
-  #            ↓[...] で部分式の呼び出し（コマンド置換）
+  #            ↓[...] はコマンド置換（＝呼び出して、値をそこに返す）
   set fileList [glob -nocomplain $pattern]
 
-  # exec で外部コマンド呼び出し
+  # exec で外部コマンド呼び出し（可変長引数）
   exec rm -f {*}$fileList
   ```
-  * 文字列に `"..."` 不要
-  * 引数列に `,` 不要
+  * 文字列に `"..."` 不要、引数の区切りに `,` 不要<small>（Shell に近い書き味）</small>
+  * 変数名・コマンド名の間違いは即エラーで脱出、例外処理へ
   * リストを展開したい箇所は `{*}` で明示
-
-* Shell 向けのコマンド例が<small>（ある程度）</small>流用できる
 
 
 ---
 # (個人的) Tcl の最推しポイント
 
-# コマンド行（List）を操作する体系の上に作られた言語
+## <u>コマンド行のようなデータ構造（List）</u>の上に作られた言語
 
 ```tcl
 foo bar baz; # コマンド foo に引数 bar baz を渡す
 
-set cmd [list foo bar baz]; # 上記と同じことを表す list を変数 cmd に入れる
+set cmd [list foo bar baz]; # 上記の処理を表す list を変数 cmd に入れる
 
 {*}$cmd; # 変数に入ったコマンドを実行
 ```
 
-- 文字列を中心に作り直された lisp 、感（弱点も多いけど…）
+- コマンド文字列のために再設計された Lisp 、みたいな…（弱点も多いけど…）
 
 * → `Dry-Run` や`べき等`、`undo` の仕組みを被せやすい
 
@@ -92,7 +115,7 @@ set cmd [list foo bar baz]; # 上記と同じことを表す list を変数 cmd 
 ---
 # Dry-Run - Shell と Tcl を比較
 
-# Shellの場合<small>（ここだけ `Zsh` です）</small> 
+# Shellの場合の実装例<small>（ここだけ `Zsh` です）</small> 
 
 任意のコマンドを dry-run 対応にする shell 関数の例
 ```sh
@@ -124,7 +147,7 @@ x echo foobar > foo.txt
 x find -size +10M | xargs rm -f
 ```
 
-**Shell の組み込み構文** なので、関数の引数にならない
+`>` `|` は **Shell の組み込み構文** → 関数の外側で動いてしまう
 
 ---
 # Tcl ではリダイレクト・パイプは exec が解釈する
@@ -140,7 +163,7 @@ exec find -size +10M | xargs rm -f
 exec コマンドが **単なる引数** 文字列として `>` や `|` を受け取り、それを解釈して実行
 
 ---
-# Tcl で Dry-Run の例
+# Tcl版： Dry-Run の実装例
 ```tcl
 package require cmdline
 array set ::opts [cmdline::getoptions ::argv {
@@ -163,7 +186,7 @@ proc RUN args {
 ---
 # Tcl版の使用例
 
-exec を RUN に変えるだけで Dry-Run 化出来る
+exec を RUN に変えるだけ: **リダイレクト**と**パイプ** も OK
 
 ```tcl
 RUN echo foobar > foo.txt
@@ -181,9 +204,9 @@ RUN rm {*}$fileListtt;  # ERROR! ここで止まる
 
 ---
 
-# お断り：Tcl も不満な点は沢山
+# お断り：Tcl にも弱点・不満は沢山〜
 
-- 変数が<small>（手続き毎にスコープが隔離されるにも関わらず）</small>動的スコープ
+- 動的スコープなのに厳格 ← Shell慣れした人がつまずく
 
 - 静的検査が無い（実行するまで typo すら見つからない）
 
@@ -198,13 +221,24 @@ RUN rm {*}$fileListtt;  # ERROR! ここで止まる
 * **全て**を任せる言語じゃない、けど、**雑用**言語としては有益
 
 ---
-# まとめ
+# まとめ（伝えたいこと）
 
-## Bash 全部の置き換えは無理（インストールが要るもんね）
+- コマンド行に対するメタプログラミングが出来る shell風言語？！
 
-- けど、**仕方なく bash を使っている箇所** の何割かは、置き換えても良いかも？
+- もちろん Bash **全部**の置き換えは**無理**
 
-- メタプログラミングに強い shell と考えると良いかも？
+  - インストールが要るから
+
+- けど **仕方なく bash を使っている箇所** の何割かは、置き換えても良いかも？
+
+
+
+
+
+---
+# 関連blog
+
+- [Dry-run の実現技法、個人的な定番](https://hkoba.hatenablog.com/entry/2025/02/08/125644)
 
 ---
 # Bash と Tcl の比較(1/2)
