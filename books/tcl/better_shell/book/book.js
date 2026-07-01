@@ -225,7 +225,7 @@ function playground_text(playground, hidden = true) {
                 }
 
                 var clipButton = document.createElement('button');
-                clipButton.className = 'clip-button';
+                clipButton.className = 'fa fa-copy clip-button';
                 clipButton.title = 'Copy to clipboard';
                 clipButton.setAttribute('aria-label', clipButton.title);
                 clipButton.innerHTML = '<i class=\"tooltiptext\"></i>';
@@ -258,7 +258,7 @@ function playground_text(playground, hidden = true) {
 
         if (window.playground_copyable) {
             var copyCodeClipboardButton = document.createElement('button');
-            copyCodeClipboardButton.className = 'clip-button';
+            copyCodeClipboardButton.className = 'fa fa-copy clip-button';
             copyCodeClipboardButton.innerHTML = '<i class="tooltiptext"></i>';
             copyCodeClipboardButton.title = 'Copy to clipboard';
             copyCodeClipboardButton.setAttribute('aria-label', copyCodeClipboardButton.title);
@@ -289,10 +289,6 @@ function playground_text(playground, hidden = true) {
     var themeToggleButton = document.getElementById('theme-toggle');
     var themePopup = document.getElementById('theme-list');
     var themeColorMetaTag = document.querySelector('meta[name="theme-color"]');
-    var themeIds = [];
-    themePopup.querySelectorAll('button.theme').forEach(function (el) {
-        themeIds.push(el.id);
-    });
     var stylesheets = {
         ayuHighlight: document.querySelector("[href$='ayu-highlight.css']"),
         tomorrowNight: document.querySelector("[href$='tomorrow-night.css']"),
@@ -321,7 +317,7 @@ function playground_text(playground, hidden = true) {
     function get_theme() {
         var theme;
         try { theme = localStorage.getItem('mdbook-theme'); } catch (e) { }
-        if (theme === null || theme === undefined || !themeIds.includes(theme)) {
+        if (theme === null || theme === undefined) {
             return default_theme;
         } else {
             return theme;
@@ -350,7 +346,7 @@ function playground_text(playground, hidden = true) {
         }
 
         setTimeout(function () {
-            themeColorMetaTag.content = getComputedStyle(document.documentElement).backgroundColor;
+            themeColorMetaTag.content = getComputedStyle(document.body).backgroundColor;
         }, 1);
 
         if (window.ace && window.editors) {
@@ -445,17 +441,16 @@ function playground_text(playground, hidden = true) {
 })();
 
 (function sidebar() {
-    var body = document.querySelector("body");
+    var html = document.querySelector("html");
     var sidebar = document.getElementById("sidebar");
     var sidebarLinks = document.querySelectorAll('#sidebar a');
     var sidebarToggleButton = document.getElementById("sidebar-toggle");
-    var sidebarToggleAnchor = document.getElementById("sidebar-toggle-anchor");
     var sidebarResizeHandle = document.getElementById("sidebar-resize-handle");
     var firstContact = null;
 
     function showSidebar() {
-        body.classList.remove('sidebar-hidden')
-        body.classList.add('sidebar-visible');
+        html.classList.remove('sidebar-hidden')
+        html.classList.add('sidebar-visible');
         Array.from(sidebarLinks).forEach(function (link) {
             link.setAttribute('tabIndex', 0);
         });
@@ -464,9 +459,20 @@ function playground_text(playground, hidden = true) {
         try { localStorage.setItem('mdbook-sidebar', 'visible'); } catch (e) { }
     }
 
+
+    var sidebarAnchorToggles = document.querySelectorAll('#sidebar a.toggle');
+
+    function toggleSection(ev) {
+        ev.currentTarget.parentElement.classList.toggle('expanded');
+    }
+
+    Array.from(sidebarAnchorToggles).forEach(function (el) {
+        el.addEventListener('click', toggleSection);
+    });
+
     function hideSidebar() {
-        body.classList.remove('sidebar-visible')
-        body.classList.add('sidebar-hidden');
+        html.classList.remove('sidebar-visible')
+        html.classList.add('sidebar-hidden');
         Array.from(sidebarLinks).forEach(function (link) {
             link.setAttribute('tabIndex', -1);
         });
@@ -476,16 +482,22 @@ function playground_text(playground, hidden = true) {
     }
 
     // Toggle sidebar
-    sidebarToggleAnchor.addEventListener('change', function sidebarToggle() {
-        if (sidebarToggleAnchor.checked) {
+    sidebarToggleButton.addEventListener('click', function sidebarToggle() {
+        if (html.classList.contains("sidebar-hidden")) {
             var current_width = parseInt(
                 document.documentElement.style.getPropertyValue('--sidebar-width'), 10);
             if (current_width < 150) {
                 document.documentElement.style.setProperty('--sidebar-width', '150px');
             }
             showSidebar();
-        } else {
+        } else if (html.classList.contains("sidebar-visible")) {
             hideSidebar();
+        } else {
+            if (getComputedStyle(sidebar)['transform'] === 'none') {
+                hideSidebar();
+            } else {
+                showSidebar();
+            }
         }
     });
 
@@ -494,14 +506,14 @@ function playground_text(playground, hidden = true) {
     function initResize(e) {
         window.addEventListener('mousemove', resize, false);
         window.addEventListener('mouseup', stopResize, false);
-        body.classList.add('sidebar-resizing');
+        html.classList.add('sidebar-resizing');
     }
     function resize(e) {
         var pos = (e.clientX - sidebar.offsetLeft);
         if (pos < 20) {
             hideSidebar();
         } else {
-            if (body.classList.contains("sidebar-hidden")) {
+            if (html.classList.contains("sidebar-hidden")) {
                 showSidebar();
             }
             pos = Math.min(pos, window.innerWidth - 100);
@@ -510,7 +522,7 @@ function playground_text(playground, hidden = true) {
     }
     //on mouseup remove windows functions mousemove & mouseup
     function stopResize(e) {
-        body.classList.remove('sidebar-resizing');
+        html.classList.remove('sidebar-resizing');
         window.removeEventListener('mousemove', resize, false);
         window.removeEventListener('mouseup', stopResize, false);
     }
@@ -539,41 +551,33 @@ function playground_text(playground, hidden = true) {
             firstContact = null;
         }
     }, { passive: true });
+
+    // Scroll sidebar to current active section
+    var activeSection = document.getElementById("sidebar").querySelector(".active");
+    if (activeSection) {
+        // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
+        activeSection.scrollIntoView({ block: 'center' });
+    }
 })();
 
 (function chapterNavigation() {
     document.addEventListener('keydown', function (e) {
         if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) { return; }
         if (window.search && window.search.hasFocus()) { return; }
-        var html = document.querySelector('html');
 
-        function next() {
-            var nextButton = document.querySelector('.nav-chapters.next');
-            if (nextButton) {
-                window.location.href = nextButton.href;
-            }
-        }
-        function prev() {
-            var previousButton = document.querySelector('.nav-chapters.previous');
-            if (previousButton) {
-                window.location.href = previousButton.href;
-            }
-        }
         switch (e.key) {
             case 'ArrowRight':
                 e.preventDefault();
-                if (html.dir == 'rtl') {
-                    prev();
-                } else {
-                    next();
+                var nextButton = document.querySelector('.nav-chapters.next');
+                if (nextButton) {
+                    window.location.href = nextButton.href;
                 }
                 break;
             case 'ArrowLeft':
                 e.preventDefault();
-                if (html.dir == 'rtl') {
-                    next();
-                } else {
-                    prev();
+                var previousButton = document.querySelector('.nav-chapters.previous');
+                if (previousButton) {
+                    window.location.href = previousButton.href;
                 }
                 break;
         }
@@ -585,12 +589,12 @@ function playground_text(playground, hidden = true) {
 
     function hideTooltip(elem) {
         elem.firstChild.innerText = "";
-        elem.className = 'clip-button';
+        elem.className = 'fa fa-copy clip-button';
     }
 
     function showTooltip(elem, msg) {
         elem.firstChild.innerText = msg;
-        elem.className = 'clip-button tooltipped';
+        elem.className = 'fa fa-copy tooltipped';
     }
 
     var clipboardSnippets = new ClipboardJS('.clip-button', {
@@ -672,14 +676,13 @@ function playground_text(playground, hidden = true) {
         }, { passive: true });
     })();
     (function controllBorder() {
-        function updateBorder() {
+        menu.classList.remove('bordered');
+        document.addEventListener('scroll', function () {
             if (menu.offsetTop === 0) {
                 menu.classList.remove('bordered');
             } else {
                 menu.classList.add('bordered');
             }
-        }
-        updateBorder();
-        document.addEventListener('scroll', updateBorder, { passive: true });
+        }, { passive: true });
     })();
 })();
