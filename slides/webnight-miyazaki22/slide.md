@@ -29,15 +29,15 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
 
 ![bg right h:400px](img/webnight-miyazaki21.jpg)
 
-* 普段の言語：[Perl](https://metacpan.org/author/HKOBA)
-
-  * 今日は Shell と Tcl の話
+* 今日は Shell と Tcl の話
 
 
 ---
-# 皆さんへの問いかけ(1/2)
+# 皆さんへ質問(1/2)
 
-- 例：**社内ツールの導入手順** Shell で書くか、本格的に Python等で書くか
+## プロジェクト内の雑用、 Shell ←vs→ Python etc で迷いませんか？
+
+* 例：**社内ツールの導入手順**
   ```sh
   git clone ... && cd ...
   chmod g+ws var var/db
@@ -46,33 +46,29 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
   ```
   - <u>外部コマンド</u>の呼び出しや<u>ファイル操作</u>の、単なる羅列
 
-* 短い処理だから Shell で済ませるってケース、有りませんか？
-  - （AI に Python に書き直させるから、気にしない？）
-
 * 他にも：CI/CD の中のアクションとか
+
+* 短い処理だから Shell で済ませるってケース、有りませんか？
 
 ---
 
-# 皆さんへの問いかけ(2/2)
+# 皆さんへの質問(2/2)
 
-# Shell（Bash）で苦しんだこと、無いですか？
+# けど、Shell（Bash）で苦しんだこと、無いですか？
 
-```sh
-workDir=_build
-
-fileList=*.dat
-
-cp --update $fileListtt $workDir;  # ←変数名間違い！
-
-...                                # なのに停止せず、実行が続いてしまう！
-```
-
-- 変数名を打ち間違ってもエラーにならなず、実行されちゃう！
-
-- エラーが起きても停止しない！
-
+- 例：データファイルを作業ディレクトリへコピー
+  ```sh
+  workDir=_build
+  
+  fileList=*.dat
+  
+  cp --update $fileListtt $workDir;  # ←変数名間違い！
+  
+  ...                                # なのに停止せず、実行が続いてしまう！
+  ```
+  - 変数名を打ち間違ってもエラーにならなず、実行されちゃう！
+  - エラーが起きても停止しない！
 * 他にも：<u>ファイル名にスペース</u>が入る時に、書き方に注意が必要
-
 * そんな悩みに、**Tcl**！
 
 ---
