@@ -56,7 +56,7 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
 
 # けど、Shell（Bash）で苦しんだこと、無いですか？
 
-- 例：データファイルを作業ディレクトリへコピー
+- 例：作業ディレクトリへ、データファイルをコピー
   ```sh
   workDir=_build
   
@@ -82,7 +82,7 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
   #            ↓[...] はコマンド置換（＝呼び出して、値をそこに返す）
   set fileList [glob -nocomplain *.dat]
 
-  # exec で外部コマンド呼び出し（可変長引数）
+  # exec で外部コマンド呼び出し
   exec cp --update {*}$fileList $workDir
   ```
   - 文字列に `"..."` 不要、引数の区切りに `,` 不要<small>（Shell に近い書き味）</small>
@@ -228,9 +228,9 @@ RUN rm {*}$fileListtt;  # ERROR! ここで止まる
 ---
 # まとめ（伝えたいこと）
 
-- Tcl はコマンド行に対するメタプログラミングが出来る shell風言語！！？
+- Tcl はコマンド行に対するメタプログラミングが出来る Shell風言語！！？
 
-  - コマンド文字列のために再設計された Lisp 、みたいな…（弱点も多いけど…）
+  - （大げさに言えば、Lisp をコマンド文字列のために再設計したかのような…）
 
 * もちろん Bash **全部**の置き換えは**無理**
 
@@ -245,7 +245,7 @@ RUN rm {*}$fileListtt;  # ERROR! ここで止まる
 ---
 # 関連記事
 
-## [→ Dry-run の実現技法、個人的な定番](https://hkoba.hatenablog.com/entry/2025/02/08/125644)
+## 以前の blog: [→ Dry-run の実現技法、個人的な定番](https://hkoba.hatenablog.com/entry/2025/02/08/125644)
 
 
 ---
