@@ -35,9 +35,9 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
 ---
 # 皆さんへ質問(1/2)
 
-## 雑用、 Shell ←vs→ Python etc で迷うこと、無いすか？
+## 雑用を Shell ←vs→ Python etc どっちで書くかの悩み、無いすか？
 
-- 例：**社内ツールの導入手順**
+* 例：**社内ツールの導入手順**
   ```sh
   git clone ... && cd ...
   chmod g+ws var var/db
@@ -46,9 +46,9 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
   ```
   - <u>外部コマンド</u>の呼び出しや<u>ファイル操作</u>の、単なる羅列
 
-- 他にも：CI/CD の中のアクションとか
+  - 他にも：CI/CD の中のアクションとか
 
-- 短いから Shell で…
+  - 短いから Shell で…
 
 ---
 
@@ -56,7 +56,7 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
 
 # けど、Shell（Bash）で苦しんだこと、無いすか？
 
-- 例：作業ディレクトリへ、データファイルをコピー
+* 例：作業ディレクトリへ、データファイルをコピー
   ```sh
   workDir=_build
   
@@ -68,7 +68,7 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
   ```
   - **変数名の打ち間違い** がエラーにならなず、実行されちゃう！
   - エラーが起きても**停止しない！**
-- 他にも：<u>ファイル名にスペース</u>が入る時に、書き方に注意が必要
+  - 他にも：<u>ファイル名にスペース</u>が入る時に、書き方に注意が必要
 * そんな悩みに、**Tcl**！
 
 ---
