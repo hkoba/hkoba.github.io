@@ -35,9 +35,9 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
 ---
 # 皆さんへ質問(1/2)
 
-## プロジェクト内の雑用、 Shell ←vs→ Python etc で迷いませんか？
+## 雑用、 Shell ←vs→ Python etc で迷うこと、無いすか？
 
-* 例：**社内ツールの導入手順**
+- 例：**社内ツールの導入手順**
   ```sh
   git clone ... && cd ...
   chmod g+ws var var/db
@@ -46,15 +46,15 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
   ```
   - <u>外部コマンド</u>の呼び出しや<u>ファイル操作</u>の、単なる羅列
 
-* 他にも：CI/CD の中のアクションとか
+- 他にも：CI/CD の中のアクションとか
 
-* 短い処理だから Shell で済ませるってケース、有りませんか？
+- 短いから Shell で…
 
 ---
 
 # 皆さんへの質問(2/2)
 
-# けど、Shell（Bash）で苦しんだこと、無いですか？
+# けど、Shell（Bash）で苦しんだこと、無いすか？
 
 - 例：作業ディレクトリへ、データファイルをコピー
   ```sh
@@ -62,13 +62,13 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
   
   fileList=*.dat
   
-  cp --update $fileListtt $workDir;  # ←変数名間違い！
+  cp --update $fileListtt $workDir;  # ←変数名間違い！なのにコマンド実行！
   
-  ...                                # なのに停止せず、実行が続いてしまう！
+  ...                                # なのに停止しない！実行が続いてしまう！
   ```
-  - 変数名を打ち間違ってもエラーにならなず、実行されちゃう！
-  - エラーが起きても停止しない！
-* 他にも：<u>ファイル名にスペース</u>が入る時に、書き方に注意が必要
+  - **変数名の打ち間違い** がエラーにならなず、実行されちゃう！
+  - エラーが起きても**停止しない！**
+- 他にも：<u>ファイル名にスペース</u>が入る時に、書き方に注意が必要
 * そんな悩みに、**Tcl**！
 
 ---
@@ -79,17 +79,16 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
   # 変数代入
   set workDir _build
 
-  #            ↓[...] はコマンド置換（＝呼び出して、値をそこに返す）
+  #            ↓glob はワイルドカードにマッチするファイルのリストを返すコマンド
   set fileList [glob -nocomplain *.dat]
 
-  # exec で外部コマンド呼び出し
+  # exec で外部コマンド呼び出し（{*} はリスト展開）
   exec cp --update {*}$fileList $workDir
   ```
-  - 文字列に `"..."` 不要、引数の区切りに `,` 不要<small>（Shell に近い書き味）</small>
+  - 文字列に `"..."` 不要、引数の区切りに `,` 不要<small>（Shell に**近い書き味**）</small>
   * 変数名・コマンド名の間違いは**即エラーで停止**、例外処理へ
-  * リストを展開したい箇所は `{*}` で明示
 
-* Shell 向けのコマンド例が<small>（ある程度）</small>流用できる
+* Shell 向けの**コマンド例が流用できる**<small>（ある程度）</small>
 
 ---
 # (個人的) Tcl の最推しポイント
@@ -121,23 +120,24 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
 ---
 # Dry-Run の実装例：Shellの場合
 
-### <small>（ここだけ `Zsh` です）</small>
-
-`-n` オプションで dry-run にする shell 関数 `x` の例
+例： `clean-backup.zsh` <small>（ここだけ `Zsh` です）</small>
 ```sh
+#!/bin/zsh
+emulate -L zsh; setopt no_no_match
 zparseopts -D -K n=o_dryrun; # -n なら配列 o_dryrun に保存
-function x {
+function x {; # `-n` オプションで dry-run にする shell 関数 `x`
     print "# $argv"
     if (($#o_dryrun)); then return; fi; # -n ならここでリターン
     "$argv[@]" || exit $?
 }
-```
-
-使い方の例<small>（`-n` オプションが指定されたときは、 rm は実行されない）</small>
-```sh
+#==== 以下、やりたいこと ====
 x rm -f *.bak
 ```
-
+使い方
+```sh
+./clean-backup.zsh -n
+# rm -f ファイル… を表示するけど、実行はしない
+```
 
 ---
 
@@ -219,25 +219,24 @@ RUN rm {*}$fileListtt;  # ERROR! ここで止まる
 
 - 記述が長くなりがち
 
-- pip, gem, npm みたいなの無いの？（→ tcllib と tcler's wiki で我慢）
+- pip, gem, npm みたいなの無いの？（→ [tcllib](https://core.tcl-lang.org/tcllib/doc/trunk/embedded/index.md) と [tcler's wiki](https://wiki.tcl-lang.org/) で我慢）
 
 - tclsh に `-e EXPR`, `-c CMD` みたいなオプションが無いのはとても不便
 
-* **全て**を任せる言語じゃない、けど、**雑用**言語としては有益
+- **全て**を任せる言語じゃない、けど、**雑用**言語としては有益
 
 ---
 # まとめ（伝えたいこと）
 
-- Tcl はコマンド行に対するメタプログラミングが出来る Shell風言語！！？
+- Tcl は **コマンド行に対するメタプログラミング** が出来る Shell風言語！！？
 
   - （大げさに言えば、Lisp をコマンド文字列のために再設計したかのような…）
 
-* もちろん Bash **全部**の置き換えは**無理**
+- もちろん Bash **全部**の置き換えは**無理**
 
   - インストールが要るから
 
 * けど **仕方なく bash を使っている箇所** の<u>何割か</u>は、置き換えても良いかも？
-
 
 * ご清聴、ありがとうございました〜〜
 
