@@ -86,9 +86,10 @@ by [@hkoba](https://github.com/hkoba/) ![](img/myfistrect.jpg)
   exec cp --update {*}$fileList $workDir
   ```
   - 文字列に `"..."` 不要、引数の区切りに `,` 不要<small>（Shell に**近い書き味**）</small>
-  * 変数名・コマンド名の間違いは**即エラーで停止**、例外処理へ
+  * Shell 向けの**コマンド例が流用できる**<small>（ある程度）</small>
 
-* Shell 向けの**コマンド例が流用できる**<small>（ある程度）</small>
+* 変数名・コマンド名の間違いは**即エラーで停止**、例外処理へ
+
 
 ---
 # (個人的) Tcl の最推しポイント
